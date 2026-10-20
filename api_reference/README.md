@@ -25,6 +25,8 @@ The public guides were retrieved on **2026-10-19**. All **85 services / 167 GET 
 - `sources/catalog.json`: the reviewable extraction of all six indexes and 85 endpoint guides, including original field descriptions, indentation, container markers, type declarations, code tables, URLs, and hashes of normalized decoded HTML. It is the **generation input**, not an authoritative FSS contract. It contains public documentation only.
 - `scripts/`: snapshot extraction, deterministic offline generation, and offline coverage/schema/example validation. The scripts never load `.env` or API credentials.
 - `redocly.yaml`: lint configuration; the two targeted XML lint exceptions are in `.redocly.lint-ignore.yaml`.
+- `scripts/build-docs.mjs`: bundles the specification and embeds the pinned Redoc 3
+  renderer into the HTML published by GitHub Pages.
 
 Edit `scripts/build.py` for modeling decisions, or refresh `sources/catalog.json` for upstream documentation changes, then regenerate. Do not edit generated YAML directly. The scripts intentionally fail on unknown guide layouts and parameter types rather than silently dropping data.
 
@@ -85,7 +87,7 @@ python3 api_reference/scripts/snapshot.py
 `snapshot.py` makes bounded sequential reads of the six indexes and their linked guides. `--cache-dir DIRECTORY` can cache public HTML for interrupted or offline work. Use a fresh directory when checking for upstream changes; an existing cache is reused. Fetching uses a 60-second timeout per page and does not call the authenticated data API.
 
 With Node.js **22.23.3** available, install the locked dependencies and build the
-static reference using **Redocly CLI 2.65.0**:
+static reference using **Redoc CE 3.0.1** and **Redocly CLI 2.65.0**:
 
 ```sh
 npm --prefix api_reference ci
@@ -95,9 +97,28 @@ npm --prefix api_reference run build
 ```
 
 The ignored `site/` directory contains `index.html`, with the specification
-embedded in the HTML. Serve that directory with a local static server to preview it.
+and Redoc 3's standalone JavaScript module embedded in the HTML. The page uses
+the three-panel layout, supports light and dark modes, and uses hash-based links
+that work on GitHub Pages and custom domains. No separate specification file or
+external renderer script is needed, and Redoc's telemetry is disabled.
 
-Linting and HTML generation were verified with Node.js 22.23.3 and Redocly CLI 2.65.0. Python validation used PyYAML 6.0.3, openapi-spec-validator 0.7.2, and jsonschema 4.26.0. These checks establish internal consistency and coverage of the retrieved guides, not conformance of the live upstream service.
+Serve that directory with a local static server to preview it:
+
+```sh
+python3 -m http.server 8000 --directory site
+```
+
+Open `http://localhost:8000/`. The HTML also works directly from disk.
+
+`build-docs.mjs` uses the CLI only to bundle the source references into a temporary
+JSON file, which is deleted after the build. Rendering uses the separately pinned
+`redoc` package because this CLI version's `build-docs` command still uses Redoc 2.
+
+Linting and HTML generation were verified with Node.js 22.23.3, Redocly CLI 2.65.0,
+and Redoc CE 3.0.1. Python validation used PyYAML 6.0.3,
+openapi-spec-validator 0.7.2, and jsonschema 4.26.0. These checks establish internal
+consistency and coverage of the retrieved guides, not conformance of the live
+upstream service.
 
 The lint exceptions are intentional and narrow:
 
@@ -135,9 +156,8 @@ A custom domain can be configured in **Settings → Pages**, with the correspond
 DNS records at the domain provider. With Actions publication, a repository
 `CNAME` file is not required. Pages hosts the reference; FSS hosts the API.
 
-Dependabot checks npm, Python, and action dependencies. Tool updates should be
-reviewed with the generated output; Redocly currently announces an upcoming
-`build-docs` renderer migration.
+Dependabot checks npm, Python, and action dependencies. Review renderer updates
+with the generated output and check navigation, search, color modes, and examples.
 
 Upstream-guide refresh automation and compatibility comparisons are not yet
 implemented. Refresh into a fresh cache and review the resulting diff separately
@@ -145,4 +165,7 @@ from publication. Formatting and schema lint cannot detect upstream changes;
 [oasdiff](https://github.com/oasdiff/oasdiff) is one option for future contract
 comparisons.
 
-The relevant tool documentation is [Redocly lint](https://redocly.com/docs/cli/commands/lint), [build-docs](https://redocly.com/docs/cli/commands/build-docs), and [GitHub Pages custom workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+The relevant tool documentation is [Redocly lint](https://redocly.com/docs/cli/commands/lint),
+[bundle](https://redocly.com/docs/cli/commands/bundle),
+[Redoc CE's standalone module](https://redocly.com/docs/redoc/deployment/html), and
+[GitHub Pages custom workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).

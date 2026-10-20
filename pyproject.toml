@@ -17,6 +17,7 @@ opendart-sdk = { workspace = true }
 dev = [
   "anyio>=4,<5",
   "pytest>=8,<10",
+  "pytest-cov>=7,<8",
   "ruff>=0.11,<1",
   "mypy>=1.15,<2",
   "PyYAML==6.0.3",
@@ -27,7 +28,16 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["packages/sdk/tests"]
-addopts = "-ra"
+addopts = "-ra --cov --cov-report=term-missing --cov-report=xml"
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+source = ["packages/sdk/src/opendart"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
 
 [tool.ruff]
 target-version = "py311"

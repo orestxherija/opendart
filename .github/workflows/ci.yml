@@ -33,5 +33,15 @@ jobs:
       - run: uv run --no-sync python scripts/generate_sdk.py --check
       - run: uv run --no-sync python api_reference/scripts/check.py
       - run: uv run --no-sync pytest
+      - name: Upload SDK coverage
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          disable_search: true
+          fail_ci_if_error: true
+          files: coverage.xml
+          flags: sdk
+          name: sdk-python-${{ matrix.python }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - run: uv run --no-sync python scripts/check_mcp.py
       - run: uv build --package opendart-sdk
       - run: uv build --package opendart-mcp

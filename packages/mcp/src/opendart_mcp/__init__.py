@@ -1,1 +1,1 @@
-"""OpenDART MCP server scaffold."""
+"""OpenDART MCP server."""

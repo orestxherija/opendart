@@ -1,5 +1,6 @@
 services:
   mcp:
+    image: ghcr.io/orestxherija/opendart-mcp:test
     build:
       context: ../..
       dockerfile: packages/mcp/Dockerfile

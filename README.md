@@ -1,6 +1,6 @@
 # OpenDART
 
-Python SDK and MCP server scaffold for Korean corporate disclosures through the
+Python SDK and MCP server for Korean corporate disclosures through the
 **English OpenDART API** operated by Korea's Financial Supervisory Service.
 
 This is a uv workspace with independently installable packages and one `uv.lock`:
@@ -8,7 +8,7 @@ This is a uv workspace with independently installable packages and one `uv.lock`
 | Package | Python import | Status |
 | --- | --- | --- |
 | [`packages/sdk`](packages/sdk) (`opendart-sdk`) | `opendart` | Async client for all 85 documented services |
-| [`packages/mcp`](packages/mcp) (`opendart-mcp`) | `opendart_mcp` | Minimal stdio server; OpenDART tools come next |
+| [`packages/mcp`](packages/mcp) (`opendart-mcp`) | `opendart_mcp` | Stdio server with a `ping` tool for deployment tests |
 
 The SDK supports the 82 JSON services and three ZIP downloads in the existing
 [API reference](api_reference/README.md). XML alternatives to JSON are not exposed.
@@ -58,8 +58,9 @@ docker compose -f packages/mcp/docker-compose.yml build mcp
 docker compose -f packages/mcp/docker-compose.yml run --rm --no-deps -T mcp
 ```
 
-This starts an empty stdio MCP server. See the [MCP guide](packages/mcp/README.md)
-for host configuration and environment variables.
+This starts a stdio MCP server with a `ping` tool that returns `pong`, without an
+API key. See the [MCP guide](packages/mcp/README.md) for smoke tests, host
+configuration, and the manual GHCR publishing workflow.
 
 ## Develop
 
