@@ -87,7 +87,7 @@ python3 api_reference/scripts/snapshot.py
 `snapshot.py` makes bounded sequential reads of the six indexes and their linked guides. `--cache-dir DIRECTORY` can cache public HTML for interrupted or offline work. Use a fresh directory when checking for upstream changes; an existing cache is reused. Fetching uses a 60-second timeout per page and does not call the authenticated data API.
 
 With Node.js **22.23.3** available, install the locked dependencies and build the
-static reference using **Redoc CE 3.0.1** and **Redocly CLI 2.65.0**:
+static reference using **Redoc CE 3.0.1** and **Redocly CLI 2.64.1**:
 
 ```sh
 npm --prefix api_reference ci
@@ -95,6 +95,10 @@ npm --prefix api_reference run lint
 mkdir -p site
 npm --prefix api_reference run build
 ```
+
+CI installs dependencies through Safe Chain with a 48-hour minimum package age.
+Regenerate npm lockfiles through Safe Chain so dependency resolution excludes
+releases that CI would reject; `npm ci` installs the existing locked versions.
 
 The ignored `site/` directory contains `index.html`, with the specification
 and Redoc 3's standalone JavaScript module embedded in the HTML. The page uses
@@ -114,7 +118,7 @@ Open `http://localhost:8000/`. The HTML also works directly from disk.
 JSON file, which is deleted after the build. Rendering uses the separately pinned
 `redoc` package because this CLI version's `build-docs` command still uses Redoc 2.
 
-Linting and HTML generation were verified with Node.js 22.23.3, Redocly CLI 2.65.0,
+Linting and HTML generation were verified with Node.js 22.23.3, Redocly CLI 2.64.1,
 and Redoc CE 3.0.1. Python validation used PyYAML 6.0.3,
 openapi-spec-validator 0.7.2, and jsonschema 4.26.0. These checks establish internal
 consistency and coverage of the retrieved guides, not conformance of the live
@@ -124,7 +128,7 @@ The lint exceptions are intentional and narrow:
 
 - `operation-4xx-response` is disabled because the guide does not establish a 4xx contract.
 - `info-license` is disabled because no API license has been established.
-- The two serialized XML example values are exempted from `no-invalid-media-type-examples`: Redocly 2.65.0 attempts to validate XML text as a JSON object. Literal XML strings are allowed by [OpenAPI 3.1 Example Objects](https://spec.openapis.org/oas/v3.1.0.html#example-object). `check.py` parses them and validates their contents separately. Shared reuse means the CLI reports many ignored occurrences of those same two values; no JSON examples or other rules are ignored.
+- The two serialized XML example values are exempted from `no-invalid-media-type-examples`: Redocly 2.64.1 attempts to validate XML text as a JSON object. Literal XML strings are allowed by [OpenAPI 3.1 Example Objects](https://spec.openapis.org/oas/v3.1.0.html#example-object). `check.py` parses them and validates their contents separately. Shared reuse means the CLI reports many ignored occurrences of those same two values; no JSON examples or other rules are ignored.
 
 ## Publish with GitHub Pages
 

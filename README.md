@@ -80,6 +80,10 @@ uv build --package opendart-sdk
 uv build --package opendart-mcp
 ```
 
+Python dependency resolution uses a 48-hour cooldown to match Safe Chain's CI policy.
+Run `uv lock` after changing dependencies and commit the updated `uv.lock`.
+Dependabot uses the same cooldown for Python and npm updates.
+
 To load local environment variables and activate `.venv` automatically when entering
 the project, install [direnv](https://direnv.net/docs/installation.html) and
 [enable its shell hook](https://direnv.net/docs/hook.html). For zsh, add

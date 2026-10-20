@@ -6,6 +6,8 @@ dependencies = []
 
 [tool.uv]
 package = false
+# Match Safe Chain's minimum package age when resolving the shared lockfile.
+exclude-newer = "48 hours"
 
 [tool.uv.workspace]
 members = ["packages/sdk", "packages/mcp"]

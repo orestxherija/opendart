@@ -6,7 +6,7 @@
     "build": "node scripts/build-docs.mjs"
   },
   "devDependencies": {
-    "@redocly/cli": "2.65.0",
+    "@redocly/cli": "2.64.1",
     "redoc": "3.0.1"
   }
 }
