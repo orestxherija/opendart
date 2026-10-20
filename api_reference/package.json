@@ -1,0 +1,11 @@
+{
+  "name": "opendart-api-reference",
+  "private": true,
+  "scripts": {
+    "lint": "redocly lint opendart --config redocly.yaml",
+    "build": "redocly build-docs opendart --config redocly.yaml --output ../site/index.html --disableGoogleFont"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.65.0"
+  }
+}

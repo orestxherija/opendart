@@ -1,0 +1,8 @@
+# Redocly CLI 2.65.0 validates serialized XML strings as JSON objects. These two
+# literal XML examples are valid under OAS 3.1 section 4.8.19.1 (Example Object).
+# scripts/check.py parses XML and validates the resulting status/message object.
+# JSON examples remain subject to the normal Redocly example validation rule.
+examples.yaml:
+  no-invalid-media-type-examples:
+    - '#/NoDataXml/value'
+    - '#/FileUnavailableXml/value'

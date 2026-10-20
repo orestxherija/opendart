@@ -1,0 +1,8 @@
+services:
+  mcp:
+    build:
+      context: ../..
+      dockerfile: packages/mcp/Dockerfile
+    environment:
+      OPENDART_API__API_KEY: ${OPENDART_API__API_KEY:-}
+    stdin_open: true

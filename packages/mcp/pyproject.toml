@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opendart-mcp"
+version = "0.1.0"
+description = "OpenDART MCP server scaffold backed by opendart-sdk"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["mcp>=2,<3", "opendart-sdk>=0.1.0,<0.2"]
+
+[project.scripts]
+opendart-mcp = "opendart_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opendart_mcp"]
