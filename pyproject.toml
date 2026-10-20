@@ -1,0 +1,53 @@
+[project]
+name = "opendart-workspace"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/sdk", "packages/mcp"]
+
+[tool.uv.sources]
+opendart-sdk = { workspace = true }
+
+[dependency-groups]
+dev = [
+  "anyio>=4,<5",
+  "pytest>=8,<10",
+  "ruff>=0.11,<1",
+  "mypy>=1.15,<2",
+  "PyYAML==6.0.3",
+  "types-PyYAML>=6,<7",
+  "openapi-spec-validator==0.7.2",
+  "jsonschema==4.26.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/sdk/tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [".agents", ".codex", "api_reference"]
+
+[tool.ruff.lint]
+select = ["D", "E4", "E7", "E9", "F", "I", "TID252", "UP"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+known-first-party = ["opendart", "opendart_mcp"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["packages/sdk/src", "packages/mcp/src"]
+plugins = ["pydantic.mypy"]

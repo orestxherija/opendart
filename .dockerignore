@@ -1,0 +1,19 @@
+# Only send the workspace files needed to build the MCP image.
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!packages/
+!packages/sdk/
+!packages/sdk/pyproject.toml
+!packages/sdk/README.md
+!packages/sdk/src/
+!packages/sdk/src/**
+!packages/mcp/
+!packages/mcp/Dockerfile
+!packages/mcp/pyproject.toml
+!packages/mcp/README.md
+!packages/mcp/src/
+!packages/mcp/src/**
+**/__pycache__/
+**/*.py[cod]

@@ -1,0 +1,4 @@
+# Offline generation and validation tools; no SDK runtime dependencies.
+PyYAML==6.0.3
+openapi-spec-validator==0.7.2
+jsonschema==4.26.0
