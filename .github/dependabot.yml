@@ -6,6 +6,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 2
 
   - package-ecosystem: "pip"
     directory: "/api_reference"
@@ -16,6 +18,8 @@ updates:
     directory: "/api_reference"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 2
 
   - package-ecosystem: "docker"
     directory: "/packages/mcp"

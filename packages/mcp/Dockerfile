@@ -12,6 +12,9 @@ RUN uv sync --locked --package opendart-mcp --no-dev --no-editable
 
 FROM python:3.14-slim
 
+LABEL org.opencontainers.image.source="https://github.com/orestxherija/opendart" \
+    org.opencontainers.image.description="Minimal OpenDART MCP server with a ping tool"
+
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
