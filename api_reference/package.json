@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "lint": "redocly lint opendart --config redocly.yaml",
-    "build": "node scripts/build-docs.mjs"
+    "build": "node ../scripts/api_reference/build-docs.mjs"
   },
   "devDependencies": {
     "@redocly/cli": "2.64.1",

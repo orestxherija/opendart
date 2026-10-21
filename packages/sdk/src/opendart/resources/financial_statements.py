@@ -42,19 +42,19 @@ class FinancialStatements:
     async def fnltt_singl_acnt(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> FnlttSinglAcntResponse:
         """Major accounts of a single company (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE003&apiId=AE00033
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -72,28 +72,29 @@ class FinancialStatements:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = FnlttSinglAcntRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request("/fnlttSinglAcnt.json", request, FnlttSinglAcntResponse)
 
     async def fnltt_multi_acnt(
         self,
         *,
-        corp_code: list[str],
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_codes: list[str],
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> FnlttMultiAcntResponse:
         """Major accounts of multiple companies (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE003&apiId=AE00034
 
         Args:
-            corp_code (list[str]): Corporation code of disclosing company (8 digits) ※ See: Guide
-                for Developers > Disclosure Information > Corporation Code Send 1–100 corporation
-                codes as a single comma-separated value. The index description, public form example,
-                and status 021 establish multi-company support despite STRING(8) in the type column.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_codes (list[str]): Corporation code of disclosing company (8 digits) ※ See:
+                Guide for Developers > Disclosure Information > Corporation Code Send 1–100
+                corporation codes as a single comma-separated value. The index description, public
+                form example, and status 021 establish multi-company support despite STRING(8) in
+                the type column.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -111,34 +112,39 @@ class FinancialStatements:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = FnlttMultiAcntRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_codes=corporation_codes,
+            fiscal_year=fiscal_year,
+            report_period=report_period,
         )
         return await self._client.request("/fnlttMultiAcnt.json", request, FnlttMultiAcntResponse)
 
     async def fnltt_cmpny_indx(
         self,
         *,
-        corp_code: list[str],
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
-        idx_cl_code: Literal["M210000", "M220000", "M230000", "M240000"],
+        corporation_codes: list[str],
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
+        indicator_category_code: Literal["M210000", "M220000", "M230000", "M240000"],
     ) -> FnlttCmpnyIndxResponse:
         """Major financial indices of multiple companies (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE003&apiId=AE00039
 
         Args:
-            corp_code (list[str]): Corporation code of disclosing company (8 digits) ※ See: Guide
-                for Developers > Disclosure Information > Corporation Code Send 1–100 corporation
-                codes as a single comma-separated value. The index description, public form example,
-                and status 021 establish multi-company support despite STRING(8) in the type column.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2022.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_codes (list[str]): Corporation code of disclosing company (8 digits) ※ See:
+                Guide for Developers > Disclosure Information > Corporation Code Send 1–100
+                corporation codes as a single comma-separated value. The index description, public
+                form example, and status 021 establish multi-company support despite STRING(8) in
+                the type column. The reference example was checked against a successful 2023
+                response.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2022. The
+                reference example was checked against a successful 2023 response.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
-            idx_cl_code (str): Profitability indicator : M210000 Stability indicator : M220000
-                Growth indicator : M230000 Activity indicator : M240000. Allowed values: 'M210000',
-                'M220000', 'M230000', 'M240000'.
+            indicator_category_code (str): Profitability indicator : M210000 Stability indicator :
+                M220000 Growth indicator : M230000 Activity indicator : M240000. Allowed values:
+                'M210000', 'M220000', 'M230000', 'M240000'.
 
         Returns:
             FnlttCmpnyIndxResponse: Validated successful response with the upstream field values.
@@ -154,26 +160,29 @@ class FinancialStatements:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = FnlttCmpnyIndxRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code, idx_cl_code=idx_cl_code
+            corporation_codes=corporation_codes,
+            fiscal_year=fiscal_year,
+            report_period=report_period,
+            indicator_category_code=indicator_category_code,
         )
         return await self._client.request("/fnlttCmpnyIndx.json", request, FnlttCmpnyIndxResponse)
 
     async def fnltt_xbrl(
         self,
         *,
-        rcept_no: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        filing_number: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> bytes:
         """Original financial statement file (XBRL) (ZIP).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE003&apiId=AE00035
 
         Args:
-            rcept_no (str): Filing No. ※ How to view: Search disclosure API call > Extract requested
-                response value rcept_no Documentation conflict: the type column says STRING(8); the
-                field definition and public examples identify a 14-digit value. This consumer
-                specification follows that definition and those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            filing_number (str): Filing No. ※ How to view: Search disclosure API call > Extract
+                requested response value rcept_no Documentation conflict: the type column says
+                STRING(8); the field definition and public examples identify a 14-digit value. This
+                consumer specification follows that definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -190,13 +199,13 @@ class FinancialStatements:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = FnlttXbrlRequest(rcept_no=rcept_no, reprt_code=reprt_code)
+        request = FnlttXbrlRequest(filing_number=filing_number, report_period=report_period)
         return await self._client.download("/fnlttXbrl.xml", request)
 
     async def xbrl_taxonomy(
         self,
         *,
-        sj_div: Literal[
+        statement_type: Literal[
             "BS1",
             "BS2",
             "BS3",
@@ -230,7 +239,7 @@ class FinancialStatements:
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE003&apiId=AE00037
 
         Args:
-            sj_div (str): Taxonomy statement variant. BS1: Statement of Financial Position,
+            statement_type (str): Taxonomy statement variant. BS1: Statement of Financial Position,
                 Consolidated, Current/Non-current Method; BS2: Statement of Financial Position,
                 Separate, Current/Non-current Method; BS3: Statement of Financial Position,
                 Consolidated, Liquidity Order Method; BS4: Statement of Financial Position,
@@ -273,30 +282,30 @@ class FinancialStatements:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = XbrlTaxonomyRequest(sj_div=sj_div)
+        request = XbrlTaxonomyRequest(statement_type=statement_type)
         return await self._client.request("/xbrlTaxonomy.json", request, XbrlTaxonomyResponse)
 
     async def fnltt_singl_acnt_all(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
-        fs_div: Literal["OFS", "CFS"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
+        statement_scope: Literal["OFS", "CFS"],
     ) -> FnlttSinglAcntAllResponse:
         """Single company’s full financial statements (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE003&apiId=AE00036
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
-            fs_div (str): OFS:Financial statements, CFS:Consolidated financial statements. Allowed
-                values: 'OFS', 'CFS'.
+            statement_scope (str): OFS:Financial statements, CFS:Consolidated financial statements.
+                Allowed values: 'OFS', 'CFS'.
 
         Returns:
             FnlttSinglAcntAllResponse: Validated successful response with the upstream field values.
@@ -312,7 +321,10 @@ class FinancialStatements:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = FnlttSinglAcntAllRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code, fs_div=fs_div
+            corporation_code=corporation_code,
+            fiscal_year=fiscal_year,
+            report_period=report_period,
+            statement_scope=statement_scope,
         )
         return await self._client.request(
             "/fnlttSinglAcntAll.json", request, FnlttSinglAcntAllResponse
@@ -321,25 +333,27 @@ class FinancialStatements:
     async def fnltt_singl_indx(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
-        idx_cl_code: Literal["M210000", "M220000", "M230000", "M240000"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
+        indicator_category_code: Literal["M210000", "M220000", "M230000", "M240000"],
     ) -> FnlttSinglIndxResponse:
         """Major financial indicators of a single company (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE003&apiId=AE00038
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2022.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code. The reference example
+                was checked against a successful 2023 response.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2022. The
+                reference example was checked against a successful 2023 response.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
-            idx_cl_code (str): Profitability indicator : M210000 Stability indicator : M220000
-                Growth indicator : M230000 Activity indicator : M240000. Allowed values: 'M210000',
-                'M220000', 'M230000', 'M240000'.
+            indicator_category_code (str): Profitability indicator : M210000 Stability indicator :
+                M220000 Growth indicator : M230000 Activity indicator : M240000. Allowed values:
+                'M210000', 'M220000', 'M230000', 'M240000'.
 
         Returns:
             FnlttSinglIndxResponse: Validated successful response with the upstream field values.
@@ -355,6 +369,9 @@ class FinancialStatements:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = FnlttSinglIndxRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code, idx_cl_code=idx_cl_code
+            corporation_code=corporation_code,
+            fiscal_year=fiscal_year,
+            report_period=report_period,
+            indicator_category_code=indicator_category_code,
         )
         return await self._client.request("/fnlttSinglIndx.json", request, FnlttSinglIndxResponse)

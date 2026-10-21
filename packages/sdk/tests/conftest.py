@@ -1,5 +1,7 @@
 """Provide synthetic SDK settings and prevent real network access in tests."""
 
+from __future__ import annotations
+
 from collections.abc import Iterator
 
 import httpx2

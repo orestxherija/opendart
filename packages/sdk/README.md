@@ -2,14 +2,22 @@
 
 [![SDK checks](https://github.com/orestxherija/opendart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/orestxherija/opendart/actions/workflows/ci.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/github/orestxherija/opendart/branch/main/graph/badge.svg?flag=sdk&token=8TTWOC0RC4)](https://codecov.io/github/orestxherija/opendart)
-![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Python](https://img.shields.io/badge/python-3.14%2B-blue)
 [![code style: Ruff](https://img.shields.io/badge/code%20style-ruff-46a2f1.svg)](https://github.com/astral-sh/ruff)
 [![type check: mypy](https://img.shields.io/badge/type%20check-mypy-blueviolet)](https://mypy.readthedocs.io/)
 
 [![SDK coverage grid](https://codecov.io/github/orestxherija/opendart/branch/main/graphs/tree.svg?token=8TTWOC0RC4&width=700&height=250)](https://codecov.io/github/orestxherija/opendart)
 
 Typed asynchronous Python client for the English OpenDART service
-at `https://engopendart.fss.or.kr/engapi`. Requires Python 3.11+.
+at `https://engopendart.fss.or.kr/engapi`. Requires Python 3.14+.
+
+## Table of contents
+
+- [Use the client](#use-the-client)
+- [Financial statements](#financial-statements)
+- [Services and models](#services-and-models)
+- [ZIP downloads](#zip-downloads)
+- [Failures and requests](#failures-and-requests)
 
 ## Use the client
 
@@ -27,8 +35,8 @@ from opendart import OpenDart, OpenDartSettings
 async def main():
     settings = OpenDartSettings(api_key=SecretStr(getpass("OpenDART API key: ")))
     async with OpenDart(settings) as client:
-        company = await client.disclosures.company(corp_code="00126380")
-        print(company.corp_name)
+        company = await client.disclosures.company(corporation_code="00126380")
+        print(company.corporation_name)
 
 
 asyncio.run(main())
@@ -51,8 +59,8 @@ from opendart import OpenDart, Settings
 async def main():
     settings = Settings(_env_file=".env")
     async with OpenDart(settings.api) as client:
-        company = await client.disclosures.company(corp_code="00126380")
-        print(company.corp_name)
+        company = await client.disclosures.company(corporation_code="00126380")
+        print(company.corporation_name)
 
 
 asyncio.run(main())
@@ -71,12 +79,12 @@ from opendart import OpenDart
 async def main():
     async with OpenDart() as client:
         accounts = await client.financial_statements.fnltt_singl_acnt(
-            corp_code="00126380",
-            bsns_year="2025",
-            reprt_code="11011",
+            corporation_code="00126380",
+            fiscal_year="2025",
+            report_period="11011",
         )
         for account in accounts.list or []:
-            print(account.account_nm, account.thstrm_amount)
+            print(account.account_name, account.current_period_amount)
 
 
 asyncio.run(main())
@@ -104,12 +112,37 @@ for `/corpCode.xml`. Each method has explicit keyword arguments, a typed return,
 and a docstring linking to its official endpoint guide. Every endpoint method is
 asynchronous.
 
+Method arguments and request model attributes use descriptive Python names.
+OpenDART still receives its documented query keys; for example,
+`disclosure_category="A"` is sent as `pblntf_ty=A`. The codes and string formats
+remain the upstream values. These are the query-name translations:
+
+| Python name | OpenDART query key |
+| --- | --- |
+| `corporation_code` | `corp_code` |
+| `corporation_codes` (batch methods) | `corp_code` |
+| `corporation_type` | `corp_cls` |
+| `filing_start_date` / `filing_end_date` | `bgn_de` / `end_de` |
+| `filing_number` | `rcept_no` |
+| `fiscal_year` | `bsns_year` |
+| `report_period` | `reprt_code` |
+| `statement_scope` / `statement_type` | `fs_div` / `sj_div` |
+| `indicator_category_code` | `idx_cl_code` |
+| `disclosure_category` / `disclosure_subcategory` | `pblntf_ty` / `pblntf_detail_ty` |
+| `final_reports_only` | `last_reprt_at` |
+| `sort_by` / `sort_order` | `sort` / `sort_mth` |
+| `page_number` / `page_size` | `page_no` / `page_count` |
+
+Response models also give common fields readable names, such as
+`filing_number`, `corporation_name`, `report_title`, and
+`current_period_amount`. Use `model_dump(by_alias=True)` when you need the
+original OpenDART field names.
+
 Request, response, and nested record models live together in category modules,
 such as `opendart.models.disclosures` and `opendart.models.financial_statements`.
 For example, `opendart.models.disclosures` contains `ListRequest`, `ListResponse`,
 and `ListResponseListItem`. Request and response models are also re-exported from
-`opendart.models`; `opendart.requests` preserves existing request imports for
-compatibility. Generated files are committed, so installing the SDK does not
+`opendart.models`. Generated files are committed, so installing the SDK does not
 require the OpenAPI files, PyYAML, or a code generator.
 
 Identifiers, years, dates, and financial values remain strings. Methods validate
@@ -124,9 +157,9 @@ from opendart import OpenDart
 async def main():
     async with OpenDart() as client:
         accounts = await client.financial_statements.fnltt_multi_acnt(
-            corp_code=["00126380", "00164779"],
-            bsns_year="2025",
-            reprt_code="11011",
+            corporation_codes=["00126380", "00164779"],
+            fiscal_year="2025",
+            report_period="11011",
         )
         print(accounts.list)
 
@@ -139,7 +172,7 @@ are required in successful envelopes; other fields may be `None`. This is SDK
 tolerance for missing/null values, not a guarantee about the upstream's behavior.
 New upstream fields are preserved in `model_extra` and `model_dump()`.
 Nested remuneration and securities-registration sections have endpoint-specific
-models. Disclosure search returns one page; advance `page_no` explicitly using
+models. Disclosure search returns one page; advance `page_number` explicitly using
 the response's `total_page`. Without a corporation code, the upstream limits
 search intervals to three months.
 
@@ -160,8 +193,8 @@ async def main():
 asyncio.run(main())
 ```
 
-`disclosures.document(rcept_no=...)` and
-`financial_statements.fnltt_xbrl(rcept_no=..., reprt_code=...)` also return ZIP
+`disclosures.document(filing_number=...)` and
+`financial_statements.fnltt_xbrl(filing_number=..., report_period=...)` also return ZIP
 bytes. The `.xml` route suffix does not determine the successful response format.
 XML error envelopes on these routes raise the same SDK errors as JSON services.
 The SDK validates the ZIP container without extracting archive members.
@@ -185,7 +218,7 @@ from opendart import OpenDart, NoDataError, QuotaExceededError
 async def main():
     async with OpenDart() as client:
         try:
-            page = await client.disclosures.search(corp_code="00126380")
+            page = await client.disclosures.search(corporation_code="00126380")
             print(page.total_count)
         except NoDataError:
             print("No matching filings")

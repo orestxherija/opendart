@@ -1,16 +1,17 @@
 """Owned HTTP clients, bounded bodies, and the OpenDART failure boundary."""
 
+from __future__ import annotations
+
 import re
-from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 from io import BytesIO
-from typing import Annotated, TypeVar
+from typing import TYPE_CHECKING, Annotated
 from xml.etree.ElementTree import ParseError
 from zipfile import is_zipfile
 
 import httpx2
-from defusedxml.common import DefusedXmlException  # type: ignore[import-untyped]
 from defusedxml.ElementTree import fromstring  # type: ignore[import-untyped]
+from defusedxml.common import DefusedXmlException  # type: ignore[import-untyped]
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from opendart.errors import (
@@ -19,17 +20,23 @@ from opendart.errors import (
     ContractError,
     FileUnavailableError,
     NoDataError,
-    OpenDartError,
     QuotaExceededError,
     RejectedError,
     ResponseTooLargeError,
     ServiceUnavailableError,
     UnavailableError,
 )
-from opendart.models._base import RequestModel, ResponseModel
-from opendart.settings import OpenDartSettings
+from opendart.models._base import ResponseModel
 
-Model = TypeVar("Model", bound=ResponseModel)
+if TYPE_CHECKING:
+    from collections.abc import Generator, Iterator
+
+    from opendart.errors import (
+        OpenDartError,
+    )
+    from opendart.models._base import RequestModel
+    from opendart.settings import OpenDartSettings
+
 Status = Annotated[str, Field(pattern=r"^[0-9]{3}$")]
 
 
@@ -61,9 +68,7 @@ class _QueryKeyAuth(httpx2.Auth):
         """
         self._key = settings.api_key
 
-    def auth_flow(
-        self, request: httpx2.Request
-    ) -> Generator[httpx2.Request, httpx2.Response, None]:
+    def auth_flow(self, request: httpx2.Request) -> Generator[httpx2.Request, httpx2.Response]:
         """Attach the FSS query credential to an outgoing request.
 
         Args:
@@ -175,7 +180,7 @@ def _application_status(envelope: _Envelope, operation: str) -> None:
     raise kind(f"OpenDART application status {status}", operation=operation, status=status)
 
 
-def _parse_json(body: bytes, operation: str, model: type[Model]) -> Model:
+def _parse_json[Model: ResponseModel](body: bytes, operation: str, model: type[Model]) -> Model:
     """Check the application status and validate a successful JSON response.
 
     Args:
@@ -314,7 +319,9 @@ class Transport:
                     _extend(body, chunk, maximum, path)
         return bytes(body)
 
-    async def request(self, path: str, request: RequestModel, model: type[Model]) -> Model:
+    async def request[Model: ResponseModel](
+        self, path: str, request: RequestModel, model: type[Model]
+    ) -> Model:
         """Fetch JSON and validate its successful endpoint response.
 
         JSON and schema validation failures raise ContractError. The response budget is

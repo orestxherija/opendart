@@ -1,47 +1,97 @@
-name: SDK checks
+name: CI
 
 on:
   push:
+    branches: ["main"]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  # Only supersede runs for the same PR. Each main push must keep its own
+  # comparison, even when a later push changes a different component.
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  sdk:
+  changes:
+    name: Detect changes
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.11", "3.14"]
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      sdk: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.sdk == 'true' }}
+      mcp: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.mcp == 'true' }}
+      reference: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.reference == 'true' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
-          version: "0.11.20"
-          python-version: ${{ matrix.python }}
-          enable-cache: true
-      - name: Set up Safe Chain
-        uses: ./.github/actions/setup-safe-chain
-      - name: Install Python dependencies
+          # Fetch push comparison history before checkout removes credentials.
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Find affected components
+        if: github.event_name != 'workflow_dispatch'
+        id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          # On pushes, compare the full push with its previous commit. PRs use
+          # the complete PR diff through the GitHub API instead.
+          base: ${{ github.event_name == 'push' && github.ref || '' }}
+          filters: .github/ci-paths.yml
+
+  sdk:
+    name: SDK
+    needs: changes
+    if: needs.changes.outputs.sdk == 'true'
+    uses: ./.github/workflows/sdk.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  mcp:
+    name: MCP
+    needs: changes
+    if: needs.changes.outputs.mcp == 'true'
+    uses: ./.github/workflows/mcp.yml
+
+  reference:
+    name: API reference
+    needs: changes
+    if: needs.changes.outputs.reference == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
+
+  checks:
+    name: CI checks
+    if: always()
+    needs: [changes, sdk, mcp, reference]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every selected component to pass
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
         run: |
-          uv safe-chain-verify
-          uv sync --locked --all-packages
-      - run: uv run --no-sync ruff check packages scripts
-      - run: uv run --no-sync ruff format --check packages scripts
-      - run: uv run --no-sync mypy
-      - run: uv run --no-sync python scripts/generate_sdk.py --check
-      - run: uv run --no-sync python api_reference/scripts/check.py
-      - run: uv run --no-sync pytest
-      - name: Upload SDK coverage
-        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
-        with:
-          disable_search: true
-          fail_ci_if_error: true
-          files: coverage.xml
-          flags: sdk
-          name: sdk-python-${{ matrix.python }}
-          token: ${{ secrets.CODECOV_TOKEN }}
-      - run: uv run --no-sync python scripts/check_mcp.py
-      - run: uv build --package opendart-sdk
-      - run: uv build --package opendart-mcp
+          python3 - <<'PY'
+          import json
+          import os
+
+          needs = json.loads(os.environ["NEEDS_JSON"])
+          if needs["changes"]["result"] != "success":
+              raise SystemExit("Change detection did not succeed")
+          for component in ("sdk", "mcp", "reference"):
+              selected = needs["changes"]["outputs"][component]
+              if selected not in ("true", "false"):
+                  raise SystemExit(f"Invalid change-detection output for {component}")
+              expected = "success" if selected == "true" else "skipped"
+              actual = needs[component]["result"]
+              print(f"{component}: {actual} (expected {expected})")
+              if actual != expected:
+                  raise SystemExit(f"{component} did not complete as expected")
+          PY

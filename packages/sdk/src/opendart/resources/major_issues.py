@@ -101,20 +101,21 @@ class MajorIssues:
     async def cmp_mg_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> CmpMgDecsnResponse:
         """Decision on Merger (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00074
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             CmpMgDecsnResponse: Validated successful response with the upstream field values.
@@ -129,26 +130,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = CmpMgDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = CmpMgDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/cmpMgDecsn.json", request, CmpMgDecsnResponse)
 
     async def otcpr_stk_invscr_inh_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> OtcprStkInvscrInhDecsnResponse:
         """Decision on Acquisition of Shares or Investment Certificates of Other Corporations (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00070
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             OtcprStkInvscrInhDecsnResponse: Validated successful response with the upstream field values.
@@ -163,7 +169,11 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = OtcprStkInvscrInhDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = OtcprStkInvscrInhDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request(
             "/otcprStkInvscrInhDecsn.json", request, OtcprStkInvscrInhDecsnResponse
         )
@@ -171,20 +181,21 @@ class MajorIssues:
     async def cmp_dvmg_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> CmpDvmgDecsnResponse:
         """Decision on Merger after Split-off (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00076
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             CmpDvmgDecsnResponse: Validated successful response with the upstream field values.
@@ -199,26 +210,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = CmpDvmgDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = CmpDvmgDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/cmpDvmgDecsn.json", request, CmpDvmgDecsnResponse)
 
     async def stk_extr_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> StkExtrDecsnResponse:
         """Decision to swap or transfer stocks (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00077
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             StkExtrDecsnResponse: Validated successful response with the upstream field values.
@@ -233,26 +249,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = StkExtrDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = StkExtrDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/stkExtrDecsn.json", request, StkExtrDecsnResponse)
 
     async def bnk_mngt_pcbg(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> BnkMngtPcbgResponse:
         """Commencement of Administrative Proceedings by Creditor Banks, etc. (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00051
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             BnkMngtPcbgResponse: Validated successful response with the upstream field values.
@@ -267,26 +288,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = BnkMngtPcbgRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = BnkMngtPcbgRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/bnkMngtPcbg.json", request, BnkMngtPcbgResponse)
 
     async def lwst_lg(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> LwstLgResponse:
         """Lawsuit Filing, etc. (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00052
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             LwstLgResponse: Validated successful response with the upstream field values.
@@ -301,26 +327,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = LwstLgRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = LwstLgRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/lwstLg.json", request, LwstLgResponse)
 
     async def ov_lst_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> OvLstDecsnResponse:
         """Decision on Listing of Stocks, Etc. on a Foreign Securities Exchange (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00053
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             OvLstDecsnResponse: Validated successful response with the upstream field values.
@@ -335,26 +366,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = OvLstDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = OvLstDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/ovLstDecsn.json", request, OvLstDecsnResponse)
 
     async def ov_dlst_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> OvDlstDecsnResponse:
         """Decision to Delist Stocks, Etc. on a Foreign Securities Exchange (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00054
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             OvDlstDecsnResponse: Validated successful response with the upstream field values.
@@ -369,26 +405,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = OvDlstDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = OvDlstDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/ovDlstDecsn.json", request, OvDlstDecsnResponse)
 
     async def ov_lst(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> OvLstResponse:
         """The Listing of Stocks, Etc. on a Foreign Securities Exchange (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00055
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             OvLstResponse: Validated successful response with the upstream field values.
@@ -403,26 +444,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = OvLstRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = OvLstRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/ovLst.json", request, OvLstResponse)
 
     async def ov_dlst(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> OvDlstResponse:
         """Delisting of Stocks, Etc. on a Foreign Securities Exchange (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00056
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             OvDlstResponse: Validated successful response with the upstream field values.
@@ -437,26 +483,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = OvDlstRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = OvDlstRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/ovDlst.json", request, OvDlstResponse)
 
     async def cvbd_is_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> CvbdIsDecsnResponse:
         """Decision on Issuance of Convertible Bonds (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00057
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             CvbdIsDecsnResponse: Validated successful response with the upstream field values.
@@ -471,26 +522,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = CvbdIsDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = CvbdIsDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/cvbdIsDecsn.json", request, CvbdIsDecsnResponse)
 
     async def bdwt_is_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> BdwtIsDecsnResponse:
         """Decision to Issue Bonds with Warrants (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00058
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             BdwtIsDecsnResponse: Validated successful response with the upstream field values.
@@ -505,26 +561,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = BdwtIsDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = BdwtIsDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/bdwtIsDecsn.json", request, BdwtIsDecsnResponse)
 
     async def exbd_is_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> ExbdIsDecsnResponse:
         """Decision on Issuance of Exchangeable Bonds (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00059
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             ExbdIsDecsnResponse: Validated successful response with the upstream field values.
@@ -539,26 +600,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = ExbdIsDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = ExbdIsDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/exbdIsDecsn.json", request, ExbdIsDecsnResponse)
 
     async def bnk_mngt_pcsp(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> BnkMngtPcspResponse:
         """Interruption of Administrative Proceedings by Creditor Banks, etc. (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00060
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             BnkMngtPcspResponse: Validated successful response with the upstream field values.
@@ -573,26 +639,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = BnkMngtPcspRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = BnkMngtPcspRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/bnkMngtPcsp.json", request, BnkMngtPcspResponse)
 
     async def wd_cocobd_is_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> WdCocobdIsDecsnResponse:
         """Decision on Issuance of Bail-in Contingent Capital Securities (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00061
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             WdCocobdIsDecsnResponse: Validated successful response with the upstream field values.
@@ -607,26 +678,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = WdCocobdIsDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = WdCocobdIsDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/wdCocobdIsDecsn.json", request, WdCocobdIsDecsnResponse)
 
     async def ast_inhtrf_etc_ptbk_opt(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> AstInhtrfEtcPtbkOptResponse:
         """Transfer and acquisition of assets (other), put back option (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00042
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             AstInhtrfEtcPtbkOptResponse: Validated successful response with the upstream field values.
@@ -641,7 +717,11 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = AstInhtrfEtcPtbkOptRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = AstInhtrfEtcPtbkOptRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request(
             "/astInhtrfEtcPtbkOpt.json", request, AstInhtrfEtcPtbkOptResponse
         )
@@ -649,20 +729,21 @@ class MajorIssues:
     async def df_ocr(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> DfOcrResponse:
         """Bankruptcy Occurrence (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00043
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             DfOcrResponse: Validated successful response with the upstream field values.
@@ -677,26 +758,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = DfOcrRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = DfOcrRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/dfOcr.json", request, DfOcrResponse)
 
     async def bsn_sp(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> BsnSpResponse:
         """Suspension of Business (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00044
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             BsnSpResponse: Validated successful response with the upstream field values.
@@ -711,26 +797,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = BsnSpRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = BsnSpRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/bsnSp.json", request, BsnSpResponse)
 
     async def ctrcvs_bgrq(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> CtrcvsBgrqResponse:
         """Application for Commencement of Rehabilitation Procedures (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00045
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             CtrcvsBgrqResponse: Validated successful response with the upstream field values.
@@ -745,26 +836,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = CtrcvsBgrqRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = CtrcvsBgrqRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/ctrcvsBgrq.json", request, CtrcvsBgrqResponse)
 
     async def ds_rs_ocr(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> DsRsOcrResponse:
         """Occurrence of Dissolution Cause (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00046
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             DsRsOcrResponse: Validated successful response with the upstream field values.
@@ -779,26 +875,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = DsRsOcrRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = DsRsOcrRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/dsRsOcr.json", request, DsRsOcrResponse)
 
     async def piic_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> PiicDecsnResponse:
         """Decision of Paid-in Capital Increase (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00047
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             PiicDecsnResponse: Validated successful response with the upstream field values.
@@ -813,26 +914,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = PiicDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = PiicDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/piicDecsn.json", request, PiicDecsnResponse)
 
     async def fric_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> FricDecsnResponse:
         """Decision of Capital Increase without Consideration (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00048
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             FricDecsnResponse: Validated successful response with the upstream field values.
@@ -847,26 +953,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = FricDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = FricDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/fricDecsn.json", request, FricDecsnResponse)
 
     async def pifric_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> PifricDecsnResponse:
         """Decision on Paid-in Capital Increase/Capital Increase without Consideration (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00049
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             PifricDecsnResponse: Validated successful response with the upstream field values.
@@ -881,26 +992,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = PifricDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = PifricDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/pifricDecsn.json", request, PifricDecsnResponse)
 
     async def cr_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> CrDecsnResponse:
         """Decision on Capital Reduction (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00050
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             CrDecsnResponse: Validated successful response with the upstream field values.
@@ -915,26 +1031,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = CrDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = CrDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/crDecsn.json", request, CrDecsnResponse)
 
     async def otcpr_stk_invscr_trf_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> OtcprStkInvscrTrfDecsnResponse:
         """Decision on Transfer of Shares or Investment Certificates of Other Corporations (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00071
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             OtcprStkInvscrTrfDecsnResponse: Validated successful response with the upstream field values.
@@ -949,7 +1070,11 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = OtcprStkInvscrTrfDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = OtcprStkInvscrTrfDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request(
             "/otcprStkInvscrTrfDecsn.json", request, OtcprStkInvscrTrfDecsnResponse
         )
@@ -957,20 +1082,21 @@ class MajorIssues:
     async def stkrtbd_inh_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> StkrtbdInhDecsnResponse:
         """Decision to Acquire Stock-Related Bonds (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00072
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             StkrtbdInhDecsnResponse: Validated successful response with the upstream field values.
@@ -985,26 +1111,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = StkrtbdInhDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = StkrtbdInhDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/stkrtbdInhDecsn.json", request, StkrtbdInhDecsnResponse)
 
     async def stkrtbd_trf_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> StkrtbdTrfDecsnResponse:
         """Decision to Transfer Stock-Related Bonds (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00073
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             StkrtbdTrfDecsnResponse: Validated successful response with the upstream field values.
@@ -1019,26 +1150,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = StkrtbdTrfDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = StkrtbdTrfDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/stkrtbdTrfDecsn.json", request, StkrtbdTrfDecsnResponse)
 
     async def tsstk_aq_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> TsstkAqDecsnResponse:
         """Decision on Acquisition of Treasury Stock (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00062
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             TsstkAqDecsnResponse: Validated successful response with the upstream field values.
@@ -1053,26 +1189,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = TsstkAqDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = TsstkAqDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/tsstkAqDecsn.json", request, TsstkAqDecsnResponse)
 
     async def tsstk_dp_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> TsstkDpDecsnResponse:
         """Decision on Disposal of Treasury Stock (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00063
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             TsstkDpDecsnResponse: Validated successful response with the upstream field values.
@@ -1087,26 +1228,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = TsstkDpDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = TsstkDpDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/tsstkDpDecsn.json", request, TsstkDpDecsnResponse)
 
     async def tsstk_aq_trctr_cns_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> TsstkAqTrctrCnsDecsnResponse:
         """Decision to Execute Trust Contract for Acquisition of Treasury Stock (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00064
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             TsstkAqTrctrCnsDecsnResponse: Validated successful response with the upstream field values.
@@ -1121,7 +1267,11 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = TsstkAqTrctrCnsDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = TsstkAqTrctrCnsDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request(
             "/tsstkAqTrctrCnsDecsn.json", request, TsstkAqTrctrCnsDecsnResponse
         )
@@ -1129,20 +1279,21 @@ class MajorIssues:
     async def tsstk_aq_trctr_cc_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> TsstkAqTrctrCcDecsnResponse:
         """Decision on Termination of Trust Contract for Acquisition of Treasury Stock (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00065
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             TsstkAqTrctrCcDecsnResponse: Validated successful response with the upstream field values.
@@ -1157,7 +1308,11 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = TsstkAqTrctrCcDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = TsstkAqTrctrCcDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request(
             "/tsstkAqTrctrCcDecsn.json", request, TsstkAqTrctrCcDecsnResponse
         )
@@ -1165,20 +1320,21 @@ class MajorIssues:
     async def bsn_inh_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> BsnInhDecsnResponse:
         """Decision on Acquisition of Business (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00066
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             BsnInhDecsnResponse: Validated successful response with the upstream field values.
@@ -1193,26 +1349,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = BsnInhDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = BsnInhDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/bsnInhDecsn.json", request, BsnInhDecsnResponse)
 
     async def bsn_trf_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> BsnTrfDecsnResponse:
         """Decision on Transfer of Business (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00067
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             BsnTrfDecsnResponse: Validated successful response with the upstream field values.
@@ -1227,26 +1388,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = BsnTrfDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = BsnTrfDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/bsnTrfDecsn.json", request, BsnTrfDecsnResponse)
 
     async def tgast_inh_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> TgastInhDecsnResponse:
         """Decision on Acquisition of Tangible Assets (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00068
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             TgastInhDecsnResponse: Validated successful response with the upstream field values.
@@ -1261,26 +1427,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = TgastInhDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = TgastInhDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/tgastInhDecsn.json", request, TgastInhDecsnResponse)
 
     async def tgast_trf_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> TgastTrfDecsnResponse:
         """Decision on Transfer of Tangible Assets (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00069
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             TgastTrfDecsnResponse: Validated successful response with the upstream field values.
@@ -1295,26 +1466,31 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = TgastTrfDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = TgastTrfDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/tgastTrfDecsn.json", request, TgastTrfDecsnResponse)
 
     async def cmp_dv_decsn(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> CmpDvDecsnResponse:
         """Decision on Split-off (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE005&apiId=AE00075
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             CmpDvDecsnResponse: Validated successful response with the upstream field values.
@@ -1329,5 +1505,9 @@ class MajorIssues:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = CmpDvDecsnRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = CmpDvDecsnRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/cmpDvDecsn.json", request, CmpDvDecsnResponse)

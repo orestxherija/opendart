@@ -1,0 +1,47 @@
+name: SDK checks
+
+on:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sdk:
+    name: Python 3.14
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.11.20"
+          python-version: "3.14"
+          enable-cache: true
+      - name: Set up Aikido Safe Chain
+        uses: ./.github/actions/setup-safe-chain
+      - name: Install SDK and development dependencies
+        run: |
+          uv safe-chain-verify
+          uv sync --locked --package opendart-workspace --package opendart-sdk
+      - run: uv run --no-sync ruff check packages/sdk scripts/generate_sdk.py
+      - run: uv run --no-sync ruff format --check packages/sdk scripts/generate_sdk.py
+      - run: uv run --no-sync mypy packages/sdk/src
+      - run: uv run --no-sync python scripts/generate_sdk.py --check
+      - run: uv run --no-sync pytest packages/sdk/tests
+      - name: Upload SDK coverage
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          disable_search: true
+          fail_ci_if_error: true
+          files: coverage.xml
+          flags: sdk
+          name: sdk-python-3.14
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - run: uv build --package opendart-sdk

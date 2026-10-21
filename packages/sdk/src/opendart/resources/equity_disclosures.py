@@ -33,15 +33,15 @@ class EquityDisclosures:
     async def elestock(
         self,
         *,
-        corp_code: str,
+        corporation_code: str,
     ) -> ElestockResponse:
         """Report of executives and major shareholders’ ownership (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE004&apiId=AE00041
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
 
         Returns:
             ElestockResponse: Validated successful response with the upstream field values.
@@ -56,21 +56,21 @@ class EquityDisclosures:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = ElestockRequest(corp_code=corp_code)
+        request = ElestockRequest(corporation_code=corporation_code)
         return await self._client.request("/elestock.json", request, ElestockResponse)
 
     async def majorstock(
         self,
         *,
-        corp_code: str,
+        corporation_code: str,
     ) -> MajorstockResponse:
         """Report of significant holding status (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE004&apiId=AE00040
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
 
         Returns:
             MajorstockResponse: Validated successful response with the upstream field values.
@@ -85,5 +85,5 @@ class EquityDisclosures:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = MajorstockRequest(corp_code=corp_code)
+        request = MajorstockRequest(corporation_code=corporation_code)
         return await self._client.request("/majorstock.json", request, MajorstockResponse)

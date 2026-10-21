@@ -89,22 +89,22 @@ class PeriodicReports:
     async def stock_totqy_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> StockTotqySttusResponse:
         """Status of total stock number (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00017
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -122,26 +122,26 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = StockTotqySttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request("/stockTotqySttus.json", request, StockTotqySttusResponse)
 
     async def tesstk_acqs_dsps_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> TesstkAcqsDspsSttusResponse:
         """Information on treasury stock acquisition and disposal (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00007
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -159,7 +159,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = TesstkAcqsDspsSttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/tesstkAcqsDspsSttus.json", request, TesstkAcqsDspsSttusResponse
@@ -168,19 +168,19 @@ class PeriodicReports:
     async def alot_matter(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> AlotMatterResponse:
         """Matters related to dividends (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00006
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -197,25 +197,27 @@ class PeriodicReports:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = AlotMatterRequest(corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code)
+        request = AlotMatterRequest(
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
+        )
         return await self._client.request("/alotMatter.json", request, AlotMatterResponse)
 
     async def irds_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> IrdsSttusResponse:
         """Status of capital increase (reduction) (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00005
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -232,28 +234,30 @@ class PeriodicReports:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = IrdsSttusRequest(corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code)
+        request = IrdsSttusRequest(
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
+        )
         return await self._client.request("/irdsSttus.json", request, IrdsSttusResponse)
 
     async def det_scrits_isu_acmslt(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> DetScritsIsuAcmsltResponse:
         """Debt securities issuance performance (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00018
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -271,7 +275,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = DetScritsIsuAcmsltRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/detScritsIsuAcmslt.json", request, DetScritsIsuAcmsltResponse
@@ -280,22 +284,22 @@ class PeriodicReports:
     async def entrprs_bil_scrits_nrdmp_blce(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> EntrprsBilScritsNrdmpBlceResponse:
         """Outstanding balance on commercial paper securities (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00019
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -313,7 +317,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = EntrprsBilScritsNrdmpBlceRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/entrprsBilScritsNrdmpBlce.json", request, EntrprsBilScritsNrdmpBlceResponse
@@ -322,22 +326,22 @@ class PeriodicReports:
     async def srtpd_psndbt_nrdmp_blce(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> SrtpdPsndbtNrdmpBlceResponse:
         """Outstanding balance on short-term bonds (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00020
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -355,7 +359,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = SrtpdPsndbtNrdmpBlceRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/srtpdPsndbtNrdmpBlce.json", request, SrtpdPsndbtNrdmpBlceResponse
@@ -364,22 +368,22 @@ class PeriodicReports:
     async def cprnd_nrdmp_blce(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> CprndNrdmpBlceResponse:
         """Outstanding balance on corporate bonds (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00021
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -397,29 +401,29 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = CprndNrdmpBlceRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request("/cprndNrdmpBlce.json", request, CprndNrdmpBlceResponse)
 
     async def new_capl_scrits_nrdmp_blce(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> NewCaplScritsNrdmpBlceResponse:
         """Outstanding balance on hybrid bonds (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00022
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -437,7 +441,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = NewCaplScritsNrdmpBlceRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/newCaplScritsNrdmpBlce.json", request, NewCaplScritsNrdmpBlceResponse
@@ -446,22 +450,22 @@ class PeriodicReports:
     async def cndl_capl_scrits_nrdmp_blce(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> CndlCaplScritsNrdmpBlceResponse:
         """Outstanding balance on contingent capital securities (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00023
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -479,7 +483,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = CndlCaplScritsNrdmpBlceRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/cndlCaplScritsNrdmpBlce.json", request, CndlCaplScritsNrdmpBlceResponse
@@ -488,22 +492,22 @@ class PeriodicReports:
     async def pssrp_cptal_use_dtls(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> PssrpCptalUseDtlsResponse:
         """Details of public offering fund usage (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00031
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -521,7 +525,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = PssrpCptalUseDtlsRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/pssrpCptalUseDtls.json", request, PssrpCptalUseDtlsResponse
@@ -530,22 +534,22 @@ class PeriodicReports:
     async def prvsrp_cptal_use_dtls(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> PrvsrpCptalUseDtlsResponse:
         """Details of private placement fund usage (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00032
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -563,7 +567,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = PrvsrpCptalUseDtlsRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/prvsrpCptalUseDtls.json", request, PrvsrpCptalUseDtlsResponse
@@ -572,22 +576,22 @@ class PeriodicReports:
     async def accnut_adtor_nm_nd_adt_opinion(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> AccnutAdtorNmNdAdtOpinionResponse:
         """Name of external auditor and audit opinion (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00024
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -605,7 +609,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = AccnutAdtorNmNdAdtOpinionRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/accnutAdtorNmNdAdtOpinion.json", request, AccnutAdtorNmNdAdtOpinionResponse
@@ -614,22 +618,22 @@ class PeriodicReports:
     async def adt_servc_cncls_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> AdtServcCnclsSttusResponse:
         """Information on audit service contract entered (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00025
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -647,7 +651,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = AdtServcCnclsSttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/adtServcCnclsSttus.json", request, AdtServcCnclsSttusResponse
@@ -656,22 +660,22 @@ class PeriodicReports:
     async def accnut_adtor_non_adt_servc_cncls_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> AccnutAdtorNonAdtServcCnclsSttusResponse:
         """Information on non-audit service contracts entered with external auditor (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00026
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -689,7 +693,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = AccnutAdtorNonAdtServcCnclsSttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/accnutAdtorNonAdtServcCnclsSttus.json",
@@ -700,22 +704,22 @@ class PeriodicReports:
     async def outcmpny_drctr_nd_change_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> OutcmpnyDrctrNdChangeSttusResponse:
         """Independent(outside) directors and changes (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00027
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -733,7 +737,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = OutcmpnyDrctrNdChangeSttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/outcmpnyDrctrNdChangeSttus.json", request, OutcmpnyDrctrNdChangeSttusResponse
@@ -742,19 +746,19 @@ class PeriodicReports:
     async def hyslr_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> HyslrSttusResponse:
         """Information on largest shareholder (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00008
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report Semi-annual Report Third Quarterly Report
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report Semi-annual Report Third Quarterly Report
                 Annual Report. Allowed values: '11013', '11012', '11014', '11011'.
 
         Returns:
@@ -770,25 +774,27 @@ class PeriodicReports:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = HyslrSttusRequest(corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code)
+        request = HyslrSttusRequest(
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
+        )
         return await self._client.request("/hyslrSttus.json", request, HyslrSttusResponse)
 
     async def hyslr_chg_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> HyslrChgSttusResponse:
         """Changes of the largest shareholder (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00009
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -806,26 +812,26 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = HyslrChgSttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request("/hyslrChgSttus.json", request, HyslrChgSttusResponse)
 
     async def mrhl_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> MrhlSttusResponse:
         """Information on minority shareholders (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00010
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code".
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015".
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code".
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015".
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -842,25 +848,27 @@ class PeriodicReports:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = MrhlSttusRequest(corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code)
+        request = MrhlSttusRequest(
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
+        )
         return await self._client.request("/mrhlSttus.json", request, MrhlSttusResponse)
 
     async def exctv_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> ExctvSttusResponse:
         """Status of executives (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00011
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -877,25 +885,27 @@ class PeriodicReports:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = ExctvSttusRequest(corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code)
+        request = ExctvSttusRequest(
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
+        )
         return await self._client.request("/exctvSttus.json", request, ExctvSttusResponse)
 
     async def emp_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> EmpSttusResponse:
         """Status of staff (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00012
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -912,28 +922,30 @@ class PeriodicReports:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = EmpSttusRequest(corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code)
+        request = EmpSttusRequest(
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
+        )
         return await self._client.request("/empSttus.json", request, EmpSttusResponse)
 
     async def unrst_exctv_mendng_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> UnrstExctvMendngSttusResponse:
         """Remuneration for unregistered executives (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00028
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -951,7 +963,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = UnrstExctvMendngSttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/unrstExctvMendngSttus.json", request, UnrstExctvMendngSttusResponse
@@ -960,22 +972,22 @@ class PeriodicReports:
     async def drctr_adt_all_mendng_sttus_gmtsck_confm_amount(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> DrctrAdtAllMendngSttusGmtsckConfmAmountResponse:
         """Remuneration for all directors and auditors (amount approved by the general shareholders' meeting) (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00029
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -993,7 +1005,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = DrctrAdtAllMendngSttusGmtsckConfmAmountRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/drctrAdtAllMendngSttusGmtsckConfmAmount.json",
@@ -1004,19 +1016,19 @@ class PeriodicReports:
     async def hmv_audit_all_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> HmvAuditAllSttusResponse:
         """Remuneration for all directors and auditors (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00014
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -1034,7 +1046,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = HmvAuditAllSttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/hmvAuditAllSttus.json", request, HmvAuditAllSttusResponse
@@ -1043,22 +1055,22 @@ class PeriodicReports:
     async def drctr_adt_all_mendng_sttus_mendng_pymntamt_ty_cl(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> DrctrAdtAllMendngSttusMendngPymntamtTyClResponse:
         """Remuneration for all directors and auditors (remuneration paid - by type) (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00030
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
-                conflict: the type column says STRING(1); the field definition and public examples
-                identify a 4-digit value. This consumer specification follows that definition and
-                those examples.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015
+                Documentation conflict: the type column says STRING(1); the field definition and
+                public examples identify a 4-digit value. This consumer specification follows that
+                definition and those examples.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -1076,7 +1088,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = DrctrAdtAllMendngSttusMendngPymntamtTyClRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/drctrAdtAllMendngSttusMendngPymntamtTyCl.json",
@@ -1087,19 +1099,19 @@ class PeriodicReports:
     async def hmv_audit_indvdl_by_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> HmvAuditIndvdlBySttusResponse:
         """Remuneration for individual directors and auditors (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00013
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -1117,7 +1129,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = HmvAuditIndvdlBySttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/hmvAuditIndvdlBySttus.json", request, HmvAuditIndvdlBySttusResponse
@@ -1126,19 +1138,19 @@ class PeriodicReports:
     async def hmv_audit_indvdl_by_sttus_v2(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> HmvAuditIndvdlBySttusV2Response:
         """Remuneration for individual directors and auditors (Ver 2.0) (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00084
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -1156,7 +1168,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = HmvAuditIndvdlBySttusV2Request(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/hmvAuditIndvdlBySttusV2.json", request, HmvAuditIndvdlBySttusV2Response
@@ -1165,19 +1177,19 @@ class PeriodicReports:
     async def indvdl_by_pay(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> IndvdlByPayResponse:
         """Individual remuneration amounts (top 5 over KRW 500 million) (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00015
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -1195,26 +1207,26 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = IndvdlByPayRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request("/indvdlByPay.json", request, IndvdlByPayResponse)
 
     async def indvdl_by_pay_v2(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> IndvdlByPayV2Response:
         """Individual remuneration amounts (top 5 over KRW 500 million) (Ver 2.0) (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00085
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -1232,26 +1244,26 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = IndvdlByPayV2Request(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request("/indvdlByPayV2.json", request, IndvdlByPayV2Response)
 
     async def otr_cpr_invstmnt_sttus(
         self,
         *,
-        corp_code: str,
-        bsns_year: str,
-        reprt_code: Literal["11013", "11012", "11014", "11011"],
+        corporation_code: str,
+        fiscal_year: str,
+        report_period: Literal["11013", "11012", "11014", "11011"],
     ) -> OtrCprInvstmntSttusResponse:
         """Investment in other corporations (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE002&apiId=AE00016
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-            reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+            report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
                 Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
                 '11014', '11011'.
 
@@ -1269,7 +1281,7 @@ class PeriodicReports:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = OtrCprInvstmntSttusRequest(
-            corp_code=corp_code, bsns_year=bsns_year, reprt_code=reprt_code
+            corporation_code=corporation_code, fiscal_year=fiscal_year, report_period=report_period
         )
         return await self._client.request(
             "/otrCprInvstmntSttus.json", request, OtrCprInvstmntSttusResponse

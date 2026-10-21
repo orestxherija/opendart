@@ -1,0 +1,106 @@
+#:schema https://www.schemastore.org/prek.json
+
+minimum_prek_version = "0.4.13"
+fail_fast = false
+default_stages = ["pre-commit"]
+default_install_hook_types = ["pre-commit", "commit-msg", "pre-merge-commit", "pre-push"]
+orphan = false
+
+[exclude]
+glob = [
+    ".cache/**",
+    ".venv/**",
+    "build/**",
+    "dist/**",
+    "archive/**",
+    "node_modules/**",
+    "vendor/**",
+    "**/generated/**",
+    "*.lock",
+    "**/*.lock",
+]
+
+[default_language_version]
+python = "3.14"
+mise = "default"
+# node = "default"
+
+[default_env]
+PYTHONUTF8 = "1"
+PYTHONUNBUFFERED = "1"
+UV_NO_PROGRESS = "1"
+UV_LOCKED = "1"
+
+[priorities]
+normalize_encoding = 0
+normalize_line_endings = 10
+normalize_structured = 15
+normalize_whitespace = 20
+normalize_eof = 30
+integrity = 40
+syntax = 45
+security_fix = 47
+security = 48
+policy = 48
+analyze = 50
+typecheck = 60
+quality = 70
+test = 80
+commit_message = 80
+
+[update]
+cooldown_days = 7
+freeze = true
+exclude_tags = ["*-{alpha,beta,rc}*"]
+
+[[repos]]
+repo = "https://github.com/hadolint/hadolint"
+rev = "v2.15.1"
+
+[[repos.hooks]]
+id = "hadolint-docker"
+name = "Hadolint Dockerfile lint"
+description = "Checks Dockerfiles for correctness and best practices using the repository's Hadolint configuration."
+entry = "ghcr.io/hadolint/hadolint:v2.15.1 hadolint"
+types = ["dockerfile"]
+always_run = false
+pass_filenames = true
+groups = ["docker", "lint", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = false
+priority = "analyze"
+log_file = ".prek-hadolint.log"
+
+# Keep the hook version aligned with ruff.toml and the quality dependency group.
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.17.1"
+
+[[repos.hooks]]
+id = "ruff-check"
+name = "Ruff lint"
+description = "Checks Python, notebooks, Markdown code blocks, and pyproject files with Ruff."
+entry = "ruff check"
+types_or = ["python", "pyi", "jupyter", "markdown", "pyproject"]
+always_run = false
+pass_filenames = true
+groups = ["python", "lint", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "analyze"
+log_file = ".prek-ruff-check.log"
+
+[[repos.hooks]]
+id = "ruff-format"
+name = "Ruff format check"
+description = "Checks Python, notebooks, and Markdown code blocks against Ruff formatting."
+entry = "ruff format"
+args = ["--check"]
+types_or = ["python", "pyi", "jupyter", "markdown"]
+always_run = false
+pass_filenames = true
+groups = ["python", "format-check", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "analyze"
+log_file = ".prek-ruff-format.log"

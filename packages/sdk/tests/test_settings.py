@@ -1,5 +1,7 @@
 """Verify explicit settings loading, caching, immutability, and validation."""
 
+from __future__ import annotations
+
 import pytest
 from pydantic import SecretStr, ValidationError
 

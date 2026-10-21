@@ -1,5 +1,7 @@
 """Verify SDK error translation, request validation, bounded reads, and cleanup."""
 
+from __future__ import annotations
+
 import asyncio
 from collections.abc import AsyncIterator
 
@@ -63,12 +65,12 @@ async def test_client_owns_transport_and_rejects_calls_after_close(settings, con
         with pytest.raises(ValueError, match="context failure"):
             async with client:
                 await client.disclosures.search()
-                await client.disclosures.company(corp_code="00126380")
+                await client.disclosures.company(corporation_code="00126380")
                 raise ValueError("context failure")
     else:
         try:
             await client.disclosures.search()
-            await client.disclosures.company(corp_code="00126380")
+            await client.disclosures.company(corporation_code="00126380")
         finally:
             await client.aclose()
     assert client.is_closed
@@ -108,7 +110,7 @@ async def test_shared_client_allows_concurrent_requests(settings):
             results = await asyncio.gather(
                 client.disclosures.search(),
                 client.financial_statements.fnltt_singl_acnt(
-                    corp_code="00126380", bsns_year="2025", reprt_code="11011"
+                    corporation_code="00126380", fiscal_year="2025", report_period="11011"
                 ),
             )
     assert len(requests) == 2
@@ -300,14 +302,14 @@ async def test_unexpected_downloads_and_xml_entities(settings, body):
 @pytest.mark.parametrize(
     "params",
     [
-        {"corp_code": "123"},
-        {"corp_code": "https://example.com"},
-        {"page_count": 101},
-        {"page_no": 0},
-        {"page_no": True},
-        {"page_no": "1"},
-        {"sort": "invalid"},
-        {"bgn_de": "2025-01-01"},
+        {"corporation_code": "123"},
+        {"corporation_code": "https://example.com"},
+        {"page_size": 101},
+        {"page_number": 0},
+        {"page_number": True},
+        {"page_number": "1"},
+        {"sort_by": "invalid"},
+        {"filing_start_date": "2025-01-01"},
     ],
 )
 async def test_invalid_requests_never_reach_transport(settings, params):
@@ -357,7 +359,7 @@ async def test_batch_bounds(settings, codes):
     async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(ValidationError):
             await client.financial_statements.fnltt_multi_acnt(
-                corp_code=codes, bsns_year="2025", reprt_code="11011"
+                corporation_codes=codes, fiscal_year="2025", report_period="11011"
             )
 
 
@@ -377,10 +379,10 @@ async def test_missing_optional_fields_unknown_fields_and_raw_amounts(settings):
         settings, transport=httpx2.MockTransport(lambda _: httpx2.Response(200, json=body))
     ) as client:
         result = await client.financial_statements.fnltt_singl_acnt(
-            corp_code="00126380", bsns_year="2025", reprt_code="11011"
+            corporation_code="00126380", fiscal_year="2025", report_period="11011"
         )
-    assert result.list[0].thstrm_amount == "1,234"
-    assert result.model_dump(exclude_unset=True) == body
+    assert result.list[0].current_period_amount == "1,234"
+    assert result.model_dump(exclude_unset=True, by_alias=True) == body
 
 
 async def test_encoded_body_rejected_before_consuming(settings):

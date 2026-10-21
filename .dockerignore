@@ -1,19 +1,30 @@
 # Only send the workspace files needed to build the MCP image.
 *
 !pyproject.toml
+!uv.toml
 !uv.lock
 !README.md
 !packages/
+# Re-exclude each directory's contents before allowing specific children.
+packages/*
 !packages/sdk/
+packages/sdk/*
 !packages/sdk/pyproject.toml
 !packages/sdk/README.md
 !packages/sdk/src/
 !packages/sdk/src/**
 !packages/mcp/
+packages/mcp/*
 !packages/mcp/Dockerfile
 !packages/mcp/pyproject.toml
 !packages/mcp/README.md
 !packages/mcp/src/
 !packages/mcp/src/**
+# Apply these after the source allowlist, including for files nested under src/.
+**/.env
+**/.env.*
+**/*.key
+**/*.pem
+**/.venv/
 **/__pycache__/
 **/*.py[cod]

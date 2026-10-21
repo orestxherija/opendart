@@ -1,5 +1,7 @@
 """Stable SDK failures, with messages that exclude credentials and response bodies."""
 
+from __future__ import annotations
+
 
 class OpenDartError(Exception):
     """Base SDK failure with safe, structured operation context.

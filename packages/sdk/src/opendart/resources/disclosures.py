@@ -35,12 +35,13 @@ class Disclosures:
     async def search(
         self,
         *,
-        corp_code: str | None = None,
-        bgn_de: str | None = None,
-        end_de: str | None = None,
-        last_reprt_at: Literal["Y", "N"] | None = None,
-        pblntf_ty: Literal["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"] | None = None,
-        pblntf_detail_ty: Literal[
+        corporation_code: str | None = None,
+        filing_start_date: str | None = None,
+        filing_end_date: str | None = None,
+        final_reports_only: Literal["Y", "N"] | None = None,
+        disclosure_category: Literal["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+        | None = None,
+        disclosure_subcategory: Literal[
             "A001",
             "A002",
             "A003",
@@ -104,41 +105,41 @@ class Disclosures:
             "J009",
         ]
         | None = None,
-        corp_cls: Literal["Y", "K", "N", "E"] | None = None,
-        sort: Literal["date", "crp", "rpt"] | None = None,
-        sort_mth: Literal["asc", "desc"] | None = None,
-        page_no: int | None = None,
-        page_count: int | None = None,
+        corporation_type: Literal["Y", "K", "N", "E"] | None = None,
+        sort_by: Literal["date", "crp", "rpt"] | None = None,
+        sort_order: Literal["asc", "desc"] | None = None,
+        page_number: int | None = None,
+        page_size: int | None = None,
     ) -> ListResponse:
         """Search disclosures (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE001&apiId=AE00001
 
         Args:
-            corp_code (str | None): Corporation code of disclosing company (8 digits) ※ See: Guide
-                for Developers > Disclosure Information > Corporation code. None omits this
+            corporation_code (str | None): Corporation code of disclosing company (8 digits) ※ See:
+                Guide for Developers > Disclosure Information > Corporation code. None omits this
                 parameter.
-            bgn_de (str | None): Filing date when search starts (YYYYMMDD) 1) Default value: End
-                date (end_de) 2) If no corporation code (corp_code), search period is limited to
-                three months. None omits this parameter.
-            end_de (str | None): Filing date when search ends (YYYYMMDD) ※ No date selected: search
-                by current date. None omits this parameter.
-            last_reprt_at (str | None): Whether to search only final reports (Y or N) 1) Default: N
-                (N selected: search all reports, including amended reports). Allowed values: 'Y',
-                'N'. None omits this parameter. The upstream default is 'N'.
-            pblntf_ty (str | None): A: Periodic Disclosure B: Report on Major Issues C: Issuance
-                Disclosure D: Equity Disclosure E: Other Disclosure F: Related to External Audits G:
-                Fund Disclosure H: Asset-Backed Securitization I: Exchange Disclosure J: Fair Trade
-                Commission Disclosure. Allowed values: 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
-                'J'. None omits this parameter.
-            pblntf_detail_ty (str | None): Detailed disclosure category. A001: Annual Report; A002:
-                Semi-annual Report; A003: Quarterly Report; A004: Financial Report of Registered
-                Corporation (Pre-Capital Markets Act); A005: Financial Report of Small-Scale Public
-                Offering Corporation; B001: Report on Major Issues; B002: Report on Material
-                Business Matters (Pre-Capital Markets Act); B003: Report on Transactions with
-                Largest Shareholder, etc. (Pre-Capital Markets Act); C001: Securities Report (Equity
-                Securities); C002: Securities Report (Debt Securities); C003: Securities Report
-                (Derivative-Linked Securities); C004: Securities Report (Merger, etc.); C005:
+            filing_start_date (str | None): Filing date when search starts (YYYYMMDD) 1) Default
+                value: End date (end_de) 2) If no corporation code (corp_code), search period is
+                limited to three months. None omits this parameter.
+            filing_end_date (str | None): Filing date when search ends (YYYYMMDD) ※ No date
+                selected: search by current date. None omits this parameter.
+            final_reports_only (str | None): Whether to search only final reports (Y or N) 1)
+                Default: N (N selected: search all reports, including amended reports). Allowed
+                values: 'Y', 'N'. None omits this parameter. The upstream default is 'N'.
+            disclosure_category (str | None): A: Periodic Disclosure B: Report on Major Issues C:
+                Issuance Disclosure D: Equity Disclosure E: Other Disclosure F: Related to External
+                Audits G: Fund Disclosure H: Asset-Backed Securitization I: Exchange Disclosure J:
+                Fair Trade Commission Disclosure. Allowed values: 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+                'H', 'I', 'J'. None omits this parameter.
+            disclosure_subcategory (str | None): Detailed disclosure category. A001: Annual Report;
+                A002: Semi-annual Report; A003: Quarterly Report; A004: Financial Report of
+                Registered Corporation (Pre-Capital Markets Act); A005: Financial Report of
+                Small-Scale Public Offering Corporation; B001: Report on Major Issues; B002: Report
+                on Material Business Matters (Pre-Capital Markets Act); B003: Report on Transactions
+                with Largest Shareholder, etc. (Pre-Capital Markets Act); C001: Securities Report
+                (Equity Securities); C002: Securities Report (Debt Securities); C003: Securities
+                Report (Derivative-Linked Securities); C004: Securities Report (Merger, etc.); C005:
                 Securities Report (Other); C006: Small-Scale Public Offering (Equity Securities);
                 C007: Small-Scale Public Offering (Debt Securities); C008: Small-Scale Public
                 Offering (Derivative-Linked Securities); C009: Small-Scale Public Offering (Merger,
@@ -175,17 +176,18 @@ class Disclosures:
                 'H001', 'H002', 'H003', 'H004', 'H005', 'H006', 'I001', 'I002', 'I003', 'I004',
                 'I005', 'I006', 'J001', 'J002', 'J004', 'J005', 'J006', 'J008', 'J009'. None omits
                 this parameter.
-            corp_cls (str | None): Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other) ※
-                View all if no type, cannot enter multiple filters. Allowed values: 'Y', 'K', 'N',
-                'E'. None omits this parameter.
-            sort (str | None): Filing date: date Company name: crp Report name: rpt ※ Default value:
-                date. Allowed values: 'date', 'crp', 'rpt'. None omits this parameter. The upstream
-                default is 'date'.
-            sort_mth (str | None): Ascending (asc), descending(desc) ※ Default value: desc. Allowed
-                values: 'asc', 'desc'. None omits this parameter. The upstream default is 'desc'.
-            page_no (int | None): Page No. (1~n) default value: 1 Serialized as decimal digits in
-                the query string. None omits this parameter. The upstream default is 1.
-            page_count (int | None): Results per page (1~100) Default value: 10, Max value: 100
+            corporation_type (str | None): Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E
+                (Other) ※ View all if no type, cannot enter multiple filters. Allowed values: 'Y',
+                'K', 'N', 'E'. None omits this parameter.
+            sort_by (str | None): Filing date: date Company name: crp Report name: rpt ※ Default
+                value: date. Allowed values: 'date', 'crp', 'rpt'. None omits this parameter. The
+                upstream default is 'date'.
+            sort_order (str | None): Ascending (asc), descending(desc) ※ Default value: desc.
+                Allowed values: 'asc', 'desc'. None omits this parameter. The upstream default is
+                'desc'.
+            page_number (int | None): Page No. (1~n) default value: 1 Serialized as decimal digits
+                in the query string. None omits this parameter. The upstream default is 1.
+            page_size (int | None): Results per page (1~100) Default value: 10, Max value: 100
                 Serialized as decimal digits in the query string. None omits this parameter. The
                 upstream default is 10.
 
@@ -203,32 +205,32 @@ class Disclosures:
             RuntimeError: The parent SDK client has already been closed.
         """
         request = ListRequest(
-            corp_code=corp_code,
-            bgn_de=bgn_de,
-            end_de=end_de,
-            last_reprt_at=last_reprt_at,
-            pblntf_ty=pblntf_ty,
-            pblntf_detail_ty=pblntf_detail_ty,
-            corp_cls=corp_cls,
-            sort=sort,
-            sort_mth=sort_mth,
-            page_no=page_no,
-            page_count=page_count,
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+            final_reports_only=final_reports_only,
+            disclosure_category=disclosure_category,
+            disclosure_subcategory=disclosure_subcategory,
+            corporation_type=corporation_type,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            page_number=page_number,
+            page_size=page_size,
         )
         return await self._client.request("/list.json", request, ListResponse)
 
     async def company(
         self,
         *,
-        corp_code: str,
+        corporation_code: str,
     ) -> CompanyResponse:
         """Overview of corporate status (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE001&apiId=AE00002
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation code.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation code.
 
         Returns:
             CompanyResponse: Validated successful response with the upstream field values.
@@ -243,20 +245,20 @@ class Disclosures:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = CompanyRequest(corp_code=corp_code)
+        request = CompanyRequest(corporation_code=corporation_code)
         return await self._client.request("/company.json", request, CompanyResponse)
 
     async def document(
         self,
         *,
-        rcept_no: str,
+        filing_number: str,
     ) -> bytes:
         """Original disclosure document file (ZIP).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE001&apiId=AE00003
 
         Args:
-            rcept_no (str): Filing No.
+            filing_number (str): Filing No.
 
         Returns:
             bytes: Complete ZIP archive bytes.
@@ -271,7 +273,7 @@ class Disclosures:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = DocumentRequest(rcept_no=rcept_no)
+        request = DocumentRequest(filing_number=filing_number)
         return await self._client.download("/document.xml", request)
 
     async def corporation_codes(

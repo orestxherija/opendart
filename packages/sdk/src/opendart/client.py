@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from types import TracebackType
-from typing import Self
-
-import httpx2
+from typing import TYPE_CHECKING, Self
 
 from opendart._transport import Transport
 from opendart.resources.disclosures import Disclosures
@@ -14,7 +11,14 @@ from opendart.resources.financial_statements import FinancialStatements
 from opendart.resources.major_issues import MajorIssues
 from opendart.resources.periodic_reports import PeriodicReports
 from opendart.resources.securities_registration import SecuritiesRegistration
-from opendart.settings import OpenDartSettings, get_settings
+from opendart.settings import get_settings
+
+if TYPE_CHECKING:
+    from types import TracebackType
+
+    import httpx2
+
+    from opendart.settings import OpenDartSettings
 
 
 class OpenDart:

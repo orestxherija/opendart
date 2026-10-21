@@ -1,5 +1,7 @@
 """Typed async Python client for the English OpenDART API."""
 
+from __future__ import annotations
+
 from opendart.client import OpenDart
 from opendart.errors import (
     APIError,

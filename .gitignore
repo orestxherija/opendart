@@ -43,12 +43,14 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+.prek-*.log
 nosetests.xml
 coverage.xml
 *.cover
 *.py.cover
 *.lcov
 .hypothesis/
+contract-results/
 .pytest_cache/
 cover/
 

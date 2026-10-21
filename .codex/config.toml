@@ -1,0 +1,9 @@
+[plugins."python-settings@opendart-python-conventions"]
+enabled = true
+
+[plugins."python-http@opendart-python-conventions"]
+enabled = true
+
+[plugins."python-db@opendart-python-conventions"]
+enabled = true
+

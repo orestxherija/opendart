@@ -7,7 +7,7 @@ name = "opendart-sdk"
 version = "0.1.0"
 description = "Typed asynchronous Python SDK for English OpenDART"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
   "httpx2>=2.13,<3",
   "pydantic>=2.7,<3",
