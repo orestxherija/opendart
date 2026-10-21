@@ -105,6 +105,9 @@ message; container tests and Trivy remain required. GHCR publishing continues
 to use `GITHUB_TOKEN` separately.
 
 DHI signature checks use the free Docker Scout CLI and Docker's public key.
+The verification step passes the same DHI username and PAT to Scout's Docker Hub
+authentication through `DOCKER_SCOUT_HUB_USER` and `DOCKER_SCOUT_HUB_PASSWORD`;
+logging in to `dhi.io` alone does not authenticate Scout.
 The public Sigstore service signs our image using the publishing workflow's
 short-lived GitHub OIDC identity (`id-token: write`); no extra subscription or
 signing secret is required. This publishes the workflow identity in the public
