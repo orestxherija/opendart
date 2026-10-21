@@ -2,6 +2,13 @@ name: MCP checks
 
 on:
   workflow_call:
+    secrets:
+      DHI_USERNAME:
+        description: Docker ID used to pull Docker Hardened Images
+        required: true
+      DHI_TOKEN:
+        description: Docker personal access token with read access to DHI
+        required: true
   workflow_dispatch:
 
 permissions:
@@ -30,14 +37,26 @@ jobs:
           uv safe-chain-verify
           uv sync --locked --package opendart-workspace --package opendart-mcp
       - run: uv run --no-sync prek run hadolint-docker --all-files
-      - run: uv run --no-sync ruff check packages/mcp scripts/check_mcp.py
-      - run: uv run --no-sync ruff format --check packages/mcp scripts/check_mcp.py
+      - run: uv run --no-sync ruff check packages/mcp scripts/check_mcp.py scripts/check_mcp_runtime.py
+      - run: uv run --no-sync ruff format --check packages/mcp scripts/check_mcp.py scripts/check_mcp_runtime.py
       - run: uv run --no-sync mypy packages/mcp/src
       - run: uv run --no-sync pytest packages/mcp/tests --no-cov
       - run: uv run --no-sync python scripts/check_mcp.py
       - run: uv build --package opendart-mcp
       - name: Validate Compose configuration
         run: docker compose -f packages/mcp/docker-compose.yml config --quiet
+      - name: Log in to Docker Hardened Images
+        env:
+          DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
+          DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
+        run: |
+          if [ -z "$DHI_USERNAME" ] || [ -z "$DHI_TOKEN" ]; then
+            echo "::error::Set DHI_USERNAME and DHI_TOKEN repository secrets; see .github/README.md."
+            exit 1
+          fi
+          printf '%s' "$DHI_TOKEN" | docker login dhi.io --username "$DHI_USERNAME" --password-stdin
+      - name: Verify Docker Hardened Images
+        uses: ./.github/actions/verify-dhi
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Read package version
@@ -74,24 +93,14 @@ jobs:
           cache-from: type=gha,scope=opendart-mcp-linux-amd64
           cache-to: type=gha,scope=opendart-mcp-linux-amd64,mode=max
           provenance: false
-      - name: Verify SDK, certificates, and runtime user
-        run: >-
-          docker compose -f packages/mcp/docker-compose.yml run --rm --no-deps -T mcp
-          python -c 'import os, ssl, opendart; assert os.getuid() == 10001; assert ssl.create_default_context().get_ca_certs()'
-      - name: Test container with Compose restrictions
-        run: |
-          docker compose -f packages/mcp/docker-compose.yml up --detach --wait --wait-timeout 60 mcp
-          uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
-      - name: Stop MCP container
-        if: always()
-        run: docker compose -f packages/mcp/docker-compose.yml down
-      - name: Scan image for fixable high and critical vulnerabilities
-        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+      - name: Test container security and protocol
+        uses: ./.github/actions/check-mcp-container
         with:
-          version: v0.76.0
-          image-ref: ${{ env.OPENDART_MCP_IMAGE }}
-          scanners: vuln
-          format: table
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: "1"
+          image: ${{ env.OPENDART_MCP_IMAGE }}
+      - name: Scan image
+        uses: ./.github/actions/scan-container
+        with:
+          image: ${{ env.OPENDART_MCP_IMAGE }}
+      - name: Log out of Docker Hardened Images
+        if: always()
+        run: docker logout dhi.io

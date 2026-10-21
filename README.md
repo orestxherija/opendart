@@ -86,7 +86,13 @@ explicit settings, downloads, and error handling.
 
 ## MCP container
 
+Building the container requires Docker with BuildKit and Compose v2, a
+[Docker account](https://app.docker.com/signup), and a Docker personal access token
+with read access to [Docker Hardened Images](https://docs.docker.com/dhi/how-to/use/).
+Authenticate first; paste the PAT at the password prompt:
+
 ```sh
+docker login dhi.io --username YOUR_DOCKER_ID
 docker compose -f packages/mcp/docker-compose.yml build mcp
 docker compose -f packages/mcp/docker-compose.yml up --detach --wait mcp
 ```
@@ -96,8 +102,9 @@ only on localhost, with a `ping` tool that returns `pong` without an API key.
 The root [`.mcp.json`](.mcp.json) configures that connection for compatible MCP
 clients. Start the server before connecting. To run without Docker,
 use `uv run --no-sync opendart-mcp` after syncing the workspace.
-See the [MCP guide](packages/mcp/README.md) for smoke tests, host
-configuration, and the manual GHCR publishing workflow.
+See the [MCP guide](packages/mcp/README.md#docker) for PAT creation, smoke tests,
+host configuration, and the manual GHCR publishing workflow. Repository
+maintainers must also [configure DHI secrets for CI and Dependabot](.github/README.md#docker-hardened-images-credentials).
 
 ## Develop
 

@@ -1,11 +1,8 @@
 # syntax=docker/dockerfile:1.28.0@sha256:bb22d9815c728170f72750f4e5b0d672e06176142e1d602c7e66c050100b7e5b
 
-# The official CPython image enables PGO and LTO on amd64 and arm64.
-# Share an exact interpreter and OS between the build and runtime stages.
-FROM python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170 AS python-base
-HEALTHCHECK NONE
-
-FROM python-base AS builder
+# Use matching DHI Python and Alpine versions for the copied virtual environment.
+# Authenticate with `docker login dhi.io` before building.
+FROM dhi.io/python:3.14.8-alpine3.24-dev@sha256:df552b9c5634f917614a73c7687a6aebfff432f8ea7a6db754e953e618dc51c1 AS builder
 HEALTHCHECK NONE
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.20@sha256:eaa5f1a3305307aaf9e67fe2bbba1d85ebbb2d8a63bce23af21797bfafbe0f8b /uv /usr/local/bin/uv
@@ -14,7 +11,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.11.20@sha256:eaa5f1a3305307aaf9e67fe2bbba1d85
 # Compiling dependencies once reduces startup work on the read-only runtime.
 ENV UV_PYTHON_DOWNLOADS=never \
     UV_NO_MANAGED_PYTHON=1 \
-    UV_PYTHON=/usr/local/bin/python3 \
+    UV_PYTHON=/usr/bin/python3.14 \
     UV_PROJECT_ENVIRONMENT=/opt/venv \
     UV_CACHE_DIR=/root/.cache/uv \
     UV_LINK_MODE=copy \
@@ -36,7 +33,7 @@ COPY packages/mcp/src/ packages/mcp/src/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --package opendart-mcp --no-default-groups --no-editable
 
-FROM python-base AS runtime
+FROM dhi.io/python:3.14.8-alpine3.24@sha256:8cf4b504e7329eedec49f8aed49db76f52b65325c79f40467261ba8f4e1c897d AS runtime
 
 # CI supplies build-specific labels; local builds can supply these arguments.
 # Keep unknown build facts and the undeclared project license empty.
@@ -65,12 +62,10 @@ ENV PATH="/opt/venv/bin:$PATH" \
     OPENDART_MCP_HTTP__PORT=8000
 WORKDIR /app
 
-RUN groupadd --gid 10001 app \
-    && useradd --uid 10001 --gid 10001 --no-create-home --no-log-init \
-        --home-dir /nonexistent --shell /usr/sbin/nologin app
 # Root ownership prevents the service account from modifying installed code.
 COPY --from=builder --chown=0:0 /opt/venv /opt/venv
 
+# Numeric IDs work without user-management commands in the shell-free runtime.
 USER 10001:10001
 EXPOSE 8000
 # Check listener readiness; CI also verifies MCP discovery and a real tool call.

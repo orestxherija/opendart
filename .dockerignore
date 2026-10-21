@@ -23,6 +23,7 @@ packages/mcp/*
 # Apply these after the source allowlist, including for files nested under src/.
 **/.env
 **/.env.*
+**/.secrets/
 **/*.key
 **/*.pem
 **/.venv/

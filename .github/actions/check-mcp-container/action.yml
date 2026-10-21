@@ -1,0 +1,44 @@
+name: Check MCP container
+description: Exercise runtime restrictions, file secrets, and HTTP transport security.
+
+inputs:
+  image:
+    description: Already pulled image tag or immutable digest to test
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check runtime without a key
+      shell: bash
+      env:
+        OPENDART_MCP_IMAGE: ${{ inputs.image }}
+      run: |
+        docker compose -f packages/mcp/docker-compose.yml run --rm --no-deps -T mcp \
+          python - < scripts/check_mcp_runtime.py
+    - name: Check file-mounted synthetic key
+      shell: bash
+      env:
+        OPENDART_MCP_IMAGE: ${{ inputs.image }}
+      run: |
+        secret_directory=$(mktemp -d "$RUNNER_TEMP/mcp-secret.XXXXXX")
+        export OPENDART_API_KEY_FILE="$secret_directory/api-key"
+        trap 'rm -f "$OPENDART_API_KEY_FILE"; rmdir "$secret_directory"' EXIT
+        # A visible placeholder exercises permissions and loading without an API call.
+        printf '%040d\n' 0 > "$OPENDART_API_KEY_FILE"
+        chmod 0444 "$OPENDART_API_KEY_FILE"
+        docker compose -f packages/mcp/docker-compose.yml -f packages/mcp/compose.secrets.yml \
+          run --rm --no-deps -T mcp python - --require-secret < scripts/check_mcp_runtime.py
+    - name: Check MCP protocol and hostile headers
+      shell: bash
+      env:
+        OPENDART_MCP_IMAGE: ${{ inputs.image }}
+      run: |
+        docker compose -f packages/mcp/docker-compose.yml up --detach --wait --wait-timeout 60 mcp
+        uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
+    - name: Stop MCP container
+      if: always()
+      shell: bash
+      env:
+        OPENDART_MCP_IMAGE: ${{ inputs.image }}
+      run: docker compose -f packages/mcp/docker-compose.yml down

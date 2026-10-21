@@ -17,9 +17,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     env:
       IMAGE: ghcr.io/${{ github.repository_owner }}/opendart-mcp
-      OPENDART_MCP_IMAGE: opendart-mcp:ci
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -41,6 +41,18 @@ jobs:
         run: uv run --no-sync prek run hadolint-docker --all-files
       - name: Validate Compose configuration
         run: docker compose -f packages/mcp/docker-compose.yml config --quiet
+      - name: Log in to Docker Hardened Images
+        env:
+          DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
+          DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
+        run: |
+          if [ -z "$DHI_USERNAME" ] || [ -z "$DHI_TOKEN" ]; then
+            echo "::error::Set DHI_USERNAME and DHI_TOKEN repository secrets; see .github/README.md."
+            exit 1
+          fi
+          printf '%s' "$DHI_TOKEN" | docker login dhi.io --username "$DHI_USERNAME" --password-stdin
+      - name: Verify Docker Hardened Images
+        uses: ./.github/actions/verify-dhi
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Read package version
@@ -67,68 +79,73 @@ jobs:
             org.opencontainers.image.title=OpenDART MCP
             org.opencontainers.image.description=OpenDART MCP server over local HTTP
             org.opencontainers.image.version=${{ steps.package.outputs.version }}
-      - name: Build container
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          file: packages/mcp/Dockerfile
-          platforms: linux/amd64
-          load: true
-          pull: true
-          tags: ${{ env.OPENDART_MCP_IMAGE }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=opendart-mcp-linux-amd64
-          provenance: false
-      - name: Verify SDK, certificates, and runtime user
-        run: >-
-          docker compose -f packages/mcp/docker-compose.yml run --rm --no-deps -T mcp
-          python -c 'import os, ssl, opendart; assert os.getuid() == 10001; assert ssl.create_default_context().get_ca_certs()'
-      - name: Test container with Compose restrictions
-        run: |
-          docker compose -f packages/mcp/docker-compose.yml up --detach --wait --wait-timeout 60 mcp
-          uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
-          docker compose -f packages/mcp/docker-compose.yml down
-      - name: Scan image for fixable high and critical vulnerabilities
-        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
-        with:
-          version: v0.76.0
-          image-ref: ${{ env.OPENDART_MCP_IMAGE }}
-          scanners: vuln
-          format: table
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: "1"
       - name: Log in to GHCR
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-      - name: Publish container
-        id: publish
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Build and push candidate once
+        id: candidate
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: packages/mcp/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          pull: true
+          tags: ${{ env.IMAGE }}:candidate-${{ github.run_id }}-${{ github.run_attempt }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=opendart-mcp-linux-amd64
           cache-to: type=gha,scope=opendart-mcp-linux-amd64,mode=max
           provenance: mode=max
           sbom: true
-      - name: Pull and test published container by digest
+      - name: Pull candidate by immutable digest
         env:
-          IMAGE_DIGEST: ${{ steps.publish.outputs.digest }}
+          IMAGE_DIGEST: ${{ steps.candidate.outputs.digest }}
         run: |
-          export OPENDART_MCP_IMAGE="$IMAGE@$IMAGE_DIGEST"
-          docker pull "$OPENDART_MCP_IMAGE"
-          docker compose -f packages/mcp/docker-compose.yml up --detach --wait --wait-timeout 60 mcp
-          uv run --no-sync python scripts/check_mcp.py \
-            --url http://127.0.0.1:8000/mcp
-          printf 'Published and verified `%s` (ping -> pong).\n' "$OPENDART_MCP_IMAGE" >> "$GITHUB_STEP_SUMMARY"
-      - name: Stop MCP container
-        if: always()
-        run: docker compose -f packages/mcp/docker-compose.yml down
+          docker pull "$IMAGE@$IMAGE_DIGEST"
+      - name: Test exact candidate security and protocol
+        uses: ./.github/actions/check-mcp-container
+        with:
+          image: ${{ env.IMAGE }}@${{ steps.candidate.outputs.digest }}
+      - name: Scan exact candidate
+        uses: ./.github/actions/scan-container
+        with:
+          image: ${{ env.IMAGE }}@${{ steps.candidate.outputs.digest }}
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.4
+      - name: Sign and verify candidate digest
+        env:
+          IMAGE_DIGEST: ${{ steps.candidate.outputs.digest }}
+        run: |
+          cosign sign --yes "$IMAGE@$IMAGE_DIGEST"
+          cosign verify "$IMAGE@$IMAGE_DIGEST" \
+            --certificate-identity="https://github.com/$GITHUB_WORKFLOW_REF" \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+      - name: Promote verified digest without rebuilding
+        env:
+          IMAGE_DIGEST: ${{ steps.candidate.outputs.digest }}
+          IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          tag_arguments=()
+          while IFS= read -r tag; do
+            if [ -n "$tag" ]; then
+              tag_arguments+=(--tag "$tag")
+            fi
+          done <<< "$IMAGE_TAGS"
+          docker buildx imagetools create --prefer-index=false \
+            "${tag_arguments[@]}" "$IMAGE@$IMAGE_DIGEST"
+          while IFS= read -r tag; do
+            if [ -n "$tag" ]; then
+              docker buildx imagetools inspect "$tag" --format '{{json .Manifest}}' | \
+                jq --exit-status --arg digest "$IMAGE_DIGEST" '.digest == $digest'
+            fi
+          done <<< "$IMAGE_TAGS"
+          printf 'Tested, scanned, signed, and promoted `%s`.\n' "$IMAGE@$IMAGE_DIGEST" >> "$GITHUB_STEP_SUMMARY"
       - name: Log out of GHCR
         if: always()
         run: docker logout ghcr.io
+      - name: Log out of Docker Hardened Images
+        if: always()
+        run: docker logout dhi.io

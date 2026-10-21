@@ -8,6 +8,49 @@ from pydantic import SecretStr, ValidationError
 from opendart import OpenDartSettings, Settings, get_settings
 
 
+@pytest.fixture
+def secret_directory(tmp_path, monkeypatch):
+    """Create an isolated file secret without using the developer's credentials."""
+    monkeypatch.delenv("OPENDART_API", raising=False)
+    monkeypatch.delenv("OPENDART_API__API_KEY", raising=False)
+    (tmp_path / "OPENDART_API__API_KEY").write_text("x" * 40 + "\n")
+    return tmp_path
+
+
+def test_nested_file_secret_is_validated_and_masked(secret_directory):
+    settings = Settings(_secrets_dir=secret_directory)
+    assert settings.api.api_key.get_secret_value() == "x" * 40
+    assert "x" * 40 not in repr(settings)
+    assert "x" * 40 not in settings.model_dump_json()
+    (secret_directory / "OPENDART_API__API_KEY").write_text("invalid-secret")
+    with pytest.raises(ValidationError) as error:
+        Settings(_secrets_dir=secret_directory)
+    assert "invalid-secret" not in str(error.value)
+
+
+def test_file_secret_has_lowest_priority(secret_directory, monkeypatch):
+    dotenv = secret_directory / ".env"
+    dotenv.write_text("OPENDART_API__API_KEY=" + "y" * 40 + "\n")
+    assert Settings(_secrets_dir=secret_directory, _env_file=dotenv).api.api_key == SecretStr(
+        "y" * 40
+    )
+    monkeypatch.setenv("OPENDART_API__API_KEY", "z" * 40)
+    assert Settings(_secrets_dir=secret_directory, _env_file=dotenv).api.api_key == SecretStr(
+        "z" * 40
+    )
+    assert Settings(
+        api={"api_key": "w" * 40}, _secrets_dir=secret_directory, _env_file=dotenv
+    ).api.api_key == SecretStr("w" * 40)
+
+
+def test_missing_secret_directory_is_optional(tmp_path, monkeypatch):
+    monkeypatch.delenv("OPENDART_API", raising=False)
+    monkeypatch.delenv("OPENDART_API__API_KEY", raising=False)
+    with pytest.raises(ValidationError):
+        Settings(_secrets_dir=tmp_path / "missing")
+    assert Settings(api={"api_key": "x" * 40}, _secrets_dir=tmp_path / "missing").api.api_key
+
+
 def test_environment_and_cache(monkeypatch):
     """Verify nested environment loading, secret masking, caching, and immutability.
 

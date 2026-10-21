@@ -36,7 +36,7 @@ In another terminal, verify discovery, legacy initialization, and real HTTP tool
 uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
 ```
 
-Expected output: `MCP smoke test passed: ping -> pong`.
+Expected output: `MCP smoke test passed: ping -> pong; hostile Host and Origin rejected`.
 
 Without `--url`, the smoke test starts an isolated native HTTP server on an unused
 loopback port and stops it afterward. This is also used in CI.
@@ -65,14 +65,35 @@ default port.
 
 ## Docker
 
+Local image builds require Docker with BuildKit and Compose v2 or newer, plus a
+Docker account to pull the Python base images from `dhi.io`.
+[DHI Community images require registry authentication](https://docs.docker.com/dhi/how-to/use/).
+
+1. [Create a Docker account](https://app.docker.com/signup) if needed and verify
+   your email address. Use your Docker ID as the registry username.
+2. In [Docker Home](https://app.docker.com), open **Account settings → Personal
+   access tokens → Generate new token**. Give the token read access to public
+   repositories and save it in your password manager. An existing Docker PAT
+   with this permission also works. See the
+   [Docker PAT guide](https://docs.docker.com/security/access-tokens/personal-access-tokens/).
+3. Start Docker and authenticate to the DHI registry:
+
+   ```sh
+   docker login dhi.io --username YOUR_DOCKER_ID
+   ```
+
+   Paste the Docker PAT at the password prompt. Docker stores the credentials
+   through its configured credential store. Keep the PAT out of the repository,
+   Dockerfile, build arguments, and application `.env` files.
+
 Lint the Dockerfile with the pinned Hadolint image (Docker required):
 
 ```sh
 uv run prek run hadolint-docker --all-files
 ```
 
-Use Docker with BuildKit and Compose v2 or newer. From the repository root, validate the
-Compose configuration, build `opendart-mcp:dev`, then start the HTTP service:
+From the repository root, validate the Compose configuration, build
+`opendart-mcp:dev`, then start the HTTP service:
 
 ```sh
 docker compose -f packages/mcp/docker-compose.yml config --quiet
@@ -103,20 +124,39 @@ docker compose -f packages/mcp/docker-compose.yml logs --tail 100 mcp
 docker compose -f packages/mcp/docker-compose.yml down
 ```
 
-Compose forwards `OPENDART_API__API_KEY` from your shell. To load the root `.env`
-file explicitly, use [Compose's `--env-file` option](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/):
+To make an API key available for future OpenDART tools, store only its value in a
+file outside the source tree or in the ignored root `.secrets/` directory. Set
+`OPENDART_API_KEY_FILE` to that file's absolute host path and add the secrets overlay:
 
 ```sh
-docker compose --env-file .env -f packages/mcp/docker-compose.yml up --detach --wait mcp
+export OPENDART_API_KEY_FILE=/absolute/path/to/opendart-api-key
+docker compose -f packages/mcp/docker-compose.yml -f packages/mcp/compose.secrets.yml up --detach --wait mcp
 ```
 
-The `ping` tool does not require a key; add one when implementing OpenDART tools.
-The build context excludes `.env`, local virtual environments, and other files
-outside the package sources and workspace manifests.
+Compose mounts the file read-only at `/run/secrets/OPENDART_API__API_KEY`; its
+contents are absent from container environment variables and image layers.
+The SDK's nested settings source reads and validates it when an authenticated
+client is created. The `ping` tool needs no key and does not read it. The base
+Compose file runs without the overlay or a key file.
 
-The image pins Python 3.14.8 on Debian Trixie slim and uv 0.11.20 by version and
-digest. The [official Python image](https://github.com/docker-library/python/blob/master/3.14/slim-trixie/Dockerfile)
-already builds CPython with PGO and LTO on amd64 and arm64. Dependencies are locked,
+File-backed Compose secrets retain the host file's ownership and permissions.
+Ensure UID/GID `10001:10001` can read it: on a Linux host, give the file group
+`10001` and mode `0440`. Keep its host directory accessible only to its owner.
+The source file remains plaintext on the host; Compose does not encrypt it.
+See [Compose secrets](https://docs.docker.com/compose/how-tos/use-secrets/).
+
+Native execution still accepts `OPENDART_API__API_KEY`. Compose's explicit
+`--env-file` option can load non-secret settings such as the published port or
+the secret file path. The build context excludes `.env` variants, secret files,
+local virtual environments, and files outside the build allowlist.
+
+The image uses matching Docker Hardened Images for Python 3.14.8 on Alpine 3.24:
+`dhi.io/python:3.14.8-alpine3.24-dev` for the builder and
+`dhi.io/python:3.14.8-alpine3.24` for the runtime. Both base images and uv 0.11.20
+are pinned by version and digest. The builder uses DHI's `/usr/bin/python3.14`,
+so the copied virtual environment resolves the same interpreter in the runtime.
+See the [DHI Python guide](https://hub.docker.com/hardened-images/catalog/dhi/python/guides).
+Dependencies are locked,
 installed without development groups, and compiled to bytecode for faster startup.
 The builder installs dependencies before copying package source, so source-only
 edits reuse the dependency layer. BuildKit caches uv downloads; CI also caches
@@ -124,8 +164,18 @@ build layers between runs. See [uv's Docker guidance](https://docs.astral.sh/uv/
 
 Only the installed runtime environment is copied from the builder. Package code
 stays owned by root, and the runtime does not contain uv, the build cache, or the
-source checkout. Keep the base-image digest current through the existing weekly
-Dependabot Docker updates; a pinned digest must change to receive base-image fixes.
+source checkout. The runtime uses numeric UID/GID `10001:10001` directly because
+the DHI runtime has no shell for user-management commands. It retains the packages
+provided by the DHI runtime; the Dockerfile does not uninstall pip or delete
+bundled libraries. CI verifies both DHI bases' signed SBOM and provenance with
+Docker's public key before building. It scans the finished image with Trivy,
+blocks fixable high or critical vulnerabilities and detected secrets, and retains
+a full vulnerability report including unfixed findings for 30 days.
+
+Keep both base-image digests current through the weekly Dependabot Docker
+updates; a pinned digest must change to receive base-image fixes. The two DHI
+references are grouped in one update. Repository maintainers must configure
+[DHI credentials for Actions and Dependabot](../../.github/README.md#docker-hardened-images-credentials).
 
 Compose runs as UID/GID `10001:10001` with a read-only root filesystem, all Linux
 capabilities dropped, and privilege escalation disabled. Temporary files use a
@@ -135,6 +185,10 @@ override when tools need more resources. Docker's init process forwards signals
 and reaps child processes; shutdown has a 10-second grace period. See the
 [Compose service reference](https://docs.docker.com/reference/compose-file/services/)
 and [tmpfs options](https://docs.docker.com/engine/storage/tmpfs/).
+
+CI exercises these restrictions inside the running image, verifies installed code
+is protected and CA certificates exist, and tests loading a synthetic file secret.
+The HTTP smoke test also requires hostile Host and Origin requests to be rejected.
 
 The `local` [logging driver](https://docs.docker.com/engine/logging/configure/)
 retains service logs with rotation: at most three 10 MiB files. MCP responses
@@ -170,20 +224,46 @@ the repository's GitHub metadata.
 ## Publish to GHCR
 
 After pushing the workflow to the repository's default branch, open GitHub
-**Actions → MCP container → Run workflow**. The workflow builds a Linux amd64 image,
-checks the SDK import and CA certificates, verifies `ping` with the Compose
-restrictions, and scans OS and Python dependencies with Trivy. Fixable high or
-critical vulnerabilities block publication. Local builds also support native
-arm64; the publishing workflow currently targets amd64.
+**Actions → MCP container → Run workflow**. The workflow builds a Linux amd64
+candidate once, pushes it under `candidate-<run-id>-<attempt>`, and pulls its
+immutable digest. It runs protocol and security checks and Trivy scans against
+that exact digest. After those pass, it signs and verifies the digest with
+[Cosign](https://docs.sigstore.dev/quickstart/quickstart-ci/) and promotes the same
+image index to consumer tags without rebuilding. Candidate tags are staging
+artifacts and may refer to images that failed checks; use promoted tags or their
+verified digests. Local builds support native arm64; publication targets amd64.
 
 Images in `ghcr.io/orestxherija/opendart-mcp` receive `sha-<full-commit>` and
 `run-<run-id>-<attempt>` tags. Default-branch runs also update `test`. OCI labels
 record the source, revision, and build date. The image includes
 [SBOM and provenance attestations](https://docs.docker.com/build/ci/github-actions/attestations/).
-The workflow pulls and smoke-tests the published digest and records it in its
-summary. Pin consumers to that digest for an immutable image selection; a commit
+The workflow records the verified digest in its summary. Pin consumers to that
+digest for an immutable image selection; a commit
 tag can be updated when the same commit is rebuilt.
-It uses the built-in `GITHUB_TOKEN` with `packages: write`; no extra secret is needed.
+Publishing to GHCR uses the built-in `GITHUB_TOKEN` with `packages: write`.
+Building the image also requires the `DHI_USERNAME` and `DHI_TOKEN` repository
+secrets described in the [CI setup](../../.github/README.md#docker-hardened-images-credentials).
+Machines that only pull and run the published GHCR image do not need DHI
+credentials; DHI authentication is needed when building from its base images.
+
+Signing uses GitHub Actions OIDC and the public Sigstore service, with no separate
+subscription or signing key secret. The signature records the repository,
+publishing workflow, and branch identity in the public transparency log. Verify
+a default-branch build before running it (replace `main` if necessary):
+
+```sh
+cosign verify ghcr.io/orestxherija/opendart-mcp@sha256:YOUR_DIGEST \
+  --certificate-identity=https://github.com/orestxherija/opendart/.github/workflows/mcp-container.yml@refs/heads/main \
+  --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+```
+
+**MCP published image security** runs daily and can also run manually. It resolves
+the current `test` tag once, verifies the default-branch publishing identity,
+and rescans that digest for vulnerabilities and secrets without rebuilding it.
+An optional manual `digest` input audits an older default-branch build. Reports
+include unfixed CVEs; fixable HIGH/CRITICAL CVEs and secrets fail the job. Publish
+a signed default-branch image once before enabling this daily audit. Updating a
+base-image pin or lockfile and publishing again is still required to deliver fixes.
 
 To test the published image on a machine with Docker, authenticate to GHCR if the
 package is private, then run:

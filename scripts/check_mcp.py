@@ -9,7 +9,23 @@ import sys
 from urllib.parse import urlsplit
 
 import anyio
+import httpx2
 from mcp import Client
+
+
+async def check_transport_security(url: str) -> None:
+    """Reject requests with hostile Host or Origin headers through the real listener."""
+    async with httpx2.AsyncClient(trust_env=False, timeout=5) as client:
+        for headers, expected in (
+            ({"Host": "attacker.invalid"}, 421),
+            ({"Origin": "https://attacker.invalid"}, 403),
+        ):
+            response = await client.post(url, headers=headers, json={})
+            if response.status_code != expected:
+                raise RuntimeError(
+                    f"Transport security check expected HTTP {expected}, received "
+                    f"{response.status_code}"
+                )
 
 
 async def check(url: str) -> None:
@@ -29,6 +45,7 @@ async def check(url: str) -> None:
                     break
             except OSError:
                 await anyio.sleep(0.1)
+        await check_transport_security(url)
         for mode in ("auto", "legacy"):
             async with Client(url, mode=mode) as client:
                 tools = await client.list_tools()
@@ -39,7 +56,7 @@ async def check(url: str) -> None:
                     content.type == "text" and content.text == "pong" for content in result.content
                 ):
                     raise RuntimeError(f"Expected pong from ping, received {result}")
-    print("MCP smoke test passed: ping -> pong")
+    print("MCP smoke test passed: ping -> pong; hostile Host and Origin rejected")
 
 
 async def check_native() -> None:

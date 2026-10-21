@@ -7,7 +7,6 @@ services:
       context: ../..
       dockerfile: packages/mcp/Dockerfile
     environment:
-      OPENDART_API__API_KEY: ${OPENDART_API__API_KEY:-}
       OPENDART_MCP_HTTP__HOST: "0.0.0.0"
       OPENDART_MCP_HTTP__PORT: "8000"
     ports:

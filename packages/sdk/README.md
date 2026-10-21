@@ -69,6 +69,13 @@ asyncio.run(main())
 Environment variables override dotenv values. The library does not load a TOML
 configuration file or create clients during import.
 
+Container deployments can mount a key file at `/run/secrets/OPENDART_API__API_KEY`.
+The root settings model reads this file into `api.api_key`, validates it, and masks
+it as `SecretStr`. Explicit arguments, environment variables, and explicit dotenv
+values override file secrets. An absent secret directory is allowed; authenticated
+clients still require a valid key. For another directory, construct
+`Settings(_secrets_dir="/path/to/secrets")` and pass `settings.api` to the client.
+
 ## Financial statements
 
 ```python

@@ -32,8 +32,10 @@ mcp:
   - '.hadolint.yaml'
   - '.github/workflows/mcp.yml'
   - '.github/workflows/mcp-container.yml'
+  - '.github/workflows/mcp-security.yml'
   - 'packages/mcp/**'
   - 'scripts/check_mcp.py'
+  - 'scripts/check_mcp_runtime.py'
   # MCP installs the SDK; changes to SDK tests or its generator alone do not
   # change the installed package.
   - 'packages/sdk/src/**'

@@ -1,0 +1,72 @@
+name: MCP published image security
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+    inputs:
+      digest:
+        description: Optional sha256 digest; defaults to the current test tag
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: mcp-published-security
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/opendart-mcp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Log in to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Resolve and pull one immutable digest
+        id: image
+        env:
+          REQUESTED_DIGEST: ${{ inputs.digest }}
+        run: |
+          if [ -n "$REQUESTED_DIGEST" ]; then
+            [[ "$REQUESTED_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]
+            digest="$REQUESTED_DIGEST"
+          else
+            digest=$(docker buildx imagetools inspect "$IMAGE:test" --format '{{json .Manifest}}' | jq --raw-output --exit-status '.digest')
+          fi
+          [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]
+          printf 'reference=%s@%s\n' "$IMAGE" "$digest" >> "$GITHUB_OUTPUT"
+          docker pull "$IMAGE@$digest"
+          printf 'Security audit of `%s@%s`.\n' "$IMAGE" "$digest" >> "$GITHUB_STEP_SUMMARY"
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.4
+      - name: Verify publishing workflow identity
+        env:
+          IMAGE_REFERENCE: ${{ steps.image.outputs.reference }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          cosign verify "$IMAGE_REFERENCE" \
+            --certificate-identity="https://github.com/$GITHUB_REPOSITORY/.github/workflows/mcp-container.yml@refs/heads/$DEFAULT_BRANCH" \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+      - name: Scan published digest
+        if: ${{ !cancelled() && steps.image.outcome == 'success' }}
+        uses: ./.github/actions/scan-container
+        with:
+          image: ${{ steps.image.outputs.reference }}
+      - name: Log out of GHCR
+        if: always()
+        run: docker logout ghcr.io

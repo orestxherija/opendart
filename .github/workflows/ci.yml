@@ -56,6 +56,9 @@ jobs:
     needs: changes
     if: needs.changes.outputs.mcp == 'true'
     uses: ./.github/workflows/mcp.yml
+    secrets:
+      DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
+      DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
 
   reference:
     name: API reference
