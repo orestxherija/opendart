@@ -15,25 +15,29 @@ class FnlttSinglAcntRequest(RequestModel):
     """Query parameters for Major accounts of a single company.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -41,30 +45,32 @@ class FnlttMultiAcntRequest(RequestModel):
     """Query parameters for Major accounts of multiple companies.
 
     Args:
-        corp_code (list[str]): Corporation code of disclosing company (8 digits) ※ See: Guide for
-            Developers > Disclosure Information > Corporation Code Send 1–100 corporation codes as a
-            single comma-separated value. The index description, public form example, and status 021
-            establish multi-company support despite STRING(8) in the type column.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        corporation_codes (list[str]): Corporation code of disclosing company (8 digits) ※ See:
+            Guide for Developers > Disclosure Information > Corporation Code Send 1–100 corporation
+            codes as a single comma-separated value. The index description, public form example, and
+            status 021 establish multi-company support despite STRING(8) in the type column.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[
+    corporation_codes: Annotated[
         builtins.list[Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")]],
         Field(min_length=1, max_length=100),
     ] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code Send 1–100 corporation codes as a single comma-separated value. The index description, public form example, and status 021 establish multi-company support despite STRING(8) in the type column."
+        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code Send 1–100 corporation codes as a single comma-separated value. The index description, public form example, and status 021 establish multi-company support despite STRING(8) in the type column.",
+        alias="corp_code",
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -72,36 +78,42 @@ class FnlttCmpnyIndxRequest(RequestModel):
     """Query parameters for Major financial indices of multiple companies.
 
     Args:
-        corp_code (list[str]): Corporation code of disclosing company (8 digits) ※ See: Guide for
-            Developers > Disclosure Information > Corporation Code Send 1–100 corporation codes as a
-            single comma-separated value. The index description, public form example, and status 021
-            establish multi-company support despite STRING(8) in the type column.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2022.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
-        idx_cl_code (str): Profitability indicator : M210000 Stability indicator : M220000 Growth
-            indicator : M230000 Activity indicator : M240000. Allowed values: 'M210000', 'M220000',
-            'M230000', 'M240000'.
+        corporation_codes (list[str]): Corporation code of disclosing company (8 digits) ※ See:
+            Guide for Developers > Disclosure Information > Corporation Code Send 1–100 corporation
+            codes as a single comma-separated value. The index description, public form example, and
+            status 021 establish multi-company support despite STRING(8) in the type column. The
+            reference example was checked against a successful 2023 response.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2022. The reference
+            example was checked against a successful 2023 response.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
+        indicator_category_code (str): Profitability indicator : M210000 Stability indicator :
+            M220000 Growth indicator : M230000 Activity indicator : M240000. Allowed values:
+            'M210000', 'M220000', 'M230000', 'M240000'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[
+    corporation_codes: Annotated[
         builtins.list[Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")]],
         Field(min_length=1, max_length=100),
     ] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code Send 1–100 corporation codes as a single comma-separated value. The index description, public form example, and status 021 establish multi-company support despite STRING(8) in the type column."
+        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code Send 1–100 corporation codes as a single comma-separated value. The index description, public form example, and status 021 establish multi-company support despite STRING(8) in the type column. The reference example was checked against a successful 2023 response.",
+        alias="corp_code",
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2022"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2022. The reference example was checked against a successful 2023 response.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
-    idx_cl_code: Literal["M210000", "M220000", "M230000", "M240000"] = Field(
-        description="Profitability indicator : M210000 Stability indicator : M220000 Growth indicator : M230000 Activity indicator : M240000"
+    indicator_category_code: Literal["M210000", "M220000", "M230000", "M240000"] = Field(
+        description="Profitability indicator : M210000 Stability indicator : M220000 Growth indicator : M230000 Activity indicator : M240000",
+        alias="idx_cl_code",
     )
 
 
@@ -109,23 +121,27 @@ class FnlttXbrlRequest(RequestModel):
     """Query parameters for Original financial statement file (XBRL).
 
     Args:
-        rcept_no (str): Filing No. ※ How to view: Search disclosure API call > Extract requested
-            response value rcept_no Documentation conflict: the type column says STRING(8); the
-            field definition and public examples identify a 14-digit value. This consumer
-            specification follows that definition and those examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        filing_number (str): Filing No. ※ How to view: Search disclosure API call > Extract
+            requested response value rcept_no Documentation conflict: the type column says
+            STRING(8); the field definition and public examples identify a 14-digit value. This
+            consumer specification follows that definition and those examples.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    rcept_no: Annotated[str, Field(min_length=14, max_length=14, pattern="^[0-9]{14}$")] = Field(
-        description="Filing No. ※ How to view: Search disclosure API call > Extract requested response value rcept_no Documentation conflict: the type column says STRING(8); the field definition and public examples identify a 14-digit value. This consumer specification follows that definition and those examples."
+    filing_number: Annotated[str, Field(min_length=14, max_length=14, pattern="^[0-9]{14}$")] = (
+        Field(
+            description="Filing No. ※ How to view: Search disclosure API call > Extract requested response value rcept_no Documentation conflict: the type column says STRING(8); the field definition and public examples identify a 14-digit value. This consumer specification follows that definition and those examples.",
+            alias="rcept_no",
+        )
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -133,7 +149,7 @@ class XbrlTaxonomyRequest(RequestModel):
     """Query parameters for XBRL taxonomy financial statements format.
 
     Args:
-        sj_div (str): Taxonomy statement variant. BS1: Statement of Financial Position,
+        statement_type (str): Taxonomy statement variant. BS1: Statement of Financial Position,
             Consolidated, Current/Non-current Method; BS2: Statement of Financial Position,
             Separate, Current/Non-current Method; BS3: Statement of Financial Position,
             Consolidated, Liquidity Order Method; BS4: Statement of Financial Position, Separate,
@@ -165,7 +181,7 @@ class XbrlTaxonomyRequest(RequestModel):
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    sj_div: Literal[
+    statement_type: Literal[
         "BS1",
         "BS2",
         "BS3",
@@ -193,7 +209,8 @@ class XbrlTaxonomyRequest(RequestModel):
         "SCE1",
         "SCE2",
     ] = Field(
-        description="Taxonomy statement variant. BS1: Statement of Financial Position, Consolidated, Current/Non-current Method; BS2: Statement of Financial Position, Separate, Current/Non-current Method; BS3: Statement of Financial Position, Consolidated, Liquidity Order Method; BS4: Statement of Financial Position, Separate, Liquidity Order Method; IS1: Separate Income Statement, Consolidated, Classification by Function; IS2: Separate Income Statement, Separate, Classification by Function; IS3: Separate Income Statement, Consolidated, Classification by Nature; IS4: Separate Income Statement, Separate, Classification by Nature; CIS1: Statement of comprehensive income, Consolidated, Post-Tax; CIS2: Statement of comprehensive income, Separate, Post-Tax; CIS3: Statement of comprehensive income, Consolidated, Pre-Tax; CIS4: Statement of comprehensive income, Separate, Pre-Tax; DCIS1: Single Statement of Comprehensive Income, Consolidated, Classification by Function, Post-Tax Comprehensive Income; DCIS2: Single Statement of Comprehensive Income, Separate, Classification by Function, Post-Tax Comprehensive Income; DCIS3: Single Statement of Comprehensive Income, Consolidated, Classification by Function, Pre-Tax; DCIS4: Single Statement of Comprehensive Income, Separate, Classification by Function, Pre-Tax; DCIS5: Single Statement of Comprehensive Income, Consolidated, Classification by Nature, Post-Tax Comprehensive Income; DCIS6: Single Statement of Comprehensive Income, Separate, Classification by Nature, Post-Tax Comprehensive Income; DCIS7: Single Statement of Comprehensive Income, Consolidated, Classification by Nature, Pre-Tax; DCIS8: Single Statement of Comprehensive Income, Separate, Classification by Nature, Pre-Tax; CF1: Statement of cash flows, Consolidated, Direct Method; CF2: Statement of cash flows, Separate, Direct Method; CF3: Statement of cash flows, Consolidated, Indirect Method; CF4: Statement of cash flows, Separate, Indirect Method; SCE1: Statement of Changes in Equity, Consolidated; SCE2: Statement of Changes in Equity, Separate"
+        description="Taxonomy statement variant. BS1: Statement of Financial Position, Consolidated, Current/Non-current Method; BS2: Statement of Financial Position, Separate, Current/Non-current Method; BS3: Statement of Financial Position, Consolidated, Liquidity Order Method; BS4: Statement of Financial Position, Separate, Liquidity Order Method; IS1: Separate Income Statement, Consolidated, Classification by Function; IS2: Separate Income Statement, Separate, Classification by Function; IS3: Separate Income Statement, Consolidated, Classification by Nature; IS4: Separate Income Statement, Separate, Classification by Nature; CIS1: Statement of comprehensive income, Consolidated, Post-Tax; CIS2: Statement of comprehensive income, Separate, Post-Tax; CIS3: Statement of comprehensive income, Consolidated, Pre-Tax; CIS4: Statement of comprehensive income, Separate, Pre-Tax; DCIS1: Single Statement of Comprehensive Income, Consolidated, Classification by Function, Post-Tax Comprehensive Income; DCIS2: Single Statement of Comprehensive Income, Separate, Classification by Function, Post-Tax Comprehensive Income; DCIS3: Single Statement of Comprehensive Income, Consolidated, Classification by Function, Pre-Tax; DCIS4: Single Statement of Comprehensive Income, Separate, Classification by Function, Pre-Tax; DCIS5: Single Statement of Comprehensive Income, Consolidated, Classification by Nature, Post-Tax Comprehensive Income; DCIS6: Single Statement of Comprehensive Income, Separate, Classification by Nature, Post-Tax Comprehensive Income; DCIS7: Single Statement of Comprehensive Income, Consolidated, Classification by Nature, Pre-Tax; DCIS8: Single Statement of Comprehensive Income, Separate, Classification by Nature, Pre-Tax; CF1: Statement of cash flows, Consolidated, Direct Method; CF2: Statement of cash flows, Separate, Direct Method; CF3: Statement of cash flows, Consolidated, Indirect Method; CF4: Statement of cash flows, Separate, Indirect Method; SCE1: Statement of Changes in Equity, Consolidated; SCE2: Statement of Changes in Equity, Separate",
+        alias="sj_div",
     )
 
 
@@ -201,30 +218,35 @@ class FnlttSinglAcntAllRequest(RequestModel):
     """Query parameters for Single company’s full financial statements.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
-        fs_div (str): OFS:Financial statements, CFS:Consolidated financial statements. Allowed
-            values: 'OFS', 'CFS'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
+        statement_scope (str): OFS:Financial statements, CFS:Consolidated financial statements.
+            Allowed values: 'OFS', 'CFS'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
-    fs_div: Literal["OFS", "CFS"] = Field(
-        description="OFS:Financial statements, CFS:Consolidated financial statements"
+    statement_scope: Literal["OFS", "CFS"] = Field(
+        description="OFS:Financial statements, CFS:Consolidated financial statements",
+        alias="fs_div",
     )
 
 
@@ -232,31 +254,39 @@ class FnlttSinglIndxRequest(RequestModel):
     """Query parameters for Major financial indicators of a single company.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-            Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2022.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
-        idx_cl_code (str): Profitability indicator : M210000 Stability indicator : M220000 Growth
-            indicator : M230000 Activity indicator : M240000. Allowed values: 'M210000', 'M220000',
-            'M230000', 'M240000'.
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+            Developers > Disclosure Information > Corporation Code. The reference example was
+            checked against a successful 2023 response.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2022. The reference
+            example was checked against a successful 2023 response.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
+        indicator_category_code (str): Profitability indicator : M210000 Stability indicator :
+            M220000 Growth indicator : M230000 Activity indicator : M240000. Allowed values:
+            'M210000', 'M220000', 'M230000', 'M240000'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code. The reference example was checked against a successful 2023 response.",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2022"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2022. The reference example was checked against a successful 2023 response.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
-    idx_cl_code: Literal["M210000", "M220000", "M230000", "M240000"] = Field(
-        description="Profitability indicator : M210000 Stability indicator : M220000 Growth indicator : M230000 Activity indicator : M240000"
+    indicator_category_code: Literal["M210000", "M220000", "M230000", "M240000"] = Field(
+        description="Profitability indicator : M210000 Stability indicator : M220000 Growth indicator : M230000 Activity indicator : M240000",
+        alias="idx_cl_code",
     )
 
 
@@ -264,49 +294,60 @@ class FnlttSinglAcntResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        bsns_year (str | None): Fiscal year. 2019. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        fiscal_year (str | None): Fiscal year. 2019. Defaults to None when absent. Serialized under
+            the upstream name 'bsns_year'.
         stock_code (str | None): Item code. Listed corporation’s item code (6 digits). Defaults to
             None when absent.
-        reprt_code (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
+        report_period (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
             11012 Third Quarterly Report : 11014 Annual Report : 11011. Defaults to None when
-            absent.
-        account_nm (str | None): Account name. e.g. Total equity. Defaults to None when absent.
-        fs_div (str | None): Seperate/consolidated. OFS: Financial statements, CFS: Consolidated
-            financial statements. Defaults to None when absent.
-        fs_nm (str | None): Seperate/consolidated title. e.g. Print consolidated finacial statements
-            or finacial statements. Defaults to None when absent.
-        sj_div (str | None): Type of financial statement. BS: Balance sheet, IS: Income statement.
-            Defaults to None when absent.
-        sj_nm (str | None): Title of financial statement. e.g. Print statement of financial position
-            or income statement. Defaults to None when absent.
-        thstrm_nm (str | None): Current term title. e.g. End of Q3 in 13th Term. Defaults to None
-            when absent.
-        thstrm_dt (str | None): Current term date. e.g. As of September 30, 2018. Defaults to None
-            when absent.
-        thstrm_amount (str | None): Current term amount. 9,999,999,999 Preserve the upstream text;
-            do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
-        thstrm_add_amount (str | None): Accumulated current term amount. 9,999,999,999 Preserve the
-            upstream text; do not coerce commas, blanks, or '-' to a number. Defaults to None when
-            absent.
-        frmtrm_nm (str | None): Previous term name. e.g. End of 12th Term. Defaults to None when
-            absent.
-        frmtrm_dt (str | None): Previous term date. e.g. 2017.01.01 ~ 2017.12.31. Defaults to None
-            when absent.
-        frmtrm_amount (str | None): Previous term amount. 9,999,999,999 Preserve the upstream text;
-            do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
-        frmtrm_add_amount (str | None): Accumulated previous term amount. 9,999,999,999 Preserve the
-            upstream text; do not coerce commas, blanks, or '-' to a number. Defaults to None when
-            absent.
-        bfefrmtrm_nm (str | None): Title of term before previous. e.g. End of 11th Term (※ only
-            printed on annual reports). Defaults to None when absent.
-        bfefrmtrm_dt (str | None): Date of term before previous. e.g. As of December 31, 2016 (※
-            only printed on annual reports). Defaults to None when absent.
-        bfefrmtrm_amount (str | None): Amount of term before previous. (※ Only printed on annual
-            reports) Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.
-            Defaults to None when absent.
+            absent. Serialized under the upstream name 'reprt_code'.
+        account_name (str | None): Account name. e.g. Total equity. Defaults to None when absent.
+            Serialized under the upstream name 'account_nm'.
+        statement_scope (str | None): Seperate/consolidated. OFS: Financial statements, CFS:
+            Consolidated financial statements. Defaults to None when absent. Serialized under the
+            upstream name 'fs_div'.
+        financial_statement_name (str | None): Seperate/consolidated title. e.g. Print consolidated
+            finacial statements or finacial statements. Defaults to None when absent. Serialized
+            under the upstream name 'fs_nm'.
+        statement_type (str | None): Type of financial statement. BS: Balance sheet, IS: Income
+            statement. Defaults to None when absent. Serialized under the upstream name 'sj_div'.
+        statement_name (str | None): Title of financial statement. e.g. Print statement of financial
+            position or income statement. Defaults to None when absent. Serialized under the
+            upstream name 'sj_nm'.
+        current_period_name (str | None): Current term title. e.g. End of Q3 in 13th Term. Defaults
+            to None when absent. Serialized under the upstream name 'thstrm_nm'.
+        current_period_date (str | None): Current term date. e.g. As of September 30, 2018. Defaults
+            to None when absent. Serialized under the upstream name 'thstrm_dt'.
+        current_period_amount (str | None): Current term amount. 9,999,999,999 Preserve the upstream
+            text; do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
+            Serialized under the upstream name 'thstrm_amount'.
+        current_period_cumulative_amount (str | None): Accumulated current term amount.
+            9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a
+            number. Defaults to None when absent. Serialized under the upstream name
+            'thstrm_add_amount'.
+        prior_period_name (str | None): Previous term name. e.g. End of 12th Term. Defaults to None
+            when absent. Serialized under the upstream name 'frmtrm_nm'.
+        prior_period_date (str | None): Previous term date. e.g. 2017.01.01 ~ 2017.12.31. Defaults
+            to None when absent. Serialized under the upstream name 'frmtrm_dt'.
+        prior_period_amount (str | None): Previous term amount. 9,999,999,999 Preserve the upstream
+            text; do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
+            Serialized under the upstream name 'frmtrm_amount'.
+        prior_period_cumulative_amount (str | None): Accumulated previous term amount. 9,999,999,999
+            Preserve the upstream text; do not coerce commas, blanks, or '-' to a number. Defaults
+            to None when absent. Serialized under the upstream name 'frmtrm_add_amount'.
+        two_periods_prior_name (str | None): Title of term before previous. e.g. End of 11th Term (※
+            only printed on annual reports). Defaults to None when absent. Serialized under the
+            upstream name 'bfefrmtrm_nm'.
+        two_periods_prior_date (str | None): Date of term before previous. e.g. As of December 31,
+            2016 (※ only printed on annual reports). Defaults to None when absent. Serialized under
+            the upstream name 'bfefrmtrm_dt'.
+        two_periods_prior_amount (str | None): Amount of term before previous. (※ Only printed on
+            annual reports) Preserve the upstream text; do not coerce commas, blanks, or '-' to a
+            number. Defaults to None when absent. Serialized under the upstream name
+            'bfefrmtrm_amount'.
         ord (str | None): Order of account titles. Order of account title Preserve the upstream
             text; do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
         currency (str | None): Currency unit. Defaults to None when absent.
@@ -315,74 +356,97 @@ class FnlttSinglAcntResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    bsns_year: str | None = Field(default=None, description="Fiscal year. 2019")
+    fiscal_year: str | None = Field(
+        default=None, description="Fiscal year. 2019", alias="bsns_year"
+    )
     stock_code: str | None = Field(
         default=None, description="Item code. Listed corporation’s item code (6 digits)"
     )
-    reprt_code: str | None = Field(
+    report_period: str | None = Field(
         default=None,
         description="Report code. First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
-    account_nm: str | None = Field(default=None, description="Account name. e.g. Total equity")
-    fs_div: str | None = Field(
+    account_name: str | None = Field(
+        default=None, description="Account name. e.g. Total equity", alias="account_nm"
+    )
+    statement_scope: str | None = Field(
         default=None,
         description="Seperate/consolidated. OFS: Financial statements, CFS: Consolidated financial statements",
+        alias="fs_div",
     )
-    fs_nm: str | None = Field(
+    financial_statement_name: str | None = Field(
         default=None,
         description="Seperate/consolidated title. e.g. Print consolidated finacial statements or finacial statements",
+        alias="fs_nm",
     )
-    sj_div: str | None = Field(
+    statement_type: str | None = Field(
         default=None,
         description="Type of financial statement. BS: Balance sheet, IS: Income statement",
+        alias="sj_div",
     )
-    sj_nm: str | None = Field(
+    statement_name: str | None = Field(
         default=None,
         description="Title of financial statement. e.g. Print statement of financial position or income statement",
+        alias="sj_nm",
     )
-    thstrm_nm: str | None = Field(
-        default=None, description="Current term title. e.g. End of Q3 in 13th Term"
+    current_period_name: str | None = Field(
+        default=None,
+        description="Current term title. e.g. End of Q3 in 13th Term",
+        alias="thstrm_nm",
     )
-    thstrm_dt: str | None = Field(
-        default=None, description="Current term date. e.g. As of September 30, 2018"
+    current_period_date: str | None = Field(
+        default=None,
+        description="Current term date. e.g. As of September 30, 2018",
+        alias="thstrm_dt",
     )
-    thstrm_amount: str | None = Field(
+    current_period_amount: str | None = Field(
         default=None,
         description="Current term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="thstrm_amount",
     )
-    thstrm_add_amount: str | None = Field(
+    current_period_cumulative_amount: str | None = Field(
         default=None,
         description="Accumulated current term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="thstrm_add_amount",
     )
-    frmtrm_nm: str | None = Field(
-        default=None, description="Previous term name. e.g. End of 12th Term"
+    prior_period_name: str | None = Field(
+        default=None, description="Previous term name. e.g. End of 12th Term", alias="frmtrm_nm"
     )
-    frmtrm_dt: str | None = Field(
-        default=None, description="Previous term date. e.g. 2017.01.01 ~ 2017.12.31"
+    prior_period_date: str | None = Field(
+        default=None,
+        description="Previous term date. e.g. 2017.01.01 ~ 2017.12.31",
+        alias="frmtrm_dt",
     )
-    frmtrm_amount: str | None = Field(
+    prior_period_amount: str | None = Field(
         default=None,
         description="Previous term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="frmtrm_amount",
     )
-    frmtrm_add_amount: str | None = Field(
+    prior_period_cumulative_amount: str | None = Field(
         default=None,
         description="Accumulated previous term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="frmtrm_add_amount",
     )
-    bfefrmtrm_nm: str | None = Field(
+    two_periods_prior_name: str | None = Field(
         default=None,
         description="Title of term before previous. e.g. End of 11th Term (※ only printed on annual reports)",
+        alias="bfefrmtrm_nm",
     )
-    bfefrmtrm_dt: str | None = Field(
+    two_periods_prior_date: str | None = Field(
         default=None,
         description="Date of term before previous. e.g. As of December 31, 2016 (※ only printed on annual reports)",
+        alias="bfefrmtrm_dt",
     )
-    bfefrmtrm_amount: str | None = Field(
+    two_periods_prior_amount: str | None = Field(
         default=None,
         description="Amount of term before previous. (※ Only printed on annual reports) Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="bfefrmtrm_amount",
     )
     ord: str | None = Field(
         default=None,
@@ -419,49 +483,60 @@ class FnlttMultiAcntResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        bsns_year (str | None): Fiscal year. Fiscal year (4 digits). Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        fiscal_year (str | None): Fiscal year. Fiscal year (4 digits). Defaults to None when absent.
+            Serialized under the upstream name 'bsns_year'.
         stock_code (str | None): Item code. Listed corporation’s item code (6 digits). Defaults to
             None when absent.
-        reprt_code (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
+        report_period (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
             11012 Third Quarterly Report : 11014 Annual Report : 11011. Defaults to None when
-            absent.
-        account_nm (str | None): Account name. e.g. Total equity. Defaults to None when absent.
-        fs_div (str | None): Seperate/consolidated. OFS: Financial statements, CFS: Consolidated
-            financial statements. Defaults to None when absent.
-        fs_nm (str | None): Seperate/consolidated title. e.g. Print consolidated finacial statements
-            or finacial statements. Defaults to None when absent.
-        sj_div (str | None): Type of financial statement. BS: Balance sheet, IS: Income statement.
-            Defaults to None when absent.
-        sj_nm (str | None): Title of financial statement. e.g. Print statement of financial position
-            or income statement. Defaults to None when absent.
-        thstrm_nm (str | None): Current term title. e.g. End of Q3 in 13th Term. Defaults to None
-            when absent.
-        thstrm_dt (str | None): Current term date. e.g. As of September 30, 2018. Defaults to None
-            when absent.
-        thstrm_amount (str | None): Current term amount. 9,999,999,999 Preserve the upstream text;
-            do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
-        thstrm_add_amount (str | None): Accumulated current term amount. 9,999,999,999 Preserve the
-            upstream text; do not coerce commas, blanks, or '-' to a number. Defaults to None when
-            absent.
-        frmtrm_nm (str | None): Previous term title. e.g. End of 12th Term. Defaults to None when
-            absent.
-        frmtrm_dt (str | None): Previous term date. e.g. 2017.01.01 ~ 2017.12.31. Defaults to None
-            when absent.
-        frmtrm_amount (str | None): Previous term amount. 9,999,999,999 Preserve the upstream text;
-            do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
-        frmtrm_add_amount (str | None): Accumulated previous term amount. 9,999,999,999 Preserve the
-            upstream text; do not coerce commas, blanks, or '-' to a number. Defaults to None when
-            absent.
-        bfefrmtrm_nm (str | None): Title of term before previous. e.g. End of 11th Term (※ only
-            printed on annual reports). Defaults to None when absent.
-        bfefrmtrm_dt (str | None): Date of term before previous. e.g. As of December 31, 2016 (※
-            only printed on annual reports). Defaults to None when absent.
-        bfefrmtrm_amount (str | None): Amount of term before previous. 9,999,999,999 (※ Only printed
-            on annual reports) Preserve the upstream text; do not coerce commas, blanks, or '-' to a
-            number. Defaults to None when absent.
+            absent. Serialized under the upstream name 'reprt_code'.
+        account_name (str | None): Account name. e.g. Total equity. Defaults to None when absent.
+            Serialized under the upstream name 'account_nm'.
+        statement_scope (str | None): Seperate/consolidated. OFS: Financial statements, CFS:
+            Consolidated financial statements. Defaults to None when absent. Serialized under the
+            upstream name 'fs_div'.
+        financial_statement_name (str | None): Seperate/consolidated title. e.g. Print consolidated
+            finacial statements or finacial statements. Defaults to None when absent. Serialized
+            under the upstream name 'fs_nm'.
+        statement_type (str | None): Type of financial statement. BS: Balance sheet, IS: Income
+            statement. Defaults to None when absent. Serialized under the upstream name 'sj_div'.
+        statement_name (str | None): Title of financial statement. e.g. Print statement of financial
+            position or income statement. Defaults to None when absent. Serialized under the
+            upstream name 'sj_nm'.
+        current_period_name (str | None): Current term title. e.g. End of Q3 in 13th Term. Defaults
+            to None when absent. Serialized under the upstream name 'thstrm_nm'.
+        current_period_date (str | None): Current term date. e.g. As of September 30, 2018. Defaults
+            to None when absent. Serialized under the upstream name 'thstrm_dt'.
+        current_period_amount (str | None): Current term amount. 9,999,999,999 Preserve the upstream
+            text; do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
+            Serialized under the upstream name 'thstrm_amount'.
+        current_period_cumulative_amount (str | None): Accumulated current term amount.
+            9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a
+            number. Defaults to None when absent. Serialized under the upstream name
+            'thstrm_add_amount'.
+        prior_period_name (str | None): Previous term title. e.g. End of 12th Term. Defaults to None
+            when absent. Serialized under the upstream name 'frmtrm_nm'.
+        prior_period_date (str | None): Previous term date. e.g. 2017.01.01 ~ 2017.12.31. Defaults
+            to None when absent. Serialized under the upstream name 'frmtrm_dt'.
+        prior_period_amount (str | None): Previous term amount. 9,999,999,999 Preserve the upstream
+            text; do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
+            Serialized under the upstream name 'frmtrm_amount'.
+        prior_period_cumulative_amount (str | None): Accumulated previous term amount. 9,999,999,999
+            Preserve the upstream text; do not coerce commas, blanks, or '-' to a number. Defaults
+            to None when absent. Serialized under the upstream name 'frmtrm_add_amount'.
+        two_periods_prior_name (str | None): Title of term before previous. e.g. End of 11th Term (※
+            only printed on annual reports). Defaults to None when absent. Serialized under the
+            upstream name 'bfefrmtrm_nm'.
+        two_periods_prior_date (str | None): Date of term before previous. e.g. As of December 31,
+            2016 (※ only printed on annual reports). Defaults to None when absent. Serialized under
+            the upstream name 'bfefrmtrm_dt'.
+        two_periods_prior_amount (str | None): Amount of term before previous. 9,999,999,999 (※ Only
+            printed on annual reports) Preserve the upstream text; do not coerce commas, blanks, or
+            '-' to a number. Defaults to None when absent. Serialized under the upstream name
+            'bfefrmtrm_amount'.
         ord (str | None): Order of account titles. Account code sort order Preserve the upstream
             text; do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
         currency (str | None): Currency unit. Defaults to None when absent.
@@ -470,74 +545,97 @@ class FnlttMultiAcntResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    bsns_year: str | None = Field(default=None, description="Fiscal year. Fiscal year (4 digits)")
+    fiscal_year: str | None = Field(
+        default=None, description="Fiscal year. Fiscal year (4 digits)", alias="bsns_year"
+    )
     stock_code: str | None = Field(
         default=None, description="Item code. Listed corporation’s item code (6 digits)"
     )
-    reprt_code: str | None = Field(
+    report_period: str | None = Field(
         default=None,
         description="Report code. First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
-    account_nm: str | None = Field(default=None, description="Account name. e.g. Total equity")
-    fs_div: str | None = Field(
+    account_name: str | None = Field(
+        default=None, description="Account name. e.g. Total equity", alias="account_nm"
+    )
+    statement_scope: str | None = Field(
         default=None,
         description="Seperate/consolidated. OFS: Financial statements, CFS: Consolidated financial statements",
+        alias="fs_div",
     )
-    fs_nm: str | None = Field(
+    financial_statement_name: str | None = Field(
         default=None,
         description="Seperate/consolidated title. e.g. Print consolidated finacial statements or finacial statements",
+        alias="fs_nm",
     )
-    sj_div: str | None = Field(
+    statement_type: str | None = Field(
         default=None,
         description="Type of financial statement. BS: Balance sheet, IS: Income statement",
+        alias="sj_div",
     )
-    sj_nm: str | None = Field(
+    statement_name: str | None = Field(
         default=None,
         description="Title of financial statement. e.g. Print statement of financial position or income statement",
+        alias="sj_nm",
     )
-    thstrm_nm: str | None = Field(
-        default=None, description="Current term title. e.g. End of Q3 in 13th Term"
+    current_period_name: str | None = Field(
+        default=None,
+        description="Current term title. e.g. End of Q3 in 13th Term",
+        alias="thstrm_nm",
     )
-    thstrm_dt: str | None = Field(
-        default=None, description="Current term date. e.g. As of September 30, 2018"
+    current_period_date: str | None = Field(
+        default=None,
+        description="Current term date. e.g. As of September 30, 2018",
+        alias="thstrm_dt",
     )
-    thstrm_amount: str | None = Field(
+    current_period_amount: str | None = Field(
         default=None,
         description="Current term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="thstrm_amount",
     )
-    thstrm_add_amount: str | None = Field(
+    current_period_cumulative_amount: str | None = Field(
         default=None,
         description="Accumulated current term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="thstrm_add_amount",
     )
-    frmtrm_nm: str | None = Field(
-        default=None, description="Previous term title. e.g. End of 12th Term"
+    prior_period_name: str | None = Field(
+        default=None, description="Previous term title. e.g. End of 12th Term", alias="frmtrm_nm"
     )
-    frmtrm_dt: str | None = Field(
-        default=None, description="Previous term date. e.g. 2017.01.01 ~ 2017.12.31"
+    prior_period_date: str | None = Field(
+        default=None,
+        description="Previous term date. e.g. 2017.01.01 ~ 2017.12.31",
+        alias="frmtrm_dt",
     )
-    frmtrm_amount: str | None = Field(
+    prior_period_amount: str | None = Field(
         default=None,
         description="Previous term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="frmtrm_amount",
     )
-    frmtrm_add_amount: str | None = Field(
+    prior_period_cumulative_amount: str | None = Field(
         default=None,
         description="Accumulated previous term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="frmtrm_add_amount",
     )
-    bfefrmtrm_nm: str | None = Field(
+    two_periods_prior_name: str | None = Field(
         default=None,
         description="Title of term before previous. e.g. End of 11th Term (※ only printed on annual reports)",
+        alias="bfefrmtrm_nm",
     )
-    bfefrmtrm_dt: str | None = Field(
+    two_periods_prior_date: str | None = Field(
         default=None,
         description="Date of term before previous. e.g. As of December 31, 2016 (※ only printed on annual reports)",
+        alias="bfefrmtrm_dt",
     )
-    bfefrmtrm_amount: str | None = Field(
+    two_periods_prior_amount: str | None = Field(
         default=None,
         description="Amount of term before previous. 9,999,999,999 (※ Only printed on annual reports) Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="bfefrmtrm_amount",
     )
     ord: str | None = Field(
         default=None,
@@ -574,58 +672,68 @@ class FnlttCmpnyIndxResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        reprt_code (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
+        report_period (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
             11012 Third Quarterly Report : 11014 Annual Report : 11011. Defaults to None when
-            absent.
-        bsns_year (str | None): Fiscal year. 2020. Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
+            absent. Serialized under the upstream name 'reprt_code'.
+        fiscal_year (str | None): Fiscal year. 2020. Defaults to None when absent. Serialized under
+            the upstream name 'bsns_year'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
         stock_code (str | None): Item code. Listed corporation’s item code (6 digits). Defaults to
             None when absent.
         stlm_dt (str | None): Settlement date. YYYY.MM.DD. Defaults to None when absent.
-        idx_cl_code (str | None): Indicator category code. Profitability indicator : M210000
-            Stability indicator : M220000 Growth indicator : M230000 Activity indicator : M240000.
-            Defaults to None when absent.
-        idx_cl_nm (str | None): Indicator category name. Profitability indicator, Stability
-            indicator, Growth indicator, Activity indicator. Defaults to None when absent.
+        indicator_category_code (str | None): Indicator category code. Profitability indicator :
+            M210000 Stability indicator : M220000 Growth indicator : M230000 Activity indicator :
+            M240000. Defaults to None when absent. Serialized under the upstream name 'idx_cl_code'.
+        indicator_category_name (str | None): Indicator category name. Profitability indicator,
+            Stability indicator, Growth indicator, Activity indicator. Defaults to None when absent.
+            Serialized under the upstream name 'idx_cl_nm'.
         idx_code (str | None): Indicator code. e.g. M211000. Defaults to None when absent.
-        idx_nm (str | None): Indicator name. e.g. Operating income margin. Defaults to None when
-            absent.
-        idx_val (str | None): Indicator value. e.g. 0.256 Preserve the upstream text; do not coerce
-            commas, blanks, or '-' to a number. Defaults to None when absent.
+        indicator_name (str | None): Indicator name. e.g. Operating income margin. Defaults to None
+            when absent. Serialized under the upstream name 'idx_nm'.
+        indicator_value (str | None): Indicator value. e.g. 0.256 Preserve the upstream text; do not
+            coerce commas, blanks, or '-' to a number. Defaults to None when absent. Serialized
+            under the upstream name 'idx_val'.
 
     Raises:
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    reprt_code: str | None = Field(
+    report_period: str | None = Field(
         default=None,
         description="Report code. First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
-    bsns_year: str | None = Field(default=None, description="Fiscal year. 2020")
-    corp_code: str | None = Field(
+    fiscal_year: str | None = Field(
+        default=None, description="Fiscal year. 2020", alias="bsns_year"
+    )
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
     stock_code: str | None = Field(
         default=None, description="Item code. Listed corporation’s item code (6 digits)"
     )
     stlm_dt: str | None = Field(default=None, description="Settlement date. YYYY.MM.DD")
-    idx_cl_code: str | None = Field(
+    indicator_category_code: str | None = Field(
         default=None,
         description="Indicator category code. Profitability indicator : M210000 Stability indicator : M220000 Growth indicator : M230000 Activity indicator : M240000",
+        alias="idx_cl_code",
     )
-    idx_cl_nm: str | None = Field(
+    indicator_category_name: str | None = Field(
         default=None,
         description="Indicator category name. Profitability indicator, Stability indicator, Growth indicator, Activity indicator",
+        alias="idx_cl_nm",
     )
     idx_code: str | None = Field(default=None, description="Indicator code. e.g. M211000")
-    idx_nm: str | None = Field(
-        default=None, description="Indicator name. e.g. Operating income margin"
+    indicator_name: str | None = Field(
+        default=None, description="Indicator name. e.g. Operating income margin", alias="idx_nm"
     )
-    idx_val: str | None = Field(
+    indicator_value: str | None = Field(
         default=None,
         description="Indicator value. e.g. 0.256 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="idx_val",
     )
 
 
@@ -657,9 +765,11 @@ class XbrlTaxonomyResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        sj_div (str | None): Type of financial statement. Defaults to None when absent.
+        statement_type (str | None): Type of financial statement. Defaults to None when absent.
+            Serialized under the upstream name 'sj_div'.
         account_id (str | None): Account ID. Unique account name. Defaults to None when absent.
-        account_nm (str | None): Account name. Defaults to None when absent.
+        account_name (str | None): Account name. Defaults to None when absent. Serialized under the
+            upstream name 'account_nm'.
         bsns_de (str | None): Baseline date. Application baseline date. Defaults to None when
             absent.
         label_kor (str | None): Korean output name. Defaults to None when absent.
@@ -676,9 +786,11 @@ class XbrlTaxonomyResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    sj_div: str | None = Field(default=None, description="Type of financial statement")
+    statement_type: str | None = Field(
+        default=None, description="Type of financial statement", alias="sj_div"
+    )
     account_id: str | None = Field(default=None, description="Account ID. Unique account name")
-    account_nm: str | None = Field(default=None, description="Account name")
+    account_name: str | None = Field(default=None, description="Account name", alias="account_nm")
     bsns_de: str | None = Field(
         default=None, description="Baseline date. Application baseline date"
     )
@@ -722,52 +834,61 @@ class FnlttSinglAcntAllResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        reprt_code (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        report_period (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
             11012 Third Quarterly Report : 11014 Annual Report : 11011. Defaults to None when
-            absent.
-        bsns_year (str | None): Fiscal year. 2018. Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        sj_div (str | None): Type of financial statement. BS : Statement of financial position IS :
-            Income statement CIS : Comprehensive income statement CF : Cash flow statement SCE :
-            Statement of changes in equity. Defaults to None when absent.
-        sj_nm (str | None): Financial statement title. e.g. Print statement of financial position or
-            income statement. Defaults to None when absent.
+            absent. Serialized under the upstream name 'reprt_code'.
+        fiscal_year (str | None): Fiscal year. 2018. Defaults to None when absent. Serialized under
+            the upstream name 'bsns_year'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        statement_type (str | None): Type of financial statement. BS : Statement of financial
+            position IS : Income statement CIS : Comprehensive income statement CF : Cash flow
+            statement SCE : Statement of changes in equity. Defaults to None when absent. Serialized
+            under the upstream name 'sj_div'.
+        statement_name (str | None): Financial statement title. e.g. Print statement of financial
+            position or income statement. Defaults to None when absent. Serialized under the
+            upstream name 'sj_nm'.
         account_id (str | None): Account ID. XBRL Standard Account ID ※If it is not a Standard
             Account ID, display "-Standard Account Code Not Used-". Defaults to None when absent.
-        account_nm (str | None): Account name. Account name e.g. Total equity. Defaults to None when
-            absent.
+        account_name (str | None): Account name. Account name e.g. Total equity. Defaults to None
+            when absent. Serialized under the upstream name 'account_nm'.
         account_detail (str | None): Detail account. ※ Display only in the Statement of Changes in
             Equity e.g. Detailed Account Name - Equity [member]|Parent Company Owner's Equity -
             Equity [member]|Parent Company Owner's Equity|Accumulated Other Comprehensive Income
             [member]. Defaults to None when absent.
-        thstrm_nm (str | None): Term name. e.g. 13th Term. Defaults to None when absent.
-        thstrm_amount (str | None): Term amount. 9,999,999,999 ※For quarterly/semi-annual
+        current_period_name (str | None): Term name. e.g. 13th Term. Defaults to None when absent.
+            Serialized under the upstream name 'thstrm_nm'.
+        current_period_amount (str | None): Term amount. 9,999,999,999 ※For quarterly/semi-annual
             (comprehensive) income statements, [3 months] amount Preserve the upstream text; do not
-            coerce commas, blanks, or '-' to a number. Defaults to None when absent.
-        thstrm_add_amount (str | None): Accumulated term amount. 9,999,999,999 Preserve the upstream
+            coerce commas, blanks, or '-' to a number. Defaults to None when absent. Serialized
+            under the upstream name 'thstrm_amount'.
+        current_period_cumulative_amount (str | None): Accumulated term amount. 9,999,999,999
+            Preserve the upstream text; do not coerce commas, blanks, or '-' to a number. Defaults
+            to None when absent. Serialized under the upstream name 'thstrm_add_amount'.
+        prior_period_name (str | None): Previous term name. e.g. End of 12th Term. Defaults to None
+            when absent. Serialized under the upstream name 'frmtrm_nm'.
+        prior_period_amount (str | None): Previous term amount. 9,999,999,999 Preserve the upstream
             text; do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
-        frmtrm_nm (str | None): Previous term name. e.g. End of 12th Term. Defaults to None when
-            absent.
-        frmtrm_amount (str | None): Previous term amount. 9,999,999,999 Preserve the upstream text;
-            do not coerce commas, blanks, or '-' to a number. Defaults to None when absent.
+            Serialized under the upstream name 'frmtrm_amount'.
         frmtrm_q_nm (str | None): Previous term name(Quarterly/Semiannual). e.g. 18th Term first
             half. Defaults to None when absent.
         frmtrm_q_amount (str | None): Previous term amount(Quarterly/Semiannual). 9,999,999,999 ※For
             quarterly/semi-annual (comprehensive) income statements, [3 months] amount Preserve the
             upstream text; do not coerce commas, blanks, or '-' to a number. Defaults to None when
             absent.
-        frmtrm_add_amount (str | None): Accumulated previous term amount. 9,999,999,999 Preserve the
-            upstream text; do not coerce commas, blanks, or '-' to a number. Defaults to None when
-            absent.
-        bfefrmtrm_nm (str | None): Name of term before previous. e.g. End of 11th Term (※ only
-            printed on annual reports). Defaults to None when absent.
-        bfefrmtrm_amount (str | None): Amount of term before previous. 9,999,999,999 (※ only printed
-            on annual reports) Preserve the upstream text; do not coerce commas, blanks, or '-' to a
-            number. Defaults to None when absent.
+        prior_period_cumulative_amount (str | None): Accumulated previous term amount. 9,999,999,999
+            Preserve the upstream text; do not coerce commas, blanks, or '-' to a number. Defaults
+            to None when absent. Serialized under the upstream name 'frmtrm_add_amount'.
+        two_periods_prior_name (str | None): Name of term before previous. e.g. End of 11th Term (※
+            only printed on annual reports). Defaults to None when absent. Serialized under the
+            upstream name 'bfefrmtrm_nm'.
+        two_periods_prior_amount (str | None): Amount of term before previous. 9,999,999,999 (※ only
+            printed on annual reports) Preserve the upstream text; do not coerce commas, blanks, or
+            '-' to a number. Defaults to None when absent. Serialized under the upstream name
+            'bfefrmtrm_amount'.
         ord (str | None): Account code sort order Preserve the upstream text; do not coerce commas,
             blanks, or '-' to a number. Defaults to None when absent.
         currency (str | None): Currency unit. Defaults to None when absent.
@@ -776,53 +897,65 @@ class FnlttSinglAcntAllResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    reprt_code: str | None = Field(
+    report_period: str | None = Field(
         default=None,
         description="Report code. First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
-    bsns_year: str | None = Field(default=None, description="Fiscal year. 2018")
-    corp_code: str | None = Field(
+    fiscal_year: str | None = Field(
+        default=None, description="Fiscal year. 2018", alias="bsns_year"
+    )
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    sj_div: str | None = Field(
+    statement_type: str | None = Field(
         default=None,
         description="Type of financial statement. BS : Statement of financial position IS : Income statement CIS : Comprehensive income statement CF : Cash flow statement SCE : Statement of changes in equity",
+        alias="sj_div",
     )
-    sj_nm: str | None = Field(
+    statement_name: str | None = Field(
         default=None,
         description="Financial statement title. e.g. Print statement of financial position or income statement",
+        alias="sj_nm",
     )
     account_id: str | None = Field(
         default=None,
         description='Account ID. XBRL Standard Account ID ※If it is not a Standard Account ID, display "-Standard Account Code Not Used-"',
     )
-    account_nm: str | None = Field(
-        default=None, description="Account name. Account name e.g. Total equity"
+    account_name: str | None = Field(
+        default=None, description="Account name. Account name e.g. Total equity", alias="account_nm"
     )
     account_detail: str | None = Field(
         default=None,
         description="Detail account. ※ Display only in the Statement of Changes in Equity e.g. Detailed Account Name - Equity [member]|Parent Company Owner's Equity - Equity [member]|Parent Company Owner's Equity|Accumulated Other Comprehensive Income [member]",
     )
-    thstrm_nm: str | None = Field(default=None, description="Term name. e.g. 13th Term")
-    thstrm_amount: str | None = Field(
+    current_period_name: str | None = Field(
+        default=None, description="Term name. e.g. 13th Term", alias="thstrm_nm"
+    )
+    current_period_amount: str | None = Field(
         default=None,
         description="Term amount. 9,999,999,999 ※For quarterly/semi-annual (comprehensive) income statements, [3 months] amount Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="thstrm_amount",
     )
-    thstrm_add_amount: str | None = Field(
+    current_period_cumulative_amount: str | None = Field(
         default=None,
         description="Accumulated term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="thstrm_add_amount",
     )
-    frmtrm_nm: str | None = Field(
-        default=None, description="Previous term name. e.g. End of 12th Term"
+    prior_period_name: str | None = Field(
+        default=None, description="Previous term name. e.g. End of 12th Term", alias="frmtrm_nm"
     )
-    frmtrm_amount: str | None = Field(
+    prior_period_amount: str | None = Field(
         default=None,
         description="Previous term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="frmtrm_amount",
     )
     frmtrm_q_nm: str | None = Field(
         default=None,
@@ -832,17 +965,20 @@ class FnlttSinglAcntAllResponseListItem(ResponseModel):
         default=None,
         description="Previous term amount(Quarterly/Semiannual). 9,999,999,999 ※For quarterly/semi-annual (comprehensive) income statements, [3 months] amount Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
     )
-    frmtrm_add_amount: str | None = Field(
+    prior_period_cumulative_amount: str | None = Field(
         default=None,
         description="Accumulated previous term amount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="frmtrm_add_amount",
     )
-    bfefrmtrm_nm: str | None = Field(
+    two_periods_prior_name: str | None = Field(
         default=None,
         description="Name of term before previous. e.g. End of 11th Term (※ only printed on annual reports)",
+        alias="bfefrmtrm_nm",
     )
-    bfefrmtrm_amount: str | None = Field(
+    two_periods_prior_amount: str | None = Field(
         default=None,
         description="Amount of term before previous. 9,999,999,999 (※ only printed on annual reports) Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="bfefrmtrm_amount",
     )
     ord: str | None = Field(
         default=None,
@@ -879,58 +1015,68 @@ class FnlttSinglIndxResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        reprt_code (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
+        report_period (str | None): Report code. First Quarterly Report : 11013 Semi-annual Report :
             11012 Third Quarterly Report : 11014 Annual Report : 11011. Defaults to None when
-            absent.
-        bsns_year (str | None): Fiscal year. 2020. Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
+            absent. Serialized under the upstream name 'reprt_code'.
+        fiscal_year (str | None): Fiscal year. 2020. Defaults to None when absent. Serialized under
+            the upstream name 'bsns_year'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
         stock_code (str | None): Item code. Listed corporation’s item code (6 digits). Defaults to
             None when absent.
         stlm_dt (str | None): Settlement date. YYYY.MM.DD. Defaults to None when absent.
-        idx_cl_code (str | None): Indicator category code. Profitability indicator : M210000
-            Stability indicator : M220000 Growth indicator : M230000 Activity indicator : M240000.
-            Defaults to None when absent.
-        idx_cl_nm (str | None): Indicator category name. Profitability indicator, Stability
-            indicator, Growth indicator, Activity indicator. Defaults to None when absent.
+        indicator_category_code (str | None): Indicator category code. Profitability indicator :
+            M210000 Stability indicator : M220000 Growth indicator : M230000 Activity indicator :
+            M240000. Defaults to None when absent. Serialized under the upstream name 'idx_cl_code'.
+        indicator_category_name (str | None): Indicator category name. Profitability indicator,
+            Stability indicator, Growth indicator, Activity indicator. Defaults to None when absent.
+            Serialized under the upstream name 'idx_cl_nm'.
         idx_code (str | None): Indicator code. e.g. M211000. Defaults to None when absent.
-        idx_nm (str | None): Indicator name. e.g. Operating income margin. Defaults to None when
-            absent.
-        idx_val (str | None): Indicator value. e.g. 0.256 Preserve the upstream text; do not coerce
-            commas, blanks, or '-' to a number. Defaults to None when absent.
+        indicator_name (str | None): Indicator name. e.g. Operating income margin. Defaults to None
+            when absent. Serialized under the upstream name 'idx_nm'.
+        indicator_value (str | None): Indicator value. e.g. 0.256 Preserve the upstream text; do not
+            coerce commas, blanks, or '-' to a number. Defaults to None when absent. Serialized
+            under the upstream name 'idx_val'.
 
     Raises:
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    reprt_code: str | None = Field(
+    report_period: str | None = Field(
         default=None,
         description="Report code. First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
-    bsns_year: str | None = Field(default=None, description="Fiscal year. 2020")
-    corp_code: str | None = Field(
+    fiscal_year: str | None = Field(
+        default=None, description="Fiscal year. 2020", alias="bsns_year"
+    )
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
     stock_code: str | None = Field(
         default=None, description="Item code. Listed corporation’s item code (6 digits)"
     )
     stlm_dt: str | None = Field(default=None, description="Settlement date. YYYY.MM.DD")
-    idx_cl_code: str | None = Field(
+    indicator_category_code: str | None = Field(
         default=None,
         description="Indicator category code. Profitability indicator : M210000 Stability indicator : M220000 Growth indicator : M230000 Activity indicator : M240000",
+        alias="idx_cl_code",
     )
-    idx_cl_nm: str | None = Field(
+    indicator_category_name: str | None = Field(
         default=None,
         description="Indicator category name. Profitability indicator, Stability indicator, Growth indicator, Activity indicator",
+        alias="idx_cl_nm",
     )
     idx_code: str | None = Field(default=None, description="Indicator code. e.g. M211000")
-    idx_nm: str | None = Field(
-        default=None, description="Indicator name. e.g. Operating income margin"
+    indicator_name: str | None = Field(
+        default=None, description="Indicator name. e.g. Operating income margin", alias="idx_nm"
     )
-    idx_val: str | None = Field(
+    indicator_value: str | None = Field(
         default=None,
         description="Indicator value. e.g. 0.256 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
+        alias="idx_val",
     )
 
 

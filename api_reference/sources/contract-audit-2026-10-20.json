@@ -1,0 +1,2386 @@
+{
+  "date": "2026-10-20",
+  "schemathesis": "4.32.0",
+  "seed": 20261020,
+  "initial_generated_examples_per_operation": 1,
+  "verification_generated_examples_per_operation": 2,
+  "operations_checked": 167,
+  "success_observed": 167,
+  "remaining_failures": 0,
+  "verification_operations": [
+    "GET /document.xml",
+    "GET /fnlttCmpnyIndx.json",
+    "GET /fnlttCmpnyIndx.xml",
+    "GET /fnlttMultiAcnt.json",
+    "GET /fnlttMultiAcnt.xml",
+    "GET /fnlttSinglIndx.json",
+    "GET /fnlttSinglIndx.xml",
+    "GET /fnlttXbrl.xml"
+  ],
+  "scope": "Bounded observed responses; not exhaustive filing, optional-field, or input coverage.",
+  "findings": [
+    {
+      "operations": [
+        "GET /corpCode.xml",
+        "GET /document.xml",
+        "GET /fnlttXbrl.xml"
+      ],
+      "observation": "ZIP success uses application/x-msdownload; archive structure and CRC validated. Corporation XML member validated."
+    },
+    {
+      "operations": [
+        "GET /fnlttXbrl.xml"
+      ],
+      "observation": "Omitting rcept_no returns HTTP 302 to /error.html, with no body or Content-Type; redirect was not followed."
+    },
+    {
+      "operations": "all",
+      "observation": "Missing crtfc_key returns HTTP 200 with application status 100."
+    },
+    {
+      "operations": [
+        "GET /fnlttCmpnyIndx.json",
+        "GET /fnlttCmpnyIndx.xml",
+        "GET /fnlttSinglIndx.json",
+        "GET /fnlttSinglIndx.xml"
+      ],
+      "observation": "The guide example for 2021 returns no data. Corporation 00126380, fiscal year 2023, annual report 11011, category M210000 returns a success envelope with list records."
+    }
+  ],
+  "operations": {
+    "GET /accnutAdtorNmNdAdtOpinion.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /accnutAdtorNmNdAdtOpinion.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /accnutAdtorNonAdtServcCnclsSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /accnutAdtorNonAdtServcCnclsSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /adtServcCnclsSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /adtServcCnclsSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /alotMatter.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /alotMatter.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /astInhtrfEtcPtbkOpt.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /astInhtrfEtcPtbkOpt.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /bdRs.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /bdRs.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /bdwtIsDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /bdwtIsDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /bnkMngtPcbg.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /bnkMngtPcbg.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /bnkMngtPcsp.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /bnkMngtPcsp.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /bsnInhDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /bsnInhDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /bsnSp.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /bsnSp.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /bsnTrfDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /bsnTrfDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /cmpDvDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /cmpDvDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /cmpDvmgDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /cmpDvmgDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /cmpMgDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /cmpMgDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /cndlCaplScritsNrdmpBlce.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /cndlCaplScritsNrdmpBlce.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /company.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /company.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /corpCode.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "100"
+      ],
+      "media_types": [
+        "application/x-msdownload",
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /cprndNrdmpBlce.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /cprndNrdmpBlce.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /crDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /crDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /ctrcvsBgrq.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /ctrcvsBgrq.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /cvbdIsDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /cvbdIsDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /detScritsIsuAcmslt.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /detScritsIsuAcmslt.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /dfOcr.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /dfOcr.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /document.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/x-msdownload",
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /drctrAdtAllMendngSttusGmtsckConfmAmount.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /drctrAdtAllMendngSttusGmtsckConfmAmount.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /drctrAdtAllMendngSttusMendngPymntamtTyCl.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /drctrAdtAllMendngSttusMendngPymntamtTyCl.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /dsRsOcr.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /dsRsOcr.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /dvRs.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /dvRs.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /elestock.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /elestock.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /empSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /empSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /entrprsBilScritsNrdmpBlce.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /entrprsBilScritsNrdmpBlce.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /estkRs.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /estkRs.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /exbdIsDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /exbdIsDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /exctvSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /exctvSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /extrRs.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /extrRs.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttCmpnyIndx.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttCmpnyIndx.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttMultiAcnt.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttMultiAcnt.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttSinglAcnt.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttSinglAcnt.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttSinglAcntAll.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttSinglAcntAll.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttSinglIndx.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttSinglIndx.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /fnlttXbrl.xml": {
+      "http_statuses": [
+        200,
+        302
+      ],
+      "application_statuses": [
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/x-msdownload",
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /fricDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /fricDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /hmvAuditAllSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /hmvAuditAllSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /hmvAuditIndvdlBySttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /hmvAuditIndvdlBySttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /hmvAuditIndvdlBySttusV2.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /hmvAuditIndvdlBySttusV2.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /hyslrChgSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /hyslrChgSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /hyslrSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /hyslrSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /indvdlByPay.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /indvdlByPay.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /indvdlByPayV2.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /indvdlByPayV2.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /irdsSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /irdsSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /list.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /list.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /lwstLg.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /lwstLg.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /majorstock.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /majorstock.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /mgRs.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /mgRs.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /mrhlSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /mrhlSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /newCaplScritsNrdmpBlce.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /newCaplScritsNrdmpBlce.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /otcprStkInvscrInhDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /otcprStkInvscrInhDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /otcprStkInvscrTrfDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /otcprStkInvscrTrfDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /otrCprInvstmntSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /otrCprInvstmntSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /outcmpnyDrctrNdChangeSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /outcmpnyDrctrNdChangeSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /ovDlst.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /ovDlst.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /ovDlstDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /ovDlstDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /ovLst.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /ovLst.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /ovLstDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /ovLstDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /pifricDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /pifricDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /piicDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /piicDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /prvsrpCptalUseDtls.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /prvsrpCptalUseDtls.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /pssrpCptalUseDtls.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /pssrpCptalUseDtls.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /srtpdPsndbtNrdmpBlce.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /srtpdPsndbtNrdmpBlce.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /stkExtrDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /stkExtrDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /stkdpRs.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /stkdpRs.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /stkrtbdInhDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /stkrtbdInhDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /stkrtbdTrfDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /stkrtbdTrfDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /stockTotqySttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /stockTotqySttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /tesstkAcqsDspsSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /tesstkAcqsDspsSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /tgastInhDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /tgastInhDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /tgastTrfDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /tgastTrfDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /tsstkAqDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /tsstkAqDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /tsstkAqTrctrCcDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /tsstkAqTrctrCcDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /tsstkAqTrctrCnsDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /tsstkAqTrctrCnsDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /tsstkDpDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /tsstkDpDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /unrstExctvMendngSttus.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /unrstExctvMendngSttus.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /wdCocobdIsDecsn.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /wdCocobdIsDecsn.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "013",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    },
+    "GET /xbrlTaxonomy.json": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "100"
+      ],
+      "media_types": [
+        "application/json"
+      ],
+      "success_observed": true
+    },
+    "GET /xbrlTaxonomy.xml": {
+      "http_statuses": [
+        200
+      ],
+      "application_statuses": [
+        "000",
+        "100"
+      ],
+      "media_types": [
+        "application/xml"
+      ],
+      "success_observed": true
+    }
+  }
+}

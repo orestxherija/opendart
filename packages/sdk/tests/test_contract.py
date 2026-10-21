@@ -1,5 +1,7 @@
 """Exercise every service against the checked-in contract's synthetic examples."""
 
+from __future__ import annotations
+
 import inspect
 import json
 import re
@@ -11,7 +13,8 @@ import httpx2
 import pytest
 import yaml
 
-from opendart import OpenDart
+from opendart import OpenDart, models
+from opendart.models.disclosures import ListRequest, ListResponse
 
 REFERENCE = Path(__file__).resolve().parents[3] / "api_reference"
 
@@ -137,5 +140,43 @@ async def test_contract(settings, group, name, route, params, body):
     async with OpenDart(settings, transport=transport) as client:
         method = getattr(getattr(client, group), name)
         assert inspect.iscoroutinefunction(method)
-        check_result(await method(**params), body)
+        stem = route.split(".")[0][1:]
+        request_model = getattr(models, stem[0].upper() + stem[1:] + "Request")
+        python_names = {
+            field.alias or name: name for name, field in request_model.model_fields.items()
+        }
+        kwargs = {python_names[wire_name]: value for wire_name, value in params.items()}
+        check_result(await method(**kwargs), body)
     assert client.is_closed
+
+
+def test_readable_disclosure_fields_preserve_upstream_names():
+    """Keep readable Python fields and the original OpenDART wire contract."""
+    request = ListRequest(disclosure_category="A", disclosure_subcategory="A001")
+    assert request.model_dump(exclude_none=True) == {
+        "disclosure_category": "A",
+        "disclosure_subcategory": "A001",
+    }
+    assert request.query() == {"pblntf_ty": "A", "pblntf_detail_ty": "A001"}
+
+    response = ListResponse.model_validate(
+        {
+            "status": "000",
+            "message": "OK",
+            "list": [{"rcept_no": "20250101000001", "corp_name": "Example", "report_nm": "Report"}],
+        }
+    )
+    filing = response.list[0]
+    assert filing.filing_number == "20250101000001"
+    assert filing.corporation_name == "Example"
+    assert filing.report_title == "Report"
+    assert filing.model_dump(exclude_none=True) == {
+        "filing_number": "20250101000001",
+        "corporation_name": "Example",
+        "report_title": "Report",
+    }
+    assert filing.model_dump(exclude_none=True, by_alias=True) == {
+        "rcept_no": "20250101000001",
+        "corp_name": "Example",
+        "report_nm": "Report",
+    }

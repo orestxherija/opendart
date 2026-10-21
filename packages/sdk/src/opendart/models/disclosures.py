@@ -15,23 +15,24 @@ class ListRequest(RequestModel):
     """Query parameters for Search disclosures.
 
     Args:
-        corp_code (str | None): Corporation code of disclosing company (8 digits) ※ See: Guide for
-            Developers > Disclosure Information > Corporation code. None omits this parameter.
-        bgn_de (str | None): Filing date when search starts (YYYYMMDD) 1) Default value: End date
-            (end_de) 2) If no corporation code (corp_code), search period is limited to three
-            months. None omits this parameter.
-        end_de (str | None): Filing date when search ends (YYYYMMDD) ※ No date selected: search by
-            current date. None omits this parameter.
-        last_reprt_at (str | None): Whether to search only final reports (Y or N) 1) Default: N (N
-            selected: search all reports, including amended reports). Allowed values: 'Y', 'N'. None
-            omits this parameter. The upstream default is 'N'.
-        pblntf_ty (str | None): A: Periodic Disclosure B: Report on Major Issues C: Issuance
-            Disclosure D: Equity Disclosure E: Other Disclosure F: Related to External Audits G:
-            Fund Disclosure H: Asset-Backed Securitization I: Exchange Disclosure J: Fair Trade
-            Commission Disclosure. Allowed values: 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'.
-            None omits this parameter.
-        pblntf_detail_ty (str | None): Detailed disclosure category. A001: Annual Report; A002:
-            Semi-annual Report; A003: Quarterly Report; A004: Financial Report of Registered
+        corporation_code (str | None): Corporation code of disclosing company (8 digits) ※ See:
+            Guide for Developers > Disclosure Information > Corporation code. None omits this
+            parameter.
+        filing_start_date (str | None): Filing date when search starts (YYYYMMDD) 1) Default value:
+            End date (end_de) 2) If no corporation code (corp_code), search period is limited to
+            three months. None omits this parameter.
+        filing_end_date (str | None): Filing date when search ends (YYYYMMDD) ※ No date selected:
+            search by current date. None omits this parameter.
+        final_reports_only (str | None): Whether to search only final reports (Y or N) 1) Default: N
+            (N selected: search all reports, including amended reports). Allowed values: 'Y', 'N'.
+            None omits this parameter. The upstream default is 'N'.
+        disclosure_category (str | None): A: Periodic Disclosure B: Report on Major Issues C:
+            Issuance Disclosure D: Equity Disclosure E: Other Disclosure F: Related to External
+            Audits G: Fund Disclosure H: Asset-Backed Securitization I: Exchange Disclosure J: Fair
+            Trade Commission Disclosure. Allowed values: 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+            'I', 'J'. None omits this parameter.
+        disclosure_subcategory (str | None): Detailed disclosure category. A001: Annual Report;
+            A002: Semi-annual Report; A003: Quarterly Report; A004: Financial Report of Registered
             Corporation (Pre-Capital Markets Act); A005: Financial Report of Small-Scale Public
             Offering Corporation; B001: Report on Major Issues; B002: Report on Material Business
             Matters (Pre-Capital Markets Act); B003: Report on Transactions with Largest
@@ -72,17 +73,17 @@ class ListRequest(RequestModel):
             'F005', 'G001', 'G002', 'G003', 'H001', 'H002', 'H003', 'H004', 'H005', 'H006', 'I001',
             'I002', 'I003', 'I004', 'I005', 'I006', 'J001', 'J002', 'J004', 'J005', 'J006', 'J008',
             'J009'. None omits this parameter.
-        corp_cls (str | None): Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other) ※ View
-            all if no type, cannot enter multiple filters. Allowed values: 'Y', 'K', 'N', 'E'. None
-            omits this parameter.
-        sort (str | None): Filing date: date Company name: crp Report name: rpt ※ Default value:
+        corporation_type (str | None): Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)
+            ※ View all if no type, cannot enter multiple filters. Allowed values: 'Y', 'K', 'N',
+            'E'. None omits this parameter.
+        sort_by (str | None): Filing date: date Company name: crp Report name: rpt ※ Default value:
             date. Allowed values: 'date', 'crp', 'rpt'. None omits this parameter. The upstream
             default is 'date'.
-        sort_mth (str | None): Ascending (asc), descending(desc) ※ Default value: desc. Allowed
+        sort_order (str | None): Ascending (asc), descending(desc) ※ Default value: desc. Allowed
             values: 'asc', 'desc'. None omits this parameter. The upstream default is 'desc'.
-        page_no (int | None): Page No. (1~n) default value: 1 Serialized as decimal digits in the
-            query string. None omits this parameter. The upstream default is 1.
-        page_count (int | None): Results per page (1~100) Default value: 10, Max value: 100
+        page_number (int | None): Page No. (1~n) default value: 1 Serialized as decimal digits in
+            the query string. None omits this parameter. The upstream default is 1.
+        page_size (int | None): Results per page (1~100) Default value: 10, Max value: 100
             Serialized as decimal digits in the query string. None omits this parameter. The
             upstream default is 10.
 
@@ -90,29 +91,38 @@ class ListRequest(RequestModel):
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] | None = (
-        Field(
-            default=None,
-            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation code",
-        )
+    corporation_code: (
+        Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] | None
+    ) = Field(
+        default=None,
+        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation code",
+        alias="corp_code",
     )
-    bgn_de: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] | None = Field(
+    filing_start_date: (
+        Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] | None
+    ) = Field(
         default=None,
         description="Filing date when search starts (YYYYMMDD) 1) Default value: End date (end_de) 2) If no corporation code (corp_code), search period is limited to three months.",
+        alias="bgn_de",
     )
-    end_de: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] | None = Field(
+    filing_end_date: (
+        Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] | None
+    ) = Field(
         default=None,
         description="Filing date when search ends (YYYYMMDD) ※ No date selected: search by current date.",
+        alias="end_de",
     )
-    last_reprt_at: Literal["Y", "N"] | None = Field(
+    final_reports_only: Literal["Y", "N"] | None = Field(
         default=None,
         description="Whether to search only final reports (Y or N) 1) Default: N (N selected: search all reports, including amended reports)",
+        alias="last_reprt_at",
     )
-    pblntf_ty: Literal["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"] | None = Field(
+    disclosure_category: Literal["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"] | None = Field(
         default=None,
         description="A: Periodic Disclosure B: Report on Major Issues C: Issuance Disclosure D: Equity Disclosure E: Other Disclosure F: Related to External Audits G: Fund Disclosure H: Asset-Backed Securitization I: Exchange Disclosure J: Fair Trade Commission Disclosure",
+        alias="pblntf_ty",
     )
-    pblntf_detail_ty: (
+    disclosure_subcategory: (
         Literal[
             "A001",
             "A002",
@@ -180,25 +190,32 @@ class ListRequest(RequestModel):
     ) = Field(
         default=None,
         description="Detailed disclosure category. A001: Annual Report; A002: Semi-annual Report; A003: Quarterly Report; A004: Financial Report of Registered Corporation (Pre-Capital Markets Act); A005: Financial Report of Small-Scale Public Offering Corporation; B001: Report on Major Issues; B002: Report on Material Business Matters (Pre-Capital Markets Act); B003: Report on Transactions with Largest Shareholder, etc. (Pre-Capital Markets Act); C001: Securities Report (Equity Securities); C002: Securities Report (Debt Securities); C003: Securities Report (Derivative-Linked Securities); C004: Securities Report (Merger, etc.); C005: Securities Report (Other); C006: Small-Scale Public Offering (Equity Securities); C007: Small-Scale Public Offering (Debt Securities); C008: Small-Scale Public Offering (Derivative-Linked Securities); C009: Small-Scale Public Offering (Merger, etc.); C010: Small-Scale Public Offering (Other); C011: Small-Scale Over-the-Counter Sales; D001: Report on Significant Holdings of Stocks, etc.; D002: Report on Specific Securities Owned by Executives and Major Shareholders; D003: Proxy Solicitation; D004: Tender Offer; D005: Report on trading plans of executives and major shareholders for specific securities; E001: Acquisition/Disposal of Treasury Stock; E002: Entering/Termination of Trust Contracts; E003: Report on Conclusion of Merger, etc.; E004: Report on Granting Stock Options; E005: Report on Independent Directors; E006: Report on Calling Shareholders' Meeting; E007: Market Making / Stabilizing Operation; E008: Report of Merger, etc. (Pre-Capital Markets Act); E009: FSC Registration / Cancellation (Pre-Capital Markets Act); E010: Covered Bonds Issuance Plan; F001: Audit Report; F002: Consolidated Audit Report; F003: Combined Audit Report; F004: Accounting Firm Annual Report; F005: Report on Non-submission of Financial Statements before Audit; G001: Securities Report (Collective Investment Securities – Trust Type); G002: Securities Report (Collective Investment Securities – Corporate Type); G003: Securities Report (Collective Investment Securities – Merger); H001: Asset Securitization Plan / Transfer Registration; H002: Annual/ Semi-annual / Quarterly Reports; H003: Securities Report (Asset-Backed Securities, etc.); H004: Claim-Backed Securitization Plan / Transfer Registration; H005: Report on Material Matters Related to Asset Securitization; H006: Report on Major Issues; I001: Ad Hoc Disclosure; I002: Fair Disclosure; I003: Market Measures / Guide; I004: Equity Disclosure; I005: Securities Investment Company; I006: Bond Disclosure; J001: Related to Large-Scale Internal Transaction; J002: Related to Large-Scale Internal Transaction (Former); J004: Business Group Status Disclosure; J005: Disclosure of Material Facts Related to the Unlisted Company; J006: Other Fair Trade Commission Disclosures; J008: Related to Large-Scale Internal Transaction (for Nonprofits); J009: Disclosure of Subcontracting Payment Terms",
+        alias="pblntf_detail_ty",
     )
-    corp_cls: Literal["Y", "K", "N", "E"] | None = Field(
+    corporation_type: Literal["Y", "K", "N", "E"] | None = Field(
         default=None,
         description="Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other) ※ View all if no type, cannot enter multiple filters",
+        alias="corp_cls",
     )
-    sort: Literal["date", "crp", "rpt"] | None = Field(
+    sort_by: Literal["date", "crp", "rpt"] | None = Field(
         default=None,
         description="Filing date: date Company name: crp Report name: rpt ※ Default value: date",
+        alias="sort",
     )
-    sort_mth: Literal["asc", "desc"] | None = Field(
-        default=None, description="Ascending (asc), descending(desc) ※ Default value: desc"
+    sort_order: Literal["asc", "desc"] | None = Field(
+        default=None,
+        description="Ascending (asc), descending(desc) ※ Default value: desc",
+        alias="sort_mth",
     )
-    page_no: Annotated[int, Field(ge=1)] | None = Field(
+    page_number: Annotated[int, Field(ge=1)] | None = Field(
         default=None,
         description="Page No. (1~n) default value: 1 Serialized as decimal digits in the query string.",
+        alias="page_no",
     )
-    page_count: Annotated[int, Field(ge=1, le=100)] | None = Field(
+    page_size: Annotated[int, Field(ge=1, le=100)] | None = Field(
         default=None,
         description="Results per page (1~100) Default value: 10, Max value: 100 Serialized as decimal digits in the query string.",
+        alias="page_count",
     )
 
 
@@ -206,15 +223,18 @@ class CompanyRequest(RequestModel):
     """Query parameters for Overview of corporate status.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation code.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation code",
+            alias="corp_code",
+        )
     )
 
 
@@ -222,37 +242,37 @@ class DocumentRequest(RequestModel):
     """Query parameters for Original disclosure document file.
 
     Args:
-        rcept_no (str): Filing No.
+        filing_number (str): Filing No.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    rcept_no: Annotated[str, Field(min_length=14, max_length=14, pattern="^[0-9]{14}$")] = Field(
-        description="Filing No."
+    filing_number: Annotated[str, Field(min_length=14, max_length=14, pattern="^[0-9]{14}$")] = (
+        Field(description="Filing No.", alias="rcept_no")
     )
 
 
 class CorpCodeRequest(RequestModel):
     """Query parameters for Corporation code."""
 
-    pass
-
 
 class ListResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_name (str | None): Item name (corporation name). The item name (listed company) or
-            corporation name (other corporation) of the corporation subject to disclosure. Defaults
-            to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of the corporation subject to
-            disclosure (8 digits). Defaults to None when absent.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_name (str | None): Item name (corporation name). The item name (listed company)
+            or corporation name (other corporation) of the corporation subject to disclosure.
+            Defaults to None when absent. Serialized under the upstream name 'corp_name'.
+        corporation_code (str | None): Corporation code. Corporation code of the corporation subject
+            to disclosure (8 digits). Defaults to None when absent. Serialized under the upstream
+            name 'corp_code'.
         stock_code (str | None): Item code. Listed corporation’s item code (6 digits). Defaults to
             None when absent.
-        report_nm (str | None): Report title. Disclosure type + report name + other information
+        report_title (str | None): Report title. Disclosure type + report name + other information
             [Revision of statements]: A report previously submitted under this title was corrected
             in its descriptions and re-submitted. [Corrected attachment]: A report previously
             submitted under this title was re-submitted when the substance of at least one
@@ -265,13 +285,15 @@ class ListResponseListItem(ResponseModel):
             upon the finalization of the conditions for issuing marketable securities. [Correction
             order imposed]: The Financial Supervisory Service issued a correction order on this
             report. [Requested submission of correction]: The Financial Supervisory Service imposed
-            a request for a correction on this report. Defaults to None when absent.
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+            a request for a correction on this report. Defaults to None when absent. Serialized
+            under the upstream name 'report_nm'.
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        flr_nm (str | None): Disclosure submitter name. Defaults to None when absent.
-        rcept_dt (str | None): Filing date. Disclosure filing date (YYYYMMDD). Defaults to None when
-            absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        submitter_name (str | None): Disclosure submitter name. Defaults to None when absent.
+            Serialized under the upstream name 'flr_nm'.
+        filing_date (str | None): Filing date. Disclosure filing date (YYYYMMDD). Defaults to None
+            when absent. Serialized under the upstream name 'rcept_dt'.
         rm (str | None): Note. The individual letters in the combinations have the following
             meanings: S: This disclosure is under the authority of the KOSPI Market Division of the
             Korea Exchange. K: This disclosure is under the authority of the KOSDAQ Market Division
@@ -287,32 +309,39 @@ class ListResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_name: str | None = Field(
+    corporation_name: str | None = Field(
         default=None,
         description="Item name (corporation name). The item name (listed company) or corporation name (other corporation) of the corporation subject to disclosure",
+        alias="corp_name",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of the corporation subject to disclosure (8 digits)",
+        alias="corp_code",
     )
     stock_code: str | None = Field(
         default=None, description="Item code. Listed corporation’s item code (6 digits)"
     )
-    report_nm: str | None = Field(
+    report_title: str | None = Field(
         default=None,
         description="Report title. Disclosure type + report name + other information [Revision of statements]: A report previously submitted under this title was corrected in its descriptions and re-submitted. [Corrected attachment]: A report previously submitted under this title was re-submitted when the substance of at least one attachment was modified. [Added attachment]: A report previously submitted under this title was re-submitted when one or more attachment was added. [Modified registration]: A report previously submitted under this title was re-submitted when its asset securitization was modified. [Decision to extend]: A report previously submitted under this title was re-submitted since the trust contract was extended. [Conditions for issuance finalized]: A report previously submitted under this title was re-submitted upon the finalization of the conditions for issuing marketable securities. [Correction order imposed]: The Financial Supervisory Service issued a correction order on this report. [Requested submission of correction]: The Financial Supervisory Service imposed a request for a correction on this report.",
+        alias="report_nm",
     )
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    flr_nm: str | None = Field(default=None, description="Disclosure submitter name")
-    rcept_dt: str | None = Field(
-        default=None, description="Filing date. Disclosure filing date (YYYYMMDD)"
+    submitter_name: str | None = Field(
+        default=None, description="Disclosure submitter name", alias="flr_nm"
+    )
+    filing_date: str | None = Field(
+        default=None, description="Filing date. Disclosure filing date (YYYYMMDD)", alias="rcept_dt"
     )
     rm: str | None = Field(
         default=None,
@@ -330,8 +359,10 @@ class ListResponse(ResponseModel):
     Attributes:
         status (str): Successful application status. Allowed values: '000'.
         message (str): Error and information message. (※ See message description).
-        page_no (int | None): Page No. Defaults to None when absent.
-        page_count (int | None): Results per page. Defaults to None when absent.
+        page_number (int | None): Page No. Defaults to None when absent. Serialized under the
+            upstream name 'page_no'.
+        page_size (int | None): Results per page. Defaults to None when absent. Serialized under the
+            upstream name 'page_count'.
         total_count (int | None): Total results. Defaults to None when absent.
         total_page (int | None): Total pages. Defaults to None when absent.
         list (list[ListResponseListItem] | None): Repeated list records. Defaults to None when
@@ -343,9 +374,11 @@ class ListResponse(ResponseModel):
 
     status: Literal["000"] = Field(description="Successful application status.")
     message: str = Field(description="Error and information message. (※ See message description)")
-    page_no: Annotated[int, Field(ge=0)] | None = Field(default=None, description="Page No.")
-    page_count: Annotated[int, Field(ge=0)] | None = Field(
-        default=None, description="Results per page"
+    page_number: Annotated[int, Field(ge=0)] | None = Field(
+        default=None, description="Page No.", alias="page_no"
+    )
+    page_size: Annotated[int, Field(ge=0)] | None = Field(
+        default=None, description="Results per page", alias="page_count"
     )
     total_count: Annotated[int, Field(ge=0)] | None = Field(
         default=None, description="Total results"
@@ -366,7 +399,8 @@ class CompanyResponse(ResponseModel):
     Attributes:
         status (str): Successful application status. Allowed values: '000'.
         message (str): Error and information message. (※ See message description).
-        corp_name (str | None): Formal name. Formal corporate name. Defaults to None when absent.
+        corporation_name (str | None): Formal name. Formal corporate name. Defaults to None when
+            absent. Serialized under the upstream name 'corp_name'.
         corp_name_eng (str | None): English name. English formal corporate name. Defaults to None
             when absent.
         stock_name (str | None): Item name (listed corporation) or abbreviated name (other
@@ -374,8 +408,9 @@ class CompanyResponse(ResponseModel):
         stock_code (str | None): If a listed corporation, stock item code. Listed corporation’s item
             code (6 digits). Defaults to None when absent.
         ceo_nm (str | None): Representative name. Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
         jurir_no (str | None): Corporate registration No. Defaults to None when absent.
         bizr_no (str | None): Business registration No. Defaults to None when absent.
         adres (str | None): Address. Defaults to None when absent.
@@ -393,7 +428,9 @@ class CompanyResponse(ResponseModel):
 
     status: Literal["000"] = Field(description="Successful application status.")
     message: str = Field(description="Error and information message. (※ See message description)")
-    corp_name: str | None = Field(default=None, description="Formal name. Formal corporate name")
+    corporation_name: str | None = Field(
+        default=None, description="Formal name. Formal corporate name", alias="corp_name"
+    )
     corp_name_eng: str | None = Field(
         default=None, description="English name. English formal corporate name"
     )
@@ -406,9 +443,10 @@ class CompanyResponse(ResponseModel):
         description="If a listed corporation, stock item code. Listed corporation’s item code (6 digits)",
     )
     ceo_nm: str | None = Field(default=None, description="Representative name")
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
     jurir_no: str | None = Field(default=None, description="Corporate registration No.")
     bizr_no: str | None = Field(default=None, description="Business registration No.")

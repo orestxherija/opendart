@@ -15,15 +15,18 @@ class ElestockRequest(RequestModel):
     """Query parameters for Report of executives and major shareholders’ ownership.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
 
 
@@ -31,15 +34,18 @@ class MajorstockRequest(RequestModel):
     """Query parameters for Report of significant holding status.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
 
 
@@ -47,14 +53,15 @@ class ElestockResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        rcept_dt (str | None): Filing Date. Disclosure filing date (YYYYMMDD). Defaults to None when
-            absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        filing_date (str | None): Filing Date. Disclosure filing date (YYYYMMDD). Defaults to None
+            when absent. Serialized under the upstream name 'rcept_dt'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         repror (str | None): Reporting entity name. Defaults to None when absent.
         isu_exctv_rgist_at (str | None): Executive related to the issuing company (whether
             registered). Registered executive, unregistered executive, etc. Defaults to None when
@@ -78,18 +85,22 @@ class ElestockResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    rcept_dt: str | None = Field(
-        default=None, description="Filing Date. Disclosure filing date (YYYYMMDD)"
+    filing_date: str | None = Field(
+        default=None, description="Filing Date. Disclosure filing date (YYYYMMDD)", alias="rcept_dt"
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     repror: str | None = Field(default=None, description="Reporting entity name")
     isu_exctv_rgist_at: str | None = Field(
         default=None,
@@ -148,15 +159,16 @@ class MajorstockResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        rcept_dt (str | None): Filing Date. Disclosure filing date (YYYYMMDD). Defaults to None when
-            absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. The item name (listed company) or corporation name
-            (other corporation) of disclosing company. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        filing_date (str | None): Filing Date. Disclosure filing date (YYYYMMDD). Defaults to None
+            when absent. Serialized under the upstream name 'rcept_dt'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. The item name (listed company) or
+            corporation name (other corporation) of disclosing company. Defaults to None when
+            absent. Serialized under the upstream name 'corp_name'.
         report_tp (str | None): Report type. Significant holdings of stocks, etc. report type.
             Defaults to None when absent.
         repror (str | None): Lead reporting entity. Defaults to None when absent.
@@ -175,20 +187,23 @@ class MajorstockResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    rcept_dt: str | None = Field(
-        default=None, description="Filing Date. Disclosure filing date (YYYYMMDD)"
+    filing_date: str | None = Field(
+        default=None, description="Filing Date. Disclosure filing date (YYYYMMDD)", alias="rcept_dt"
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(
+    corporation_name: str | None = Field(
         default=None,
         description="Corporation name. The item name (listed company) or corporation name (other corporation) of disclosing company",
+        alias="corp_name",
     )
     report_tp: str | None = Field(
         default=None, description="Report type. Significant holdings of stocks, etc. report type"

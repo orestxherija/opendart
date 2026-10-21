@@ -41,20 +41,21 @@ class SecuritiesRegistration:
     async def estk_rs(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> EstkRsResponse:
         """Equity Securities (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE006&apiId=AE00078
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             EstkRsResponse: Validated successful response with the upstream field values.
@@ -69,26 +70,31 @@ class SecuritiesRegistration:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = EstkRsRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = EstkRsRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/estkRs.json", request, EstkRsResponse)
 
     async def bd_rs(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> BdRsResponse:
         """Debt Securities (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE006&apiId=AE00079
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             BdRsResponse: Validated successful response with the upstream field values.
@@ -103,26 +109,31 @@ class SecuritiesRegistration:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = BdRsRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = BdRsRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/bdRs.json", request, BdRsResponse)
 
     async def stkdp_rs(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> StkdpRsResponse:
         """Depositary Receipts (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE006&apiId=AE00080
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             StkdpRsResponse: Validated successful response with the upstream field values.
@@ -137,26 +148,31 @@ class SecuritiesRegistration:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = StkdpRsRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = StkdpRsRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/stkdpRs.json", request, StkdpRsResponse)
 
     async def mg_rs(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> MgRsResponse:
         """Merger (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE006&apiId=AE00081
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             MgRsResponse: Validated successful response with the upstream field values.
@@ -171,26 +187,31 @@ class SecuritiesRegistration:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = MgRsRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = MgRsRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/mgRs.json", request, MgRsResponse)
 
     async def extr_rs(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> ExtrRsResponse:
         """All-inclusive swap or transfer of stocks (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE006&apiId=AE00082
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             ExtrRsResponse: Validated successful response with the upstream field values.
@@ -205,26 +226,31 @@ class SecuritiesRegistration:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = ExtrRsRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = ExtrRsRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/extrRs.json", request, ExtrRsResponse)
 
     async def dv_rs(
         self,
         *,
-        corp_code: str,
-        bgn_de: str,
-        end_de: str,
+        corporation_code: str,
+        filing_start_date: str,
+        filing_end_date: str,
     ) -> DvRsResponse:
         """Split (JSON).
 
         Official guide: https://engopendart.fss.or.kr/guide/detail.do?apiGrpCd=DE006&apiId=AE00083
 
         Args:
-            corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
-                Developers > Disclosure Information > Corporation Code.
-            bgn_de (str): Filing date when search starts (YYYYMMDD) ※ Information provided since
-                2015.
-            end_de (str): Filing date when search ends (YYYYMMDD) ※ Information provided since 2015.
+            corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide
+                for Developers > Disclosure Information > Corporation Code.
+            filing_start_date (str): Filing date when search starts (YYYYMMDD) ※ Information
+                provided since 2015.
+            filing_end_date (str): Filing date when search ends (YYYYMMDD) ※ Information provided
+                since 2015.
 
         Returns:
             DvRsResponse: Validated successful response with the upstream field values.
@@ -239,5 +265,9 @@ class SecuritiesRegistration:
             ContractError: The HTTP status, content encoding, or response body is unexpected.
             RuntimeError: The parent SDK client has already been closed.
         """
-        request = DvRsRequest(corp_code=corp_code, bgn_de=bgn_de, end_de=end_de)
+        request = DvRsRequest(
+            corporation_code=corporation_code,
+            filing_start_date=filing_start_date,
+            filing_end_date=filing_end_date,
+        )
         return await self._client.request("/dvRs.json", request, DvRsResponse)

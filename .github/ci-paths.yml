@@ -1,0 +1,52 @@
+# Changes to shared tooling affect every component. Keep this list in one place.
+shared: &shared
+  - 'pyproject.toml'
+  - 'uv.toml'
+  - 'ruff.toml'
+  - 'prek.toml'
+  - 'uv.lock'
+  - '.python-version'
+  - '.github/ci-paths.yml'
+  - '.github/workflows/ci.yml'
+  - '.github/actions/**'
+
+sdk:
+  - *shared
+  - '.github/workflows/sdk.yml'
+  - 'codecov.yml'
+  - 'packages/sdk/**'
+  - 'scripts/generate_sdk.py'
+  # These files define or generate the contract consumed by the SDK.
+  - 'api_reference/openapi.yaml'
+  - 'api_reference/parameters.yaml'
+  - 'api_reference/examples.yaml'
+  - 'api_reference/paths/**'
+  - 'api_reference/schemas/**'
+  - 'api_reference/sources/**'
+  - 'scripts/api_reference/build.py'
+  - 'scripts/api_reference/snapshot.py'
+
+mcp:
+  - *shared
+  - '.dockerignore'
+  - '.hadolint.yaml'
+  - '.github/workflows/mcp.yml'
+  - '.github/workflows/mcp-container.yml'
+  - '.github/workflows/mcp-security.yml'
+  - 'packages/mcp/**'
+  - 'scripts/check_mcp.py'
+  - 'scripts/check_mcp_runtime.py'
+  # MCP installs the SDK; changes to SDK tests or its generator alone do not
+  # change the installed package.
+  - 'packages/sdk/src/**'
+  - 'packages/sdk/pyproject.toml'
+  - 'packages/sdk/README.md'
+
+reference:
+  - *shared
+  - '.github/workflows/pages.yml'
+  - '.github/workflows/contracts.yml'
+  - 'api_reference/**'
+  - 'scripts/api_reference/**'
+  - 'tests/__init__.py'
+  - 'tests/contracts/**'

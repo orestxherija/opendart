@@ -15,28 +15,33 @@ class StockTotqySttusRequest(RequestModel):
     """Query parameters for Status of total stock number.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -44,25 +49,29 @@ class TesstkAcqsDspsSttusRequest(RequestModel):
     """Query parameters for Information on treasury stock acquisition and disposal.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -70,25 +79,29 @@ class AlotMatterRequest(RequestModel):
     """Query parameters for Matters related to dividends.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -96,25 +109,29 @@ class IrdsSttusRequest(RequestModel):
     """Query parameters for Status of capital increase (reduction).
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -122,28 +139,33 @@ class DetScritsIsuAcmsltRequest(RequestModel):
     """Query parameters for Debt securities issuance performance.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -151,28 +173,33 @@ class EntrprsBilScritsNrdmpBlceRequest(RequestModel):
     """Query parameters for Outstanding balance on commercial paper securities.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -180,28 +207,33 @@ class SrtpdPsndbtNrdmpBlceRequest(RequestModel):
     """Query parameters for Outstanding balance on short-term bonds.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -209,28 +241,33 @@ class CprndNrdmpBlceRequest(RequestModel):
     """Query parameters for Outstanding balance on corporate bonds.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -238,28 +275,33 @@ class NewCaplScritsNrdmpBlceRequest(RequestModel):
     """Query parameters for Outstanding balance on hybrid bonds.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -267,28 +309,33 @@ class CndlCaplScritsNrdmpBlceRequest(RequestModel):
     """Query parameters for Outstanding balance on contingent capital securities.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -296,28 +343,33 @@ class PssrpCptalUseDtlsRequest(RequestModel):
     """Query parameters for Details of public offering fund usage.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -325,28 +377,33 @@ class PrvsrpCptalUseDtlsRequest(RequestModel):
     """Query parameters for Details of private placement fund usage.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -354,28 +411,33 @@ class AccnutAdtorNmNdAdtOpinionRequest(RequestModel):
     """Query parameters for Name of external auditor and audit opinion.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -383,28 +445,33 @@ class AdtServcCnclsSttusRequest(RequestModel):
     """Query parameters for Information on audit service contract entered.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -412,28 +479,33 @@ class AccnutAdtorNonAdtServcCnclsSttusRequest(RequestModel):
     """Query parameters for Information on non-audit service contracts entered with external auditor.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -441,28 +513,33 @@ class OutcmpnyDrctrNdChangeSttusRequest(RequestModel):
     """Query parameters for Independent(outside) directors and changes.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -470,24 +547,28 @@ class HyslrSttusRequest(RequestModel):
     """Query parameters for Information on largest shareholder.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report Semi-annual Report Third Quarterly Report Annual
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report Semi-annual Report Third Quarterly Report Annual
             Report. Allowed values: '11013', '11012', '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report Semi-annual Report Third Quarterly Report Annual Report"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report Semi-annual Report Third Quarterly Report Annual Report",
+        alias="reprt_code",
     )
 
 
@@ -495,25 +576,29 @@ class HyslrChgSttusRequest(RequestModel):
     """Query parameters for Changes of the largest shareholder.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -521,25 +606,29 @@ class MrhlSttusRequest(RequestModel):
     """Query parameters for Information on minority shareholders.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code".
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015".
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015".
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description='Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"'
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description='Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"',
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description='Fiscal year (4 digits) ※ Information provided since 2015"'
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description='Fiscal year (4 digits) ※ Information provided since 2015"', alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -547,25 +636,29 @@ class ExctvSttusRequest(RequestModel):
     """Query parameters for Status of executives.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -573,25 +666,29 @@ class EmpSttusRequest(RequestModel):
     """Query parameters for Status of staff.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -599,28 +696,33 @@ class UnrstExctvMendngSttusRequest(RequestModel):
     """Query parameters for Remuneration for unregistered executives.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -628,28 +730,33 @@ class DrctrAdtAllMendngSttusGmtsckConfmAmountRequest(RequestModel):
     """Query parameters for Remuneration for all directors and auditors (amount approved by the general shareholders' meeting).
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -657,25 +764,29 @@ class HmvAuditAllSttusRequest(RequestModel):
     """Query parameters for Remuneration for all directors and auditors.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -683,28 +794,33 @@ class DrctrAdtAllMendngSttusMendngPymntamtTyClRequest(RequestModel):
     """Query parameters for Remuneration for all directors and auditors (remuneration paid - by type).
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015 Documentation
             conflict: the type column says STRING(1); the field definition and public examples
             identify a 4-digit value. This consumer specification follows that definition and those
             examples.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples."
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015 Documentation conflict: the type column says STRING(1); the field definition and public examples identify a 4-digit value. This consumer specification follows that definition and those examples.",
+        alias="bsns_year",
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -712,25 +828,29 @@ class HmvAuditIndvdlBySttusRequest(RequestModel):
     """Query parameters for Remuneration for individual directors and auditors.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -738,25 +858,29 @@ class HmvAuditIndvdlBySttusV2Request(RequestModel):
     """Query parameters for Remuneration for individual directors and auditors (Ver 2.0).
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -764,25 +888,29 @@ class IndvdlByPayRequest(RequestModel):
     """Query parameters for Individual remuneration amounts (top 5 over KRW 500 million).
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -790,25 +918,29 @@ class IndvdlByPayV2Request(RequestModel):
     """Query parameters for Individual remuneration amounts (top 5 over KRW 500 million) (Ver 2.0).
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -816,25 +948,29 @@ class OtrCprInvstmntSttusRequest(RequestModel):
     """Query parameters for Investment in other corporations.
 
     Args:
-        corp_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
+        corporation_code (str): Corporation code of disclosing company (8 digits) ※ See: Guide for
             Developers > Disclosure Information > Corporation Code.
-        bsns_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
-        reprt_code (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly
-            Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012', '11014',
-            '11011'.
+        fiscal_year (str): Fiscal year (4 digits) ※ Information provided since 2015.
+        report_period (str): First Quarterly Report : 11013 Semi-annual Report : 11012 Third
+            Quarterly Report : 11014 Annual Report : 11011. Allowed values: '11013', '11012',
+            '11014', '11011'.
 
     Raises:
         pydantic.ValidationError: A field violates its type or query constraints.
     """
 
-    corp_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = Field(
-        description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code"
+    corporation_code: Annotated[str, Field(min_length=8, max_length=8, pattern="^[0-9]{8}$")] = (
+        Field(
+            description="Corporation code of disclosing company (8 digits) ※ See: Guide for Developers > Disclosure Information > Corporation Code",
+            alias="corp_code",
+        )
     )
-    bsns_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
-        description="Fiscal year (4 digits) ※ Information provided since 2015"
+    fiscal_year: Annotated[str, Field(min_length=4, max_length=4, pattern="^[0-9]{4}$")] = Field(
+        description="Fiscal year (4 digits) ※ Information provided since 2015", alias="bsns_year"
     )
-    reprt_code: Literal["11013", "11012", "11014", "11011"] = Field(
-        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011"
+    report_period: Literal["11013", "11012", "11014", "11011"] = Field(
+        description="First Quarterly Report : 11013 Semi-annual Report : 11012 Third Quarterly Report : 11014 Annual Report : 11011",
+        alias="reprt_code",
     )
 
 
@@ -842,14 +978,16 @@ class StockTotqySttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         se (str | None): Type of Shares. Type of Shares (securities class, total, note). Defaults to
             None when absent.
         isu_stock_totqy (str | None): Total number of shares to be issued. Ⅰ. Total number of shares
@@ -877,19 +1015,24 @@ class StockTotqySttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     se: str | None = Field(
         default=None, description="Type of Shares. Type of Shares (securities class, total, note)"
     )
@@ -960,14 +1103,16 @@ class TesstkAcqsDspsSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         acqs_mth1 (str | None): Level 1 Methods of acquisition. Acquisition within profits available
             for dividends, other acquisition, total, etc. Defaults to None when absent.
         acqs_mth2 (str | None): Level 2 Methods of acquisition. Direct acquisition, acquisition by
@@ -998,19 +1143,24 @@ class TesstkAcqsDspsSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     acqs_mth1: str | None = Field(
         default=None,
         description="Level 1 Methods of acquisition. Acquisition within profits available for dividends, other acquisition, total, etc.",
@@ -1078,14 +1228,16 @@ class AlotMatterResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         se (str | None): Category. Paid-in capital increase (shareholder allocation), exercise of
             conversion rights, etc. Defaults to None when absent.
         stock_knd (str | None): Type of Shares. Common stock, etc. Defaults to None when absent.
@@ -1101,19 +1253,24 @@ class AlotMatterResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     se: str | None = Field(
         default=None,
         description="Category. Paid-in capital increase (shareholder allocation), exercise of conversion rights, etc.",
@@ -1162,14 +1319,16 @@ class IrdsSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         isu_dcrs_de (str | None): Stock issuance(reduction) date. Defaults to None when absent.
         isu_dcrs_stle (str | None): Issuance(reduction) type. Defaults to None when absent.
         isu_dcrs_stock_knd (str | None): Details of issued (reduced) stocks ( Class of Shares ).
@@ -1189,19 +1348,24 @@ class IrdsSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     isu_dcrs_de: str | None = Field(default=None, description="Stock issuance(reduction) date")
     isu_dcrs_stle: str | None = Field(default=None, description="Issuance(reduction) type")
     isu_dcrs_stock_knd: str | None = Field(
@@ -1250,14 +1414,16 @@ class DetScritsIsuAcmsltResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation code. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation code. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         isu_cmpny (str | None): Issuing company. Defaults to None when absent.
         scrits_knd_nm (str | None): Securities type. Securities class. Defaults to None when absent.
         isu_mth_nm (str | None): Method of issuance. Defaults to None when absent.
@@ -1276,19 +1442,24 @@ class DetScritsIsuAcmsltResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation code")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation code", alias="corp_name"
+    )
     isu_cmpny: str | None = Field(default=None, description="Issuing company")
     scrits_knd_nm: str | None = Field(default=None, description="Securities type. Securities class")
     isu_mth_nm: str | None = Field(default=None, description="Method of issuance")
@@ -1333,14 +1504,16 @@ class EntrprsBilScritsNrdmpBlceResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         remndr_exprtn1 (str | None): Remaining maturity. Defaults to None when absent.
         remndr_exprtn2 (str | None): Remaining maturity. Defaults to None when absent.
         de10_below (str | None): 10 days or less. 9,999,999,999 Preserve the upstream text; do not
@@ -1367,19 +1540,24 @@ class EntrprsBilScritsNrdmpBlceResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     remndr_exprtn1: str | None = Field(default=None, description="Remaining maturity")
     remndr_exprtn2: str | None = Field(default=None, description="Remaining maturity")
     de10_below: str | None = Field(
@@ -1449,14 +1627,16 @@ class SrtpdPsndbtNrdmpBlceResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         remndr_exprtn1 (str | None): Remaining maturity. Defaults to None when absent.
         remndr_exprtn2 (str | None): Remaining maturity. Defaults to None when absent.
         de10_below (str | None): 10 days or less. 9,999,999,999 Preserve the upstream text; do not
@@ -1481,19 +1661,24 @@ class SrtpdPsndbtNrdmpBlceResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     remndr_exprtn1: str | None = Field(default=None, description="Remaining maturity")
     remndr_exprtn2: str | None = Field(default=None, description="Remaining maturity")
     de10_below: str | None = Field(
@@ -1559,14 +1744,16 @@ class CprndNrdmpBlceResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         remndr_exprtn1 (str | None): Remaining maturity. Defaults to None when absent.
         remndr_exprtn2 (str | None): Remaining maturity. Defaults to None when absent.
         yy1_below (str | None): 1 year or less. 9,999,999,999 Preserve the upstream text; do not
@@ -1591,19 +1778,24 @@ class CprndNrdmpBlceResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     remndr_exprtn1: str | None = Field(default=None, description="Remaining maturity")
     remndr_exprtn2: str | None = Field(default=None, description="Remaining maturity")
     yy1_below: str | None = Field(
@@ -1669,14 +1861,16 @@ class NewCaplScritsNrdmpBlceResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         remndr_exprtn1 (str | None): Remaining maturity. Remainder to maturity. Defaults to None
             when absent.
         remndr_exprtn2 (str | None): Remaining maturity. Remainder to maturity. Defaults to None
@@ -1703,19 +1897,24 @@ class NewCaplScritsNrdmpBlceResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     remndr_exprtn1: str | None = Field(
         default=None, description="Remaining maturity. Remainder to maturity"
     )
@@ -1785,14 +1984,16 @@ class CndlCaplScritsNrdmpBlceResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         remndr_exprtn1 (str | None): Remaining maturity. Remainder to maturity. Defaults to None
             when absent.
         remndr_exprtn2 (str | None): Remaining maturity. Remainder to maturity. Defaults to None
@@ -1823,19 +2024,24 @@ class CndlCaplScritsNrdmpBlceResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     remndr_exprtn1: str | None = Field(
         default=None, description="Remaining maturity. Remainder to maturity"
     )
@@ -1913,14 +2119,16 @@ class PssrpCptalUseDtlsResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         se_nm (str | None): Category. Classification. Defaults to None when absent.
         tm (str | None): Ordinal. Sequence ③ Added starting December 9, 2019. Defaults to None when
             absent.
@@ -1954,19 +2162,24 @@ class PssrpCptalUseDtlsResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     se_nm: str | None = Field(default=None, description="Category. Classification")
     tm: str | None = Field(
         default=None, description="Ordinal. Sequence ③ Added starting December 9, 2019"
@@ -2034,14 +2247,16 @@ class PrvsrpCptalUseDtlsResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         se_nm (str | None): Category. Classification. Defaults to None when absent.
         tm (str | None): Ordinal. Sequence ③ Added starting December 9, 2019. Defaults to None when
             absent.
@@ -2073,19 +2288,24 @@ class PrvsrpCptalUseDtlsResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     se_nm: str | None = Field(default=None, description="Category. Classification")
     tm: str | None = Field(
         default=None, description="Ordinal. Sequence ③ Added starting December 9, 2019"
@@ -2153,16 +2373,18 @@ class AccnutAdtorNmNdAdtOpinionResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
-        bsns_year (str | None): Fiscal year. Fiscal year (current term, previous term, term before
-            previous). Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
+        fiscal_year (str | None): Fiscal year. Fiscal year (current term, previous term, term before
+            previous). Defaults to None when absent. Serialized under the upstream name 'bsns_year'.
         adtor (str | None): Auditor. Defaults to None when absent.
         adt_opinion (str | None): External auditor's opinion. Defaults to None when absent.
         adt_reprt_spcmnt_matter (str | None): Matters of note in the audit report. Matters of note
@@ -2177,22 +2399,28 @@ class AccnutAdtorNmNdAdtOpinionResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
-    bsns_year: str | None = Field(
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
+    fiscal_year: str | None = Field(
         default=None,
         description="Fiscal year. Fiscal year (current term, previous term, term before previous)",
+        alias="bsns_year",
     )
     adtor: str | None = Field(default=None, description="Auditor")
     adt_opinion: str | None = Field(default=None, description="External auditor's opinion")
@@ -2238,16 +2466,18 @@ class AdtServcCnclsSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
-        bsns_year (str | None): Fiscal year. Fiscal year (current term, previous term, term before
-            previous). Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
+        fiscal_year (str | None): Fiscal year. Fiscal year (current term, previous term, term before
+            previous). Defaults to None when absent. Serialized under the upstream name 'bsns_year'.
         adtor (str | None): Auditor. Defaults to None when absent.
         cn (str | None): Details. Defaults to None when absent.
         mendng (str | None): Remuneration. Remuneration ① In use until July 5, 2020. Defaults to
@@ -2269,22 +2499,28 @@ class AdtServcCnclsSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
-    bsns_year: str | None = Field(
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
+    fiscal_year: str | None = Field(
         default=None,
         description="Fiscal year. Fiscal year (current term, previous term, term before previous)",
+        alias="bsns_year",
     )
     adtor: str | None = Field(default=None, description="Auditor")
     cn: str | None = Field(default=None, description="Details")
@@ -2341,16 +2577,18 @@ class AccnutAdtorNonAdtServcCnclsSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
-        bsns_year (str | None): Fiscal year. Fiscal year (current term, previous term, term before
-            previous). Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
+        fiscal_year (str | None): Fiscal year. Fiscal year (current term, previous term, term before
+            previous). Defaults to None when absent. Serialized under the upstream name 'bsns_year'.
         cntrct_cncls_de (str | None): Contract date. Defaults to None when absent.
         servc_cn (str | None): Service details. Defaults to None when absent.
         servc_exc_pd (str | None): Service performance period. Defaults to None when absent.
@@ -2362,22 +2600,28 @@ class AccnutAdtorNonAdtServcCnclsSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
-    bsns_year: str | None = Field(
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
+    fiscal_year: str | None = Field(
         default=None,
         description="Fiscal year. Fiscal year (current term, previous term, term before previous)",
+        alias="bsns_year",
     )
     cntrct_cncls_de: str | None = Field(default=None, description="Contract date")
     servc_cn: str | None = Field(default=None, description="Service details")
@@ -2415,14 +2659,16 @@ class OutcmpnyDrctrNdChangeSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         drctr_co (str | None): Number of directors. 9,999,999,999 Preserve the upstream text; do not
             coerce commas, blanks, or '-' to a number. Defaults to None when absent.
         otcmp_drctr_co (str | None): Number of independent(outside) directors. 9,999,999,999
@@ -2443,19 +2689,24 @@ class OutcmpnyDrctrNdChangeSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     drctr_co: str | None = Field(
         default=None,
         description="Number of directors. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
@@ -2507,14 +2758,16 @@ class HyslrSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         nm (str | None): Name. Hong Gildong. Defaults to None when absent.
         relate (str | None): Relationship. Self, relative, etc. Defaults to None when absent.
         stock_knd (str | None): Type of Shares. Defaults to None when absent.
@@ -2535,19 +2788,24 @@ class HyslrSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     nm: str | None = Field(default=None, description="Name. Hong Gildong")
     relate: str | None = Field(default=None, description="Relationship. Self, relative, etc.")
     stock_knd: str | None = Field(default=None, description="Type of Shares")
@@ -2599,14 +2857,16 @@ class HyslrChgSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         change_on (str | None): Date of change. YYYY.MM.DD. Defaults to None when absent.
         mxmm_shrholdr_nm (str | None): Name of largest shareholder. Hong Gildong. Defaults to None
             when absent.
@@ -2621,19 +2881,24 @@ class HyslrChgSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     change_on: str | None = Field(default=None, description="Date of change. YYYY.MM.DD")
     mxmm_shrholdr_nm: str | None = Field(
         default=None, description="Name of largest shareholder. Hong Gildong"
@@ -2676,14 +2941,16 @@ class MrhlSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         se (str | None): Category. Minority shareholders. Defaults to None when absent.
         shrholdr_co (str | None): Shareholders (Number of minority shareholders). 9,999,999,999
             Preserve the upstream text; do not coerce commas, blanks, or '-' to a number. Defaults
@@ -2705,19 +2972,24 @@ class MrhlSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     se: str | None = Field(default=None, description="Category. Minority shareholders")
     shrholdr_co: str | None = Field(
         default=None,
@@ -2768,14 +3040,16 @@ class ExctvSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         nm (str | None): Name. Hong Gildong. Defaults to None when absent.
         sexdstn (str | None): Gender. Male. Defaults to None when absent.
         birth_ym (str | None): Date of birth. YYYYMM. Defaults to None when absent.
@@ -2797,19 +3071,24 @@ class ExctvSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     nm: str | None = Field(default=None, description="Name. Hong Gildong")
     sexdstn: str | None = Field(default=None, description="Gender. Male")
     birth_ym: str | None = Field(default=None, description="Date of birth. YYYYMM")
@@ -2861,14 +3140,16 @@ class EmpSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         fo_bbm (str | None): Business division. Defaults to None when absent.
         sexdstn (str | None): Gender. Male, female. Defaults to None when absent.
         reform_bfe_emp_co_rgllbr (str | None): Number of employees(before the form amendment in
@@ -2903,19 +3184,24 @@ class EmpSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     fo_bbm: str | None = Field(default=None, description="Business division")
     sexdstn: str | None = Field(default=None, description="Gender. Male, female")
     reform_bfe_emp_co_rgllbr: str | None = Field(
@@ -2994,14 +3280,16 @@ class UnrstExctvMendngSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         se (str | None): Category. Type (unregistered executives). Defaults to None when absent.
         nmpr (str | None): Headcount. 9,999,999,999 Preserve the upstream text; do not coerce
             commas, blanks, or '-' to a number. Defaults to None when absent.
@@ -3016,19 +3304,24 @@ class UnrstExctvMendngSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     se: str | None = Field(default=None, description="Category. Type (unregistered executives)")
     nmpr: str | None = Field(
         default=None,
@@ -3074,14 +3367,16 @@ class DrctrAdtAllMendngSttusGmtsckConfmAmountResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         se (str | None): Category. Defaults to None when absent.
         nmpr (str | None): Headcount. Defaults to None when absent.
         gmtsck_confm_amount (str | None): Amount approved at general shareholders' meeting.
@@ -3096,19 +3391,24 @@ class DrctrAdtAllMendngSttusGmtsckConfmAmountResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     se: str | None = Field(default=None, description="Category")
     nmpr: str | None = Field(default=None, description="Headcount")
     gmtsck_confm_amount: str | None = Field(
@@ -3150,14 +3450,16 @@ class HmvAuditAllSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         nmpr (str | None): Headcount. 9,999,999,999 Preserve the upstream text; do not coerce
             commas, blanks, or '-' to a number. Defaults to None when absent.
         mendng_totamt (str | None): Total remuneration amount. 9,999,999,999 Preserve the upstream
@@ -3192,19 +3494,24 @@ class HmvAuditAllSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     nmpr: str | None = Field(
         default=None,
         description="Headcount. 9,999,999,999 Preserve the upstream text; do not coerce commas, blanks, or '-' to a number.",
@@ -3276,14 +3583,16 @@ class DrctrAdtAllMendngSttusMendngPymntamtTyClResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         se (str | None): Category. Type. Defaults to None when absent.
         nmpr (str | None): Headcount. 9,999,999,999 Preserve the upstream text; do not coerce
             commas, blanks, or '-' to a number. Defaults to None when absent.
@@ -3319,19 +3628,24 @@ class DrctrAdtAllMendngSttusMendngPymntamtTyClResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     se: str | None = Field(default=None, description="Category. Type")
     nmpr: str | None = Field(
         default=None,
@@ -3404,14 +3718,16 @@ class HmvAuditIndvdlBySttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         nm (str | None): Name. Hong Gildong. Defaults to None when absent.
         ofcps (str | None): Position. Director, CEO, etc. Defaults to None when absent.
         mendng_totamt (str | None): Total remuneration. 9,999,999,999 Preserve the upstream text; do
@@ -3425,19 +3741,24 @@ class HmvAuditIndvdlBySttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     nm: str | None = Field(default=None, description="Name. Hong Gildong")
     ofcps: str | None = Field(default=None, description="Position. Director, CEO, etc.")
     mendng_totamt: str | None = Field(
@@ -3592,14 +3913,16 @@ class HmvAuditIndvdlBySttusV2Response(ResponseModel):
     Attributes:
         status (str): Successful application status. Allowed values: '000'.
         message (str): Error and information message. (※ See message description).
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         stlm_dt (str | None): Settlement date. YYYY.MM.DD. Defaults to None when absent.
         group (list[HmvAuditIndvdlBySttusV2ResponseGroupItem] | None): Repeated group records.
             Defaults to None when absent.
@@ -3610,19 +3933,24 @@ class HmvAuditIndvdlBySttusV2Response(ResponseModel):
 
     status: Literal["000"] = Field(description="Successful application status.")
     message: str = Field(description="Error and information message. (※ See message description)")
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     stlm_dt: str | None = Field(default=None, description="Settlement date. YYYY.MM.DD")
     group: builtins.list[HmvAuditIndvdlBySttusV2ResponseGroupItem] | None = Field(
         default=None, description="Repeated group records."
@@ -3633,14 +3961,16 @@ class IndvdlByPayResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         nm (str | None): Name. Hong Gildong. Defaults to None when absent.
         ofcps (str | None): Position. CEO, etc. Defaults to None when absent.
         mendng_totamt (str | None): Total remuneration. 9,999,999,999 Preserve the upstream text; do
@@ -3654,19 +3984,24 @@ class IndvdlByPayResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     nm: str | None = Field(default=None, description="Name. Hong Gildong")
     ofcps: str | None = Field(default=None, description="Position. CEO, etc.")
     mendng_totamt: str | None = Field(
@@ -3821,14 +4156,16 @@ class IndvdlByPayV2Response(ResponseModel):
     Attributes:
         status (str): Successful application status. Allowed values: '000'.
         message (str): Error and information message. (※ See message description).
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         stlm_dt (str | None): Settlement date. YYYY.MM.DD. Defaults to None when absent.
         group (list[IndvdlByPayV2ResponseGroupItem] | None): Repeated group records. Defaults to
             None when absent.
@@ -3839,19 +4176,24 @@ class IndvdlByPayV2Response(ResponseModel):
 
     status: Literal["000"] = Field(description="Successful application status.")
     message: str = Field(description="Error and information message. (※ See message description)")
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     stlm_dt: str | None = Field(default=None, description="Settlement date. YYYY.MM.DD")
     group: builtins.list[IndvdlByPayV2ResponseGroupItem] | None = Field(
         default=None, description="Repeated group records."
@@ -3862,14 +4204,16 @@ class OtrCprInvstmntSttusResponseListItem(ResponseModel):
     """Documented fields; availability depends on the submitted disclosure.
 
     Attributes:
-        rcept_no (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
+        filing_number (str | None): Filing No.. Filing No. (14 digits) ※ Example link to Disclosure
             Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber.
-            Defaults to None when absent.
-        corp_cls (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX),
-            E (Other). Defaults to None when absent.
-        corp_code (str | None): Corporation code. Corporation code of disclosing company (8 digits).
-            Defaults to None when absent.
-        corp_name (str | None): Corporation name. Defaults to None when absent.
+            Defaults to None when absent. Serialized under the upstream name 'rcept_no'.
+        corporation_type (str | None): Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N
+            (KONEX), E (Other). Defaults to None when absent. Serialized under the upstream name
+            'corp_cls'.
+        corporation_code (str | None): Corporation code. Corporation code of disclosing company (8
+            digits). Defaults to None when absent. Serialized under the upstream name 'corp_code'.
+        corporation_name (str | None): Corporation name. Defaults to None when absent. Serialized
+            under the upstream name 'corp_name'.
         inv_prm (str | None): Corporation name. Defaults to None when absent.
         frst_acqs_de (str | None): Date of initial acquisitiond. Date of original
             acquisition(YYYYMMDD). Defaults to None when absent.
@@ -3915,19 +4259,24 @@ class OtrCprInvstmntSttusResponseListItem(ResponseModel):
         pydantic.ValidationError: Fields do not match the response schema.
     """
 
-    rcept_no: str | None = Field(
+    filing_number: str | None = Field(
         default=None,
         description="Filing No.. Filing No. (14 digits) ※ Example link to Disclosure Viewer - For PCs: https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo=FilingNumber",
+        alias="rcept_no",
     )
-    corp_cls: str | None = Field(
+    corporation_type: str | None = Field(
         default=None,
         description="Corporation type. Corporation type: Y (KOSPI), K (KOSDAQ), N (KONEX), E (Other)",
+        alias="corp_cls",
     )
-    corp_code: str | None = Field(
+    corporation_code: str | None = Field(
         default=None,
         description="Corporation code. Corporation code of disclosing company (8 digits)",
+        alias="corp_code",
     )
-    corp_name: str | None = Field(default=None, description="Corporation name")
+    corporation_name: str | None = Field(
+        default=None, description="Corporation name", alias="corp_name"
+    )
     inv_prm: str | None = Field(default=None, description="Corporation name")
     frst_acqs_de: str | None = Field(
         default=None,

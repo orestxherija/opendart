@@ -1,5 +1,7 @@
 """Shared request and response model behavior."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -9,7 +11,7 @@ class RequestModel(BaseModel):
     Unknown fields are rejected. Subclasses define endpoint-specific constraints.
     """
 
-    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True, populate_by_name=True)
 
     def query(self) -> dict[str, str | int]:
         """Serialize query fields, omitting None and joining array values with commas.
@@ -17,7 +19,7 @@ class RequestModel(BaseModel):
         Returns:
             dict[str, str | int]: Query values ready to pass to the HTTP client.
         """
-        data = self.model_dump(mode="json", exclude_none=True)
+        data = self.model_dump(mode="json", exclude_none=True, by_alias=True)
         return {
             name: ",".join(value) if isinstance(value, list) else value
             for name, value in data.items()

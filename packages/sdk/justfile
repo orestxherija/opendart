@@ -1,0 +1,35 @@
+# Use the shared workspace configuration, including when invoked as a module.
+set working-directory := '../..'
+
+# List available commands.
+default:
+    @just --justfile '{{ source_file() }}' --list
+
+# Check lint and formatting.
+lint:
+    uv run --no-sync ruff check packages/sdk scripts/generate_sdk.py
+    uv run --no-sync ruff format --check packages/sdk scripts/generate_sdk.py
+
+# Format Python files.
+format:
+    uv run --no-sync ruff format packages/sdk scripts/generate_sdk.py
+
+# Check types.
+typecheck:
+    uv run --no-sync mypy packages/sdk/src
+
+# Run SDK tests.
+test:
+    uv run --no-sync pytest packages/sdk/tests
+
+# Check the SDK and generated-file freshness.
+check: lint typecheck test
+    uv run --no-sync python scripts/generate_sdk.py --check
+
+# Regenerate the SDK from the checked-in reference.
+generate:
+    uv run --no-sync python scripts/generate_sdk.py
+
+# Build the Python package.
+build:
+    uv build --package opendart-sdk

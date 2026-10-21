@@ -1,0 +1,6 @@
+{
+  "name": "python-settings",
+  "version": "1.0.0",
+  "description": "Conventions for centralized configuration in Python with Pydantic settings.",
+  "author": { "name": "Orest Xherija" }
+}

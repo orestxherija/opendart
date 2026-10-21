@@ -1,0 +1,14 @@
+{
+  "name": "python-http",
+  "version": "0.3.0",
+  "description": "Tested Python HTTP skills for client lifecycle, authentication, retries, typed adapters, concurrency, streaming, observability, and testing, with integration and review workflows.",
+  "author": {
+    "name": "Orest Xherija"
+  },
+  "dependencies": [
+    {
+      "name": "python-settings",
+      "version": "^1.0"
+    }
+  ]
+}

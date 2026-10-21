@@ -1,7 +1,9 @@
 """Immutable, explicitly loaded SDK configuration."""
 
+from __future__ import annotations
+
 from functools import lru_cache
-from typing import Annotated, Self
+from typing import TYPE_CHECKING, Annotated, Self, override
 
 from pydantic import (
     AfterValidator,
@@ -12,7 +14,14 @@ from pydantic import (
     SecretStr,
     model_validator,
 )
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    NestedSecretsSettingsSource,
+    SettingsConfigDict,
+)
+
+if TYPE_CHECKING:
+    from pydantic_settings import PydanticBaseSettingsSource
 
 
 def _english_api_url(value: HttpUrl) -> HttpUrl:
@@ -108,7 +117,8 @@ class Settings(BaseSettings):
     """Load immutable SDK settings from explicit input and OPENDART_API__* variables.
 
     Environment variables override dotenv values. Unrelated root keys are ignored; unknown
-    nested API fields are rejected. Other BaseSettings keyword options are inherited.
+    nested API fields are rejected. File secrets in /run/secrets have lower priority than
+    explicit arguments, environment variables, and dotenv values.
 
     Args:
         api (OpenDartSettings): Upstream settings. May instead be supplied through nested
@@ -125,11 +135,42 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="OPENDART_",
         env_nested_delimiter="__",
+        secrets_dir="/run/secrets",
+        secrets_dir_missing="ok",
         frozen=True,
         extra="ignore",
         hide_input_in_errors=True,
     )
     api: OpenDartSettings
+
+    @classmethod
+    @override
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Read nested file secrets after explicit, environment, and dotenv settings.
+
+        Args:
+            settings_cls (type[BaseSettings]): Settings class supplied by Pydantic.
+            init_settings (PydanticBaseSettingsSource): Explicit constructor values.
+            env_settings (PydanticBaseSettingsSource): Process environment values.
+            dotenv_settings (PydanticBaseSettingsSource): Explicit dotenv values.
+            file_secret_settings (PydanticBaseSettingsSource): Secret directory options.
+
+        Returns:
+            tuple[PydanticBaseSettingsSource, ...]: Sources in descending priority.
+        """
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            NestedSecretsSettingsSource(file_secret_settings),
+        )
 
 
 @lru_cache

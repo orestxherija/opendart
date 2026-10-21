@@ -1,0 +1,14 @@
+# uv policy shared by the workspace. CI pins uv 0.11.20.
+required-version = ">=0.11,<1.0"
+python-preference = "only-managed"
+python-downloads = "automatic"
+system-certs = true
+resolution = "highest"
+prerelease = "if-necessary-or-explicit"
+no-build-isolation = false
+compile-bytecode = false
+cache-dir = ".cache/uv"
+link-mode = "clone"
+
+# Match the dependency age policy used by Safe Chain in CI.
+exclude-newer = "48 hours"

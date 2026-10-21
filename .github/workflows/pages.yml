@@ -1,10 +1,7 @@
 name: API reference Pages
 
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -17,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Set up Python
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
@@ -29,14 +28,19 @@ jobs:
           node-version: "22.23.3"
           cache: npm
           cache-dependency-path: api_reference/package-lock.json
-      - name: Set up Safe Chain
+      - name: Set up Aikido Safe Chain
         uses: ./.github/actions/setup-safe-chain
       - name: Install Python dependencies
         run: |
           uv safe-chain-verify
-          uv sync --locked --all-packages
+          uv sync --locked --only-group dev --only-group contracts
+      - name: Check reference tooling and test contracts offline
+        run: |
+          uv run --no-sync ruff check scripts/api_reference tests
+          uv run --no-sync ruff format --check scripts/api_reference tests
+          uv run --no-sync pytest tests/contracts -o addopts=''
       - name: Validate reference and generated files
-        run: uv run --no-sync python api_reference/scripts/check.py
+        run: uv run --no-sync python scripts/api_reference/check.py
       - name: Install Redocly
         run: |
           npm safe-chain-verify

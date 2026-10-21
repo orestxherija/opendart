@@ -1,5 +1,12 @@
 version: 2
 
+registries:
+  docker-hardened-images:
+    type: docker-registry
+    url: https://dhi.io
+    username: ${{ secrets.DHI_USERNAME }}
+    password: ${{ secrets.DHI_TOKEN }}
+
 updates:
   # The root lockfile covers both SDK and MCP workspace members.
   - package-ecosystem: "uv"
@@ -23,8 +30,14 @@ updates:
 
   - package-ecosystem: "docker"
     directory: "/packages/mcp"
+    registries:
+      - docker-hardened-images
     schedule:
       interval: "weekly"
+    groups:
+      dhi-python:
+        patterns:
+          - "dhi.io/python"
 
   - package-ecosystem: "github-actions"
     directory: "/"
