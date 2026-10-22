@@ -44,7 +44,7 @@ quality = [
   "loq>=0.1,<0.2",
   "pip-audit==2.10.1",
   "ruff>=0.17.1,<0.18",
-  "mypy>=1.15,<2",
+  "mypy>=2.4,<3",
   "pyrefly>=1.1.1,<1.2",
   "types-PyYAML>=6,<7",
   "typos==1.48.0",
