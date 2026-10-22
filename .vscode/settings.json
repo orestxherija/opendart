@@ -1,3 +1,37 @@
 {
-    "python.terminal.useEnvFile": true
+  "python.terminal.useEnvFile": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.cache": true,
+    "**/.coverage*": true,
+    "**/.hypothesis": true,
+    "**/.loq_cache": true,
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true,
+    "**/.venv": true,
+    "**/contract-results": true,
+    "**/coverage.xml": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "**/site": true,
+    "**/.prek-*.log": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.cache": true,
+    "**/.coverage*": true,
+    "**/.hypothesis": true,
+    "**/.loq_cache": true,
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true,
+    "**/.venv": true,
+    "**/contract-results": true,
+    "**/coverage.xml": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "**/site": true,
+    "**/.prek-*.log": true
+  }
 }

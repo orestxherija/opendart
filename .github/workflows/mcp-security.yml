@@ -12,7 +12,7 @@ on:
 
 permissions:
   contents: read
-  packages: read
+  packages: read # Pull the published MCP image from GHCR for verification.
 
 concurrency:
   group: mcp-published-security
@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   scan:
+    name: Verify and scan published MCP image
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -44,7 +45,8 @@ jobs:
             [[ "$REQUESTED_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]
             digest="$REQUESTED_DIGEST"
           else
-            digest=$(docker buildx imagetools inspect "$IMAGE:test" --format '{{json .Manifest}}' | jq --raw-output --exit-status '.digest')
+            digest=$(docker buildx imagetools inspect "$IMAGE:test" --format '{{json .Manifest}}' |
+              jq --raw-output --exit-status '.digest')
           fi
           [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]
           printf 'reference=%s@%s\n' "$IMAGE" "$digest" >> "$GITHUB_OUTPUT"
@@ -59,8 +61,9 @@ jobs:
           IMAGE_REFERENCE: ${{ steps.image.outputs.reference }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
+          identity="https://github.com/$GITHUB_REPOSITORY/.github/workflows/mcp-container.yml"
           cosign verify "$IMAGE_REFERENCE" \
-            --certificate-identity="https://github.com/$GITHUB_REPOSITORY/.github/workflows/mcp-container.yml@refs/heads/$DEFAULT_BRANCH" \
+            --certificate-identity="$identity@refs/heads/$DEFAULT_BRANCH" \
             --certificate-oidc-issuer=https://token.actions.githubusercontent.com
       - name: Scan published digest
         if: ${{ !cancelled() && steps.image.outcome == 'success' }}

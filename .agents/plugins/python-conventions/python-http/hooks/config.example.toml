@@ -1,0 +1,6 @@
+# Copy to the consuming project's .claude/python-http.toml to enable feedback.
+# Requires python3 >= 3.11 on PATH. No model calls or files are written.
+[python-http]
+enabled = true
+checks = ["HTTP001", "HTTP002", "HTTP003"]
+exclude = ["generated/**", "vendor/**"]

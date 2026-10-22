@@ -1,0 +1,129 @@
+name: MCP image checks
+
+on:
+  workflow_call:
+    inputs:
+      verify-base-images:
+        description: Verify the DHI base images' signed SBOM and provenance.
+        type: boolean
+        default: true
+      scan-vulnerabilities:
+        description: Scan the image for vulnerabilities; secrets are always scanned.
+        type: boolean
+        default: true
+    secrets:
+      DHI_USERNAME:
+        description: Docker ID used to pull Docker Hardened Images
+        required: true
+      DHI_TOKEN:
+        description: Docker personal access token with read access to DHI
+        required: true
+  workflow_dispatch:
+    inputs:
+      verify-base-images:
+        description: Verify the DHI base images' signed SBOM and provenance.
+        type: boolean
+        default: true
+      scan-vulnerabilities:
+        description: Scan the image for vulnerabilities; secrets are always scanned.
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcp-image-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  image:
+    name: Build, test, and scan image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENDART_MCP_IMAGE: opendart-mcp:ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.11.20"
+          python-version: "3.14"
+          enable-cache: true
+      - name: Set up Aikido Safe Chain
+        uses: ./.github/actions/setup-safe-chain
+      - name: Install MCP client
+        # The protocol check connects to the container with the MCP client.
+        run: |
+          uv safe-chain-verify
+          uv sync --locked --package opendart-workspace --package opendart-mcp --no-dev
+      - name: Log in to Docker Hardened Images
+        env:
+          DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
+          DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
+        run: |
+          if [ -z "$DHI_USERNAME" ] || [ -z "$DHI_TOKEN" ]; then
+            echo "::error::Set DHI_USERNAME and DHI_TOKEN repository secrets; see .github/README.md."
+            exit 1
+          fi
+          printf '%s' "$DHI_TOKEN" | docker login dhi.io --username "$DHI_USERNAME" --password-stdin
+      - name: Verify Docker Hardened Images
+        # Unchanged base digests were verified when pinned; publishing verifies again.
+        if: inputs.verify-base-images
+        uses: ./.github/actions/verify-dhi
+        env:
+          DOCKER_SCOUT_HUB_USER: ${{ secrets.DHI_USERNAME }}
+          DOCKER_SCOUT_HUB_PASSWORD: ${{ secrets.DHI_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Read package version
+        id: package
+        run: |
+          uv run --no-sync python - <<'PY' >> "$GITHUB_OUTPUT"
+          from pathlib import Path
+          import tomllib
+
+          project = tomllib.loads(Path("packages/mcp/pyproject.toml").read_text())["project"]
+          print(f"version={project['version']}")
+          PY
+      - name: Image labels
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: opendart-mcp
+          flavor: latest=false
+          tags: type=raw,value=ci
+          labels: |
+            org.opencontainers.image.title=OpenDART MCP
+            org.opencontainers.image.description=OpenDART MCP server over local HTTP
+            org.opencontainers.image.version=${{ steps.package.outputs.version }}
+      - name: Build container
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: packages/mcp/Dockerfile
+          platforms: linux/amd64
+          load: true
+          push: false
+          pull: true
+          tags: ${{ env.OPENDART_MCP_IMAGE }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=opendart-mcp-linux-amd64
+          cache-to: type=gha,scope=opendart-mcp-linux-amd64,mode=max
+          provenance: false
+      - name: Test container security and protocol
+        uses: ./.github/actions/check-mcp-container
+        with:
+          image: ${{ env.OPENDART_MCP_IMAGE }}
+      - name: Scan image
+        uses: ./.github/actions/scan-container
+        with:
+          image: ${{ env.OPENDART_MCP_IMAGE }}
+          vulnerabilities: ${{ inputs.scan-vulnerabilities }}
+      - name: Log out of Docker Hardened Images
+        if: always()
+        run: docker logout dhi.io

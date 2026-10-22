@@ -1,0 +1,75 @@
+[pytest]
+# Standalone configuration and native TOML values require pytest 9.0+.
+minversion = "9.0"
+
+addopts = [
+    "-ra",
+    "--import-mode=importlib",
+
+    # Coverage sources are selected by each package's test command.
+    "--cov",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+
+    "-n=auto",
+    "--dist=worksteal",
+    "--maxprocesses=8",
+    "--max-worker-restart=2",
+
+    # The default suite is offline; asyncio still needs Unix sockets.
+    "--disable-socket",
+    "--allow-unix-socket",
+
+    "--html=.cache/pytest/report.html",
+    "--self-contained-html",
+]
+
+strict_config = true
+strict_markers = true
+strict_parametrization_ids = true
+strict_xfail = true
+tmp_path_retention_policy = "failed"
+tmp_path_retention_count = "3"
+filterwarnings = []
+
+cache_dir = ".cache/pytest"
+testpaths = ["packages/sdk/tests", "packages/mcp/tests", "tests"]
+pythonpath = ["."]
+consider_namespace_packages = true
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: fast tests isolated from external systems",
+    "integration: tests spanning multiple components or external systems",
+    "e2e: end-to-end tests exercising a complete user flow",
+    "slow: tests excluded from fast feedback loops",
+    "network: tests requiring network access",
+]
+required_plugins = [
+    "pytest-asyncio>=1.4,<2",
+    "pytest-cov>=7.1,<8",
+    "pytest-html>=4.2,<5",
+    "pytest-randomly>=4.1,<5",
+    "pytest-socket>=0.8,<0.9",
+    "pytest-timeout>=2.4,<3",
+    "pytest-xdist>=3.8,<4",
+]
+
+# pytest-timeout
+timeout = "60"
+session_timeout = "900"
+timeout_func_only = false
+
+# AnyIO tests opt in with their existing marker; asyncio tests must also opt in.
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
+asyncio_default_test_loop_scope = "function"
+asyncio_debug = false
+
+# pytest-html
+render_collapsed = "passed"
+environment_table_redact_list = [".*TOKEN.*", ".*PASSWORD.*", ".*SECRET.*"]
+generate_report_on_test = true
+initial_sort = "result"
+max_asset_filename_length = "255"

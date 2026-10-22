@@ -6,25 +6,25 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const referenceDirectory = fileURLToPath(new URL("../../api_reference/", import.meta.url));
-const referenceRequire = createRequire(join(referenceDirectory, "package.json"));
-const outputDirectory = resolve(referenceDirectory, "../site");
+const toolingDirectory = dirname(fileURLToPath(import.meta.url));
+const toolingRequire = createRequire(import.meta.url);
+const outputDirectory = resolve(toolingDirectory, "../../site");
 const temporaryDirectory = await mkdtemp(join(tmpdir(), "opendart-reference-"));
 
 try {
   const specificationPath = join(temporaryDirectory, "openapi.json");
-  const cliDirectory = dirname(referenceRequire.resolve("@redocly/cli/package.json"));
+  const cliDirectory = dirname(toolingRequire.resolve("@redocly/cli/package.json"));
   execFileSync(process.execPath, [
     join(cliDirectory, "bin/cli.js"),
     "bundle", "opendart",
     "--config", "redocly.yaml",
     "--output", specificationPath,
-  ], { cwd: referenceDirectory, stdio: "inherit" });
+  ], { cwd: toolingDirectory, stdio: "inherit" });
 
   const specification = JSON.parse(await readFile(specificationPath, "utf8"));
   // Escape HTML delimiters so descriptions cannot terminate the JSON script tag.
   const embeddedSpecification = JSON.stringify(specification).replaceAll("<", "\\u003c");
-  const rendererPath = referenceRequire.resolve("redoc/bundles/redoc.standalone.js");
+  const rendererPath = toolingRequire.resolve("redoc/bundles/redoc.standalone.js");
   // A data URL keeps the ES module and all its dependencies inside index.html.
   const renderer = (await readFile(rendererPath)).toString("base64");
   const title = specification.info.title.replaceAll("&", "&amp;")

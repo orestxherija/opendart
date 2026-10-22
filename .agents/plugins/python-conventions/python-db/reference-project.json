@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "module": "app.db_settings",
+      "source": "skills/client/references/settings.py",
+      "requires": []
+    },
+    {
+      "module": "app.db_client",
+      "source": "skills/client/references/example.py",
+      "requires": [
+        "app.db_settings"
+      ]
+    },
+    {
+      "module": "app.db_transactions",
+      "source": "skills/transactions/references/example.py",
+      "requires": []
+    },
+    {
+      "module": "app.db_models",
+      "source": "skills/orm/references/example.py",
+      "requires": []
+    },
+    {
+      "module": "app.db_queries",
+      "source": "skills/queries/references/example.py",
+      "requires": [
+        "app.db_models"
+      ]
+    },
+    {
+      "module": "app.db_errors",
+      "source": "skills/errors/references/example.py",
+      "requires": []
+    },
+    {
+      "module": "app.db_retries",
+      "source": "skills/retries/references/example.py",
+      "requires": [
+        "app.db_errors"
+      ]
+    },
+    {
+      "module": "app.db_bulk",
+      "source": "skills/bulk/references/example.py",
+      "requires": []
+    },
+    {
+      "module": "app.db_copy",
+      "source": "skills/bulk/references/postgresql_copy.py",
+      "requires": []
+    },
+    {
+      "module": "app.db_observability",
+      "source": "skills/observability/references/example.py",
+      "requires": []
+    },
+    {
+      "module": "db_testing_reference",
+      "source": "skills/testing/references/example.py",
+      "requires": [
+        "app.db_client",
+        "app.db_settings"
+      ]
+    }
+  ],
+  "profiles": {
+    "client": [
+      "app.db_client"
+    ],
+    "transactions": [
+      "app.db_transactions"
+    ],
+    "orm": [
+      "app.db_models"
+    ],
+    "queries": [
+      "app.db_queries"
+    ],
+    "errors": [
+      "app.db_errors"
+    ],
+    "retries": [
+      "app.db_retries"
+    ],
+    "bulk": [
+      "app.db_bulk"
+    ],
+    "postgres-copy": [
+      "app.db_copy"
+    ],
+    "observability": [
+      "app.db_observability"
+    ],
+    "testing": [
+      "db_testing_reference"
+    ],
+    "orm-client": [
+      "app.db_client",
+      "app.db_transactions",
+      "app.db_queries"
+    ],
+    "integration": [
+      "app.db_client",
+      "app.db_transactions",
+      "app.db_queries",
+      "app.db_retries",
+      "app.db_bulk",
+      "app.db_observability"
+    ]
+  }
+}

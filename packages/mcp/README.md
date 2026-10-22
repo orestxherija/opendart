@@ -1,16 +1,37 @@
 # OpenDART MCP
 
+[![CI](https://github.com/orestxherija/opendart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/orestxherija/opendart/actions/workflows/ci.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/github/orestxherija/opendart/branch/main/graph/badge.svg?flag=mcp&token=8TTWOC0RC4)](https://codecov.io/github/orestxherija/opendart)
+![Python](https://img.shields.io/badge/python-3.14%2B-blue)
+[![code style: Ruff](https://img.shields.io/badge/code%20style-ruff-46a2f1.svg)](https://github.com/astral-sh/ruff)
+[![type check: mypy](https://img.shields.io/badge/type%20check-mypy-blueviolet)](https://mypy.readthedocs.io/)
+
+[![Project coverage grid](https://codecov.io/github/orestxherija/opendart/branch/main/graphs/tree.svg?token=8TTWOC0RC4&width=700&height=250)](https://codecov.io/github/orestxherija/opendart)
+
 Local Streamable HTTP server using the [official MCP Python SDK](https://py.sdk.modelcontextprotocol.io/run/).
 It exposes one tool, `ping`, which returns `pong` without an API key or network calls.
 OpenDART tools will use the async `OpenDart` client from `opendart-sdk`.
 
 ## Table of contents
 
+- [Design](#design)
 - [Run locally](#run-locally)
 - [Connect an MCP client](#connect-an-mcp-client)
 - [Docker](#docker)
 - [Image metadata](#image-metadata)
 - [Publish to GHCR](#publish-to-ghcr)
+
+## Design
+
+![MCP design: local Streamable HTTP service and ping tool, listener settings, Docker deployment, validation, and signed container publishing](docs/architecture.svg)
+
+MCP clients connect to the local `/mcp` endpoint. The server currently registers
+only `ping`; it installs the SDK but makes no OpenDART calls. Native execution and
+Docker Compose use the same server, with validated listener settings and localhost
+Host and Origin checks.
+
+Edit the [draw.io source](docs/architecture.drawio), then export it as SVG to
+update [the README diagram](docs/architecture.svg). Keep the source and SVG together.
 
 ## Run locally
 
@@ -86,10 +107,11 @@ Docker account to pull the Python base images from `dhi.io`.
    through its configured credential store. Keep the PAT out of the repository,
    Dockerfile, build arguments, and application `.env` files.
 
-Lint the Dockerfile with the pinned Hadolint image (Docker required):
+Lint the Dockerfile with the pinned Hadolint image (Docker required). The hook also
+runs before pushes that change the Dockerfile:
 
 ```sh
-uv run prek run hadolint-docker --all-files
+uv run prek run hadolint-docker --all-files --stage pre-push
 ```
 
 From the repository root, validate the Compose configuration, build
@@ -167,10 +189,12 @@ stays owned by root, and the runtime does not contain uv, the build cache, or th
 source checkout. The runtime uses numeric UID/GID `10001:10001` directly because
 the DHI runtime has no shell for user-management commands. It retains the packages
 provided by the DHI runtime; the Dockerfile does not uninstall pip or delete
-bundled libraries. CI verifies both DHI bases' signed SBOM and provenance with
-Docker's public key before building. It scans the finished image with Trivy,
-blocks fixable high or critical vulnerabilities and detected secrets, and retains
-a full vulnerability report including unfixed findings for 30 days.
+bundled libraries. When the Dockerfile changes, CI verifies both DHI bases' signed
+SBOM and provenance with Docker's public key before building. CI scans every built
+image for secrets, and scans for vulnerabilities when the base images or locked
+dependencies change. It blocks fixable high or critical vulnerabilities and detected
+secrets, and retains a full vulnerability report including unfixed findings for 30
+days. Publishing always runs every check on the exact candidate.
 
 Keep both base-image digests current through the weekly Dependabot Docker
 updates; a pinned digest must change to receive base-image fixes. The two DHI

@@ -1,0 +1,14 @@
+{
+  "name": "python-db",
+  "version": "0.1.0",
+  "description": "Python database client skills for SQLite and PostgreSQL: connections, ORM, transactions, queries, retries, bulk operations, diagnostics, testing, integration, and review.",
+  "author": {
+    "name": "Orest Xherija"
+  },
+  "dependencies": [
+    {
+      "name": "python-settings",
+      "version": "^1.0"
+    }
+  ]
+}

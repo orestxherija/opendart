@@ -17,10 +17,11 @@ format:
 # Check types.
 typecheck:
     uv run --no-sync mypy packages/mcp/src
+    uv run --no-sync pyrefly check --config pyrefly.toml packages/mcp/src
 
-# Run MCP tests without SDK coverage settings.
+# Run MCP tests and collect package coverage.
 test:
-    uv run --no-sync pytest packages/mcp/tests --no-cov
+    uv run --no-sync prek run pytest-mcp --all-files --stage pre-push
 
 # Check the MCP package.
 check: lint typecheck test

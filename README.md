@@ -13,8 +13,10 @@ This is a uv workspace with independently installable packages and one `uv.lock`
 | [`packages/sdk`](packages/sdk) (`opendart-sdk`) | `opendart` | Async client for all 85 documented services |
 | [`packages/mcp`](packages/mcp) (`opendart-mcp`) | `opendart_mcp` | Local HTTP server with a `ping` tool for deployment tests |
 
-The SDK supports the 82 JSON services and three ZIP downloads in the existing
-[API reference](api_reference/README.md). XML alternatives to JSON are not exposed.
+The SDK supports the 82 JSON services and three ZIP downloads in the
+[published API reference](https://orestxherija.github.io/opendart/); its source
+and generation guide are in [`api_reference/`](api_reference/README.md). XML
+alternatives to JSON are not exposed.
 The Korean-language API is a separate service and is not supported by this SDK.
 
 ## Table of contents
@@ -111,27 +113,98 @@ maintainers must also [configure DHI secrets for CI and Dependabot](.github/READ
 Python 3.14+ is supported; `.python-version` selects Python 3.14 for local development.
 The HTTP and settings implementations follow the repository's `python-http` and
 `python-settings` plugin conventions, using httpx2 and Pydantic.
+The root [`.editorconfig`](.editorconfig) makes every standard editor property
+explicit and matches the repository's file formats and formatter settings.
 
 For task shortcuts, install [Just](https://just.systems/) 1.33 or newer. Run `just`
 to list commands, `just sync` to install the Python workspace and offline test
 dependencies, and `just reference sync` to install documentation dependencies.
 Use `just sdk test`, `just mcp run`, or `just reference build` from the root, or
-run `just test` inside a package. `just check` runs all component checks offline.
+run `just test` inside a package. `just check` runs repository quality checks and
+all offline component checks. `just quality` runs repository checks, including
+Zizmor audits of workflows, shared actions, and Dependabot. `just audit` checks all
+locked Python dependencies against current vulnerability advisories;
+`just secrets` scans all local Git history, and `just links` audits external
+documentation links. Taplo and Markdownlint require Node.js 22+ and npm; their
+pinned CLIs are installed on first use, and TOML schema validation can fetch
+remote schemas.
+
+Pip-audit runs before pushes that change `uv.lock` and exports every workspace
+package, dependency group, and optional extra from the lockfile. It audits registry packages without
+installing them; local workspace packages are omitted while their dependencies
+remain covered. Zizmor runs before commits and merges when GitHub YAML or its
+configuration changes, scanning all workflow and action definitions together.
+
+The `api_reference/` directory contains API documents and source data. Reference
+tooling, dependency manifests, and the Just module live in `scripts/api_reference/`;
+the contract test harness lives in `tests/contracts/`.
 
 ```sh
-uv sync --locked --all-packages
-uv run pytest
-uv run mypy
-uv run ruff check packages scripts tests
-uv run ruff format --check packages scripts tests
-uv run python scripts/generate_sdk.py --check
-uv run python scripts/api_reference/check.py
+uv sync --locked --all-packages --group contracts
+uv run --no-sync pytest
+uv run --no-sync mypy
+uv run --no-sync pyrefly check
+uv run --no-sync ruff check packages scripts tests
+uv run --no-sync ruff format --check packages scripts tests
+uv run --no-sync python scripts/generate_sdk.py --check
+uv run --no-sync python scripts/api_reference/check.py
 uv build --package opendart-sdk
 uv build --package opendart-mcp
 ```
 
+[`pytest.toml`](pytest.toml) configures all three offline suites with strict
+configuration and marker checks, randomized order, up to eight parallel workers,
+timeouts, blocked network sockets, and HTML reports. The existing AnyIO tests use
+their explicit markers. Run `uv run --no-sync pytest -n 0` for a serial run.
+[`pyrefly.toml`](pyrefly.toml) applies strict type checking to both packages' source
+trees, including generated SDK code, alongside the existing mypy checks.
+
+After syncing, run `uv run --no-sync prek install` to install the configured Git
+hooks. Commitizen validates new commit messages at the `commit-msg` stage using
+Conventional Commits, such as `fix(sdk): handle an empty response`.
+Pre-commit hooks are quick and offline: they normalize text and JSON, check file
+integrity and syntax, scan staged changes for secrets, audit workflow security, and
+check Ruff, Markdown, YAML, TOML formatting, spelling, and the changed files' lengths.
+Pyrefly type-checks both packages when a commit changes their source or configuration.
+Direct commits to `main` are blocked locally.
+Slower checks run before pushes, and only when the pushed commits change their
+inputs: Hadolint for the Dockerfile, Taplo schema validation for TOML, Lychee for
+Markdown links, pip-audit for `uv.lock`, and the SDK, MCP, and offline contract
+tests for each suite's sources, tests, contract files, and shared test configuration.
+Run every pre-push hook manually with `uv run --no-sync prek run --all-files --stage pre-push`.
+Python hooks use the installed environment without syncing it. Taplo, Markdownlint,
+Lychee, and Betterleaks install pinned tools on first use. Betterleaks verifies
+download checksums and always redacts findings in the configured commands.
+`just sdk test`,
+`just mcp test`, `just reference test`, and CI use the same test hooks. Their HTML
+reports are written to `.cache/pytest/`, with separate SDK and MCP coverage data
+and XML reports in `.cache/coverage/`. Branch coverage is configured in the
+[SDK `.coveragerc.toml`](packages/sdk/.coveragerc.toml) and
+[MCP `.coveragerc.toml`](packages/mcp/.coveragerc.toml). The package workflows upload
+those XML reports to Codecov with separate `sdk` and `mcp` flags, configured in
+[`codecov.yml`](codecov.yml).
+
+The quality configs exclude generated API/SDK files where appropriate and the
+vendored convention plugins. Loq caps handwritten files at 500 lines, with explicit
+adoption limits for three existing larger files. Pull requests and `main` pushes
+run the same built-in, Ruff, Markdown, YAML, TOML, spelling, and file-length checks
+across the repository through [repository quality CI](.github/workflows/quality.yml),
+and scan the full fetched Git history with Betterleaks, including secrets removed in
+later commits. Zizmor audits workflows and pip-audit checks locked Python
+dependencies when those files change; both also run weekly and manually. External
+links are audited weekly or manually, separately from the required PR checks.
+Building and smoke-testing the distributions and the MCP image run when their
+inputs change, except on draft pull requests; see [GitHub Actions](.github/README.md).
+The local branch guard is excluded
+from CI, which uses detached checkouts and runs after merges to `main`.
+
 Python dependency resolution uses a 48-hour cooldown to match Safe Chain's CI policy.
 Run `uv lock` after changing dependencies and commit the updated `uv.lock`.
+
+`just release-check` verifies coordinated package versions and the release tooling.
+`just release-build` also builds wheels and source archives, checks their metadata,
+and smoke-tests isolated installations. See the [release guide](docs/RELEASING.md)
+for version updates, the [changelog](CHANGELOG.md), and artifact preparation.
 Dependabot uses the same cooldown for Python and npm updates.
 
 To load local environment variables and activate `.venv` automatically when entering

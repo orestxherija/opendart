@@ -4,6 +4,8 @@ on:
   push:
     branches: ["main"]
   pull_request:
+    # Drafts skip the expensive checks; marking a draft ready runs them.
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
@@ -18,17 +20,34 @@ concurrency:
 jobs:
   changes:
     name: Detect changes
-    runs-on: ubuntu-latest
+    # Light jobs use the cheaper single-CPU runner; it has Git and Python.
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: read # Read the complete PR diff for component selection.
     outputs:
+      quality: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.quality == 'true' }}
+      audit: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.audit == 'true' }}
+      release: >-
+        ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.release == 'true'
+        || (!github.event.pull_request.draft && steps.filter.outputs.distributions == 'true') }}
       sdk: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.sdk == 'true' }}
       mcp: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.mcp == 'true' }}
       reference: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.reference == 'true' }}
+      # Expensive builds run when their inputs change, except on draft PRs.
+      distributions: >-
+        ${{ github.event_name == 'workflow_dispatch'
+        || (!github.event.pull_request.draft && steps.filter.outputs.distributions == 'true') }}
+      container: >-
+        ${{ github.event_name == 'workflow_dispatch'
+        || (!github.event.pull_request.draft && steps.filter.outputs.container == 'true') }}
+      base-images: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.base-images == 'true' }}
+      vulnerabilities: >-
+        ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.vulnerabilities == 'true' }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Fetch push comparison history before checkout removes credentials.
           fetch-depth: 0
@@ -42,6 +61,24 @@ jobs:
           # the complete PR diff through the GitHub API instead.
           base: ${{ github.event_name == 'push' && github.ref || '' }}
           filters: .github/ci-paths.yml
+          # A leading ! excludes matching files from that filter.
+          predicate-quantifier: some-with-excludes
+
+  quality:
+    name: Repository quality
+    needs: changes
+    if: needs.changes.outputs.quality == 'true'
+    uses: ./.github/workflows/quality.yml
+    with:
+      audit: ${{ needs.changes.outputs.audit == 'true' }}
+
+  release:
+    name: Release
+    needs: changes
+    if: needs.changes.outputs.release == 'true'
+    uses: ./.github/workflows/release.yml
+    with:
+      build: ${{ needs.changes.outputs.distributions == 'true' }}
 
   sdk:
     name: SDK
@@ -57,6 +94,17 @@ jobs:
     if: needs.changes.outputs.mcp == 'true'
     uses: ./.github/workflows/mcp.yml
     secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  container:
+    name: MCP image
+    needs: changes
+    if: needs.changes.outputs.container == 'true'
+    uses: ./.github/workflows/mcp-image.yml
+    with:
+      verify-base-images: ${{ needs.changes.outputs.base-images == 'true' }}
+      scan-vulnerabilities: ${{ needs.changes.outputs.vulnerabilities == 'true' }}
+    secrets:
       DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
 
@@ -66,15 +114,15 @@ jobs:
     if: needs.changes.outputs.reference == 'true'
     permissions:
       contents: read
-      pages: write
-      id-token: write
+      pages: write # The called Pages workflow publishes the reference site.
+      id-token: write # The Pages deployment authenticates with OIDC.
     uses: ./.github/workflows/pages.yml
 
   checks:
     name: CI checks
     if: always()
-    needs: [changes, sdk, mcp, reference]
-    runs-on: ubuntu-latest
+    needs: [changes, quality, release, sdk, mcp, container, reference]
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       - name: Require every selected component to pass
@@ -88,7 +136,7 @@ jobs:
           needs = json.loads(os.environ["NEEDS_JSON"])
           if needs["changes"]["result"] != "success":
               raise SystemExit("Change detection did not succeed")
-          for component in ("sdk", "mcp", "reference"):
+          for component in ("quality", "release", "sdk", "mcp", "container", "reference"):
               selected = needs["changes"]["outputs"][component]
               if selected not in ("true", "false"):
                   raise SystemExit(f"Invalid change-detection output for {component}")

@@ -1,0 +1,16 @@
+apis:
+  opendart:
+    root: ../../api_reference/openapi.yaml
+
+extends:
+  - recommended-strict
+
+rules:
+  # FSS documents application error codes, not a 4xx HTTP contract. Preserve it.
+  operation-4xx-response: 'off'
+  # Neither an API license nor a repository license has been established here.
+  # Do not invent an upstream license to satisfy a documentation preference.
+  info-license: 'off'
+  no-unused-components: error
+  no-invalid-media-type-examples: error
+  no-invalid-parameter-examples: error

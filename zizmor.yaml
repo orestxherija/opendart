@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/zizmorcore/zizmor/v1.29.0/support/zizmor.schema.json
+---
+
+# Keep every audit enabled; match the workspace's 48-hour release cooldown.
+rules:
+  dependabot-cooldown:
+    config:
+      days: 2

@@ -1,0 +1,9 @@
+title = "OpenDART secret scanning"
+description = "Scan committed code and staged changes with Betterleaks' built-in rules."
+betterleaksMinVersion = "v1.7.4"
+
+[extend]
+useDefault = true
+
+# Add only demonstrated false positives, scoped to both their paths and values.
+# Never exclude whole fixture, documentation, or generated-code directories.

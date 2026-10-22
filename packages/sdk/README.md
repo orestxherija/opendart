@@ -1,23 +1,35 @@
 # OpenDART SDK
 
-[![SDK checks](https://github.com/orestxherija/opendart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/orestxherija/opendart/actions/workflows/ci.yml?query=branch%3Amain)
+[![CI](https://github.com/orestxherija/opendart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/orestxherija/opendart/actions/workflows/ci.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/github/orestxherija/opendart/branch/main/graph/badge.svg?flag=sdk&token=8TTWOC0RC4)](https://codecov.io/github/orestxherija/opendart)
 ![Python](https://img.shields.io/badge/python-3.14%2B-blue)
 [![code style: Ruff](https://img.shields.io/badge/code%20style-ruff-46a2f1.svg)](https://github.com/astral-sh/ruff)
 [![type check: mypy](https://img.shields.io/badge/type%20check-mypy-blueviolet)](https://mypy.readthedocs.io/)
 
-[![SDK coverage grid](https://codecov.io/github/orestxherija/opendart/branch/main/graphs/tree.svg?token=8TTWOC0RC4&width=700&height=250)](https://codecov.io/github/orestxherija/opendart)
+[![Project coverage grid](https://codecov.io/github/orestxherija/opendart/branch/main/graphs/tree.svg?token=8TTWOC0RC4&width=700&height=250)](https://codecov.io/github/orestxherija/opendart)
 
 Typed asynchronous Python client for the English OpenDART service
 at `https://engopendart.fss.or.kr/engapi`. Requires Python 3.14+.
 
 ## Table of contents
 
+- [Design](#design)
 - [Use the client](#use-the-client)
 - [Financial statements](#financial-statements)
 - [Services and models](#services-and-models)
 - [ZIP downloads](#zip-downloads)
 - [Failures and requests](#failures-and-requests)
+
+## Design
+
+![SDK design: application requests through OpenDart and its shared HTTP transport, response handling, settings, and offline code generation](docs/architecture.svg)
+
+The six generated resource groups share one async HTTP transport. Settings are
+validated before use, and responses become typed models, ZIP bytes, or SDK errors.
+The checked-in OpenAPI reference generates the resource methods and models offline.
+
+Edit the [draw.io source](docs/architecture.drawio), then export it as SVG to
+update [the README diagram](docs/architecture.svg). Keep the source and SVG together.
 
 ## Use the client
 

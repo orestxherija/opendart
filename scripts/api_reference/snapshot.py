@@ -15,11 +15,67 @@ from datetime import UTC, datetime
 from hashlib import sha256
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.parse import urljoin, urlsplit
-from urllib.request import urlopen
+from urllib.request import HTTPRedirectHandler, build_opener
 
 BASE = "https://engopendart.fss.or.kr"
 ROOT = Path(__file__).resolve().parents[2] / "api_reference"
+
+
+class NoGuideRedirects(HTTPRedirectHandler):
+    """Reject redirects before another request can leave the allowlisted guide URL."""
+
+    def redirect_request(self, req, fp, code, msg, headers, _newurl):
+        """Fail on every redirect, including redirects to the same host."""
+        raise HTTPError(req.full_url, code, msg, headers, fp)
+
+
+def read_guide(name, url, cache_dir=None):
+    """Read allowlisted public guide HTML from the optional cache or HTTPS.
+
+    Args:
+        name (str): DE001-DE006 index or AE followed by five ASCII digits.
+        url (str): Official English OpenDART guide index or detail URL.
+        cache_dir (Path | None): Optional directory containing public HTML only.
+
+    Returns:
+        str: UTF-8 decoded HTML.
+
+    Raises:
+        ValueError: The identifier or URL is invalid, or a cache path escapes its directory.
+        urllib.error.HTTPError: The guide returns a redirect or HTTP error.
+        urllib.error.URLError: The guide cannot be fetched.
+        OSError: The HTML cache cannot be read or written.
+        UnicodeError: HTML cannot be decoded as UTF-8.
+    """
+    if not re.fullmatch(r"(?:DE00[1-6]|AE[0-9]{5})", name):
+        raise ValueError("Unexpected guide identifier")
+    target = urlsplit(url)
+    if (
+        target.scheme != "https"
+        or target.netloc != "engopendart.fss.or.kr"
+        or target.path not in {"/guide/main.do", "/guide/detail.do"}
+        or target.fragment
+    ):
+        raise ValueError(f"Unexpected guide URL: {url}")
+    path = None
+    if cache_dir is not None:
+        directory = cache_dir.resolve()
+        path = (directory / (name + ".html")).resolve()
+        if not path.is_relative_to(directory):
+            raise ValueError("Guide cache path must stay within its directory")
+    if path and path.exists():
+        return path.read_text(encoding="utf-8")
+    # Replacing urllib's default redirect handler keeps the allowlist in force
+    # for the entire fetch, including redirects returned by the trusted host.
+    opener = build_opener(NoGuideRedirects())
+    with opener.open(url, timeout=60) as response:
+        html = response.read().decode("utf-8")
+    if path:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(html, encoding="utf-8")
+    return html
 
 
 class GuideParser(HTMLParser):
@@ -234,40 +290,11 @@ def main():
     cli.add_argument("--cache-dir", type=Path)
     args = cli.parse_args()
 
-    def read(name, url):
-        """Read public HTML from the optional cache or fetch and cache it.
-
-        Args:
-            name (str): Index or service identifier used as the cache filename stem.
-            url (str): Public guide URL to fetch when no cached file exists.
-
-        Returns:
-            str: UTF-8 decoded HTML.
-
-        Raises:
-            urllib.error.URLError: The guide cannot be fetched.
-            OSError: The HTML cache cannot be read or written.
-            UnicodeError: HTML cannot be decoded as UTF-8.
-        """
-        path = args.cache_dir / (name + ".html") if args.cache_dir else None
-        if path and path.exists():
-            return path.read_text(encoding="utf-8")
-        target = urlsplit(url)
-        if target.scheme != "https" or target.netloc != "engopendart.fss.or.kr":
-            raise ValueError(f"Unexpected guide URL: {url}")
-        # The scheme and host are checked above before following guide links.
-        with urlopen(url, timeout=60) as response:  # noqa: S310
-            html = response.read().decode("utf-8")
-        if path:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(html, encoding="utf-8")
-        return html
-
     groups = []
     for number in range(1, 7):
         code = f"DE{number:03}"
         source = f"{BASE}/guide/main.do?apiGrpCd={code}"
-        html = read(code, source)
+        html = read_guide(code, source, args.cache_dir)
         parser = GuideParser(html)
         links = list(dict.fromkeys(parser.links))
         table = next(t for t in parser.tables if t["attrs"].get("class") == "tb01")
@@ -278,7 +305,7 @@ def main():
         for link, row in zip(links, catalog, strict=True):
             api_id = re.search(r"apiId=(AE\d+)", link)[1]
             entry = dict(id=api_id, title=row[1], description=row[2], source=urljoin(BASE, link))
-            entries.append(extract(read(api_id, entry["source"]), entry))
+            entries.append(extract(read_guide(api_id, entry["source"], args.cache_dir), entry))
         groups.append(dict(code=code, source=source, services=entries))
         print(f"{code}: {len(entries)} services", flush=True)
     snapshot = dict(

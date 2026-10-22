@@ -1,0 +1,23 @@
+project-includes = ["packages/sdk/src", "packages/mcp/src"]
+project-excludes = ["**/node_modules", "**/__pycache__", "**/*venv/**", "**/.[!/.]*/**"]
+# Editable workspace installs must not cause src/ trees to be excluded.
+disable-project-excludes-heuristics = true
+use-ignore-files = true
+search-path = ["packages/sdk/src", "packages/mcp/src"]
+disable-search-path-heuristics = true
+enable-fallback-search-path = false
+skip-interpreter-query = false
+python-version = "3.14"
+min-severity = "error"
+output-format = "full-text"
+disable-type-errors-in-ide = false
+skip-lsp-config-indexing = false
+preset = "strict"
+infer-with-first-use = true
+check-unannotated-defs = true
+infer-return-types = "checked"
+strict-callable-subtyping = true
+replace-imports-with-any = []
+ignore-missing-imports = []
+enabled-ignores = ["type", "pyrefly"]
+ignore-errors-in-generated-code = false
