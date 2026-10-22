@@ -52,7 +52,7 @@ quality = [
   "zizmor==1.29.0",
 ]
 # Commit messages, coordinated package versions, and built distribution validation.
-release = ["commitizen==4.17.0", "packaging>=25,<27", "twine>=6,<7"]
+release = ["commitizen==4.19.2", "packaging>=25,<27", "twine>=6,<7"]
 # uv installs dev by default. Group includes keep the tool requirements in one place.
 dev = [
   { include-group = "hooks" },
