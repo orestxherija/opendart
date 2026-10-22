@@ -49,14 +49,109 @@ ignore = [
 
 [lint.per-file-ignores]
 # Standalone CLI and generation scripts have dynamic inputs and print progress.
-"scripts/**" = ["ANN", "BLE001", "C901", "D1", "EM", "EXE001", "INP001", "ISC002", "ISC004", "PLC0415", "PLR09", "T201", "TRY003", "TRY301"]
+"scripts/**" = [
+    "ANN",
+    "BLE001",
+    "C901",
+    "D1",
+    "EM",
+    "EXE001",
+    "INP001",
+    "ISC002",
+    "ISC004",
+    "PLC0415",
+    "PLR09",
+    "T201",
+    "TRY003",
+    "TRY301",
+]
 # Beyond the usual test relaxations: PLC0415 because an import inside a test keeps the
 # test self-contained; EM/TRY003 because a mock handler raises library errors inline;
 # S105/S106 because every credential in this suite is a visible placeholder.
-"**/tests/**" = ["ANN", "D", "FBT003", "INP001", "PLR09", "PT006", "PT011", "PT012", "S101", "ARG001", "EM", "PLC0415", "PLR2004", "S105", "S106", "SLF001", "TC", "TRY003", "W505"]
-"**/test_*.py" = ["ANN", "D", "FBT003", "INP001", "PLR09", "PT006", "PT011", "PT012", "S101", "ARG001", "EM", "PLC0415", "PLR2004", "S105", "S106", "SLF001", "TC", "TRY003", "W505"]
-"**/*_test.py" = ["ANN", "D", "FBT003", "INP001", "PLR09", "PT006", "PT011", "PT012", "S101", "ARG001", "EM", "PLC0415", "PLR2004", "S105", "S106", "SLF001", "TC", "TRY003", "W505"]
-"**/conftest.py" = ["ANN", "D", "FBT003", "INP001", "PLR09", "PT006", "PT011", "PT012", "S101", "ARG001", "EM", "PLC0415", "PLR2004", "S105", "S106", "SLF001", "TC", "TRY003", "W505"]
+"**/tests/**" = [
+    "ANN",
+    "D",
+    "FBT003",
+    "INP001",
+    "PLR09",
+    "PT006",
+    "PT011",
+    "PT012",
+    "S101",
+    "ARG001",
+    "EM",
+    "PLC0415",
+    "PLR2004",
+    "S105",
+    "S106",
+    "SLF001",
+    "TC",
+    "TRY003",
+    "W505",
+]
+"**/test_*.py" = [
+    "ANN",
+    "D",
+    "FBT003",
+    "INP001",
+    "PLR09",
+    "PT006",
+    "PT011",
+    "PT012",
+    "S101",
+    "ARG001",
+    "EM",
+    "PLC0415",
+    "PLR2004",
+    "S105",
+    "S106",
+    "SLF001",
+    "TC",
+    "TRY003",
+    "W505",
+]
+"**/*_test.py" = [
+    "ANN",
+    "D",
+    "FBT003",
+    "INP001",
+    "PLR09",
+    "PT006",
+    "PT011",
+    "PT012",
+    "S101",
+    "ARG001",
+    "EM",
+    "PLC0415",
+    "PLR2004",
+    "S105",
+    "S106",
+    "SLF001",
+    "TC",
+    "TRY003",
+    "W505",
+]
+"**/conftest.py" = [
+    "ANN",
+    "D",
+    "FBT003",
+    "INP001",
+    "PLR09",
+    "PT006",
+    "PT011",
+    "PT012",
+    "S101",
+    "ARG001",
+    "EM",
+    "PLC0415",
+    "PLR2004",
+    "S105",
+    "S106",
+    "SLF001",
+    "TC",
+    "TRY003",
+    "W505",
+]
 # Generated OpenAPI descriptions preserve upstream punctuation and long field prose.
 "packages/sdk/src/opendart/models/**" = ["RUF001", "RUF002", "TC003", "W505"]
 "packages/sdk/src/opendart/resources/**" = ["PLR0913", "RUF001", "RUF002", "W505"]
@@ -74,7 +169,25 @@ ignore = [
 "scripts/generate_sdk.py" = ["S603"]
 # The contract harness intentionally uses subprocesses, broad fixture callbacks,
 # and a linear request runner so its bounded audit steps remain visible.
-"tests/contracts/**" = ["ARG002", "ARG005", "BLE001", "C901", "ISC002", "ISC004", "N818", "PERF401", "PLR09", "PLW1510", "PLW2901", "PT011", "RUF012", "S603", "S607", "T201", "TRY301"]
+"tests/contracts/**" = [
+    "ARG002",
+    "ARG005",
+    "BLE001",
+    "C901",
+    "ISC002",
+    "ISC004",
+    "N818",
+    "PERF401",
+    "PLR09",
+    "PLW1510",
+    "PLW2901",
+    "PT011",
+    "RUF012",
+    "S603",
+    "S607",
+    "T201",
+    "TRY301",
+]
 "**/*.ipynb" = ["D100"]
 
 [lint.flake8-annotations]

@@ -1,5 +1,5 @@
 # Use the shared workspace configuration, including when invoked as a module.
-set working-directory := '..'
+set working-directory := '../..'
 
 # List available commands.
 default:
@@ -7,17 +7,17 @@ default:
 
 # Install locked documentation dependencies.
 sync:
-    npm --prefix api_reference ci
+    npm --prefix scripts/api_reference ci
 
 # Check Python tooling and OpenAPI lint.
 lint:
     uv run --no-sync ruff check scripts/api_reference tests
     uv run --no-sync ruff format --check scripts/api_reference tests
-    npm --prefix api_reference run lint
+    npm --prefix scripts/api_reference run lint
 
 # Run offline contract tests.
 test:
-    uv run --no-sync pytest tests/contracts -o addopts=''
+    uv run --no-sync prek run pytest-contracts --all-files --stage pre-push
 
 # Check the reference and generated-file freshness offline.
 check: lint test
@@ -29,4 +29,4 @@ generate:
 
 # Build the static documentation site.
 build:
-    npm --prefix api_reference run build
+    npm --prefix scripts/api_reference run build

@@ -1,0 +1,12 @@
+[run]
+branch = true
+relative_files = true
+data_file = ".cache/coverage/.coverage.mcp"
+source = ["packages/mcp/src/opendart_mcp"]
+
+[report]
+show_missing = true
+skip_covered = true
+
+[xml]
+output = ".cache/coverage/mcp.xml"

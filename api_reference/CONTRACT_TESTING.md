@@ -18,7 +18,7 @@ repository's Safe Chain setup:
 
 ```sh
 uv sync --locked --only-group contracts --only-group dev
-uv run --no-sync pytest tests/contracts -o addopts=''
+uv run --no-sync prek run pytest-contracts --all-files --stage pre-push
 ```
 
 Set `OPENDART_API__API_KEY` to an issued key. The legacy `OPENDART_API_KEY` name is
@@ -123,8 +123,8 @@ catalog, and regenerate:
 uv run --no-sync python scripts/api_reference/build.py
 uv run --no-sync python scripts/api_reference/check.py
 uv run --no-sync python scripts/generate_sdk.py --check
-npm --prefix api_reference run lint
-npm --prefix api_reference run build
+npm --prefix scripts/api_reference run lint
+npm --prefix scripts/api_reference run build
 ```
 
 Redoc receives the corrected media types, schemas, descriptions, and error

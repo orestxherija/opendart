@@ -1,0 +1,12 @@
+[run]
+branch = true
+relative_files = true
+data_file = ".cache/coverage/.coverage.sdk"
+source = ["packages/sdk/src/opendart"]
+
+[report]
+show_missing = true
+skip_covered = true
+
+[xml]
+output = ".cache/coverage/sdk.xml"

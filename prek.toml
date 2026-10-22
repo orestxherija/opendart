@@ -16,8 +16,6 @@ glob = [
     "node_modules/**",
     "vendor/**",
     "**/generated/**",
-    "*.lock",
-    "**/*.lock",
 ]
 
 [default_language_version]
@@ -53,6 +51,181 @@ cooldown_days = 7
 freeze = true
 exclude_tags = ["*-{alpha,beta,rc}*"]
 
+# Fast native checks need no additional runtime or package installation.
+[[repos]]
+repo = "builtin"
+
+[[repos.hooks]]
+id = "fix-byte-order-marker"
+types = ["text"]
+# Vendored conventions are maintained in their upstream repository.
+exclude = '^\.agents/plugins/python-conventions/'
+groups = ["builtin", "format", "fast", "ci"]
+priority = "normalize_encoding"
+
+[[repos.hooks]]
+id = "mixed-line-ending"
+args = ["--fix=lf"]
+types = ["text"]
+# Vendored conventions are maintained in their upstream repository.
+exclude = '^\.agents/plugins/python-conventions/'
+groups = ["builtin", "format", "fast", "ci"]
+priority = "normalize_line_endings"
+
+[[repos.hooks]]
+id = "pretty-format-json"
+args = ["--autofix", "--indent=2", "--no-ensure-ascii", "--no-sort-keys"]
+types = ["json"]
+# Vendored conventions are maintained in their upstream repository.
+exclude = '^\.agents/plugins/python-conventions/'
+groups = ["builtin", "json", "format", "fast", "ci"]
+priority = "normalize_structured"
+
+[[repos.hooks]]
+id = "trailing-whitespace"
+args = ["--markdown-linebreak-ext=md", "--markdown-linebreak-ext=mdx"]
+types = ["text"]
+# Vendored conventions are maintained in their upstream repository.
+exclude = '^\.agents/plugins/python-conventions/'
+groups = ["builtin", "format", "fast", "ci"]
+priority = "normalize_whitespace"
+
+[[repos.hooks]]
+id = "end-of-file-fixer"
+types = ["text"]
+# Vendored conventions are maintained in their upstream repository.
+exclude = '^\.agents/plugins/python-conventions/'
+groups = ["builtin", "format", "fast", "ci"]
+priority = "normalize_eof"
+
+[[repos.hooks]]
+id = "check-added-large-files"
+args = ["--maxkb=500", "--enforce-all"]
+types = ["file"]
+stages = ["pre-commit", "pre-push"]
+# Reviewed upstream catalog and generated lockfile; other checks cover their contents.
+exclude = '^(api_reference/sources/catalog\.json|uv\.lock)$'
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "integrity"
+
+[[repos.hooks]]
+id = "check-case-conflict"
+types = ["file"]
+stages = ["pre-commit", "pre-merge-commit"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "integrity"
+
+[[repos.hooks]]
+id = "check-illegal-windows-names"
+types = ["file"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "integrity"
+
+[[repos.hooks]]
+id = "check-symlinks"
+types = ["symlink"]
+stages = ["pre-commit", "pre-merge-commit"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "integrity"
+
+[[repos.hooks]]
+id = "destroyed-symlinks"
+types = ["file"]
+stages = ["pre-commit", "pre-merge-commit"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "integrity"
+
+[[repos.hooks]]
+id = "check-executables-have-shebangs"
+types = ["text", "executable"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "integrity"
+
+[[repos.hooks]]
+id = "check-shebang-scripts-are-executable"
+types = ["text"]
+# Vendored conventions are maintained in their upstream repository.
+exclude = '^\.agents/plugins/python-conventions/'
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "integrity"
+
+[[repos.hooks]]
+id = "check-merge-conflict"
+args = ["--assume-in-merge"]
+types = ["text"]
+stages = ["pre-commit", "pre-merge-commit", "pre-push"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "syntax"
+
+[[repos.hooks]]
+id = "check-json"
+types = ["json"]
+stages = ["pre-commit", "pre-merge-commit"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "syntax"
+
+[[repos.hooks]]
+id = "check-json5"
+# Prek 0.4 does not identify .jsonc; include the Markdownlint configuration.
+files = '\.json[5c]$'
+types = ["text"]
+stages = ["pre-commit", "pre-merge-commit"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "syntax"
+
+[[repos.hooks]]
+id = "check-toml"
+types = ["toml"]
+stages = ["pre-commit", "pre-merge-commit"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "syntax"
+
+[[repos.hooks]]
+id = "check-yaml"
+args = ["--allow-multiple-documents"]
+types = ["yaml"]
+stages = ["pre-commit", "pre-merge-commit"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "syntax"
+
+[[repos.hooks]]
+id = "check-xml"
+types = ["xml"]
+stages = ["pre-commit", "pre-merge-commit"]
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "syntax"
+
+[[repos.hooks]]
+id = "check-vcs-permalinks"
+types = ["text"]
+# Vendored conventions are maintained in their upstream repository.
+exclude = '^\.agents/plugins/python-conventions/'
+groups = ["builtin", "validate", "fast", "ci"]
+priority = "syntax"
+
+[[repos.hooks]]
+id = "detect-private-key"
+types = ["text"]
+stages = ["pre-commit", "pre-push"]
+groups = ["builtin", "security", "fast", "ci"]
+priority = "security"
+
+[[repos.hooks]]
+id = "no-commit-to-branch"
+args = ["--branch", "main"]
+# Enforce local branch policy; CI uses detached checkouts and main pushes.
+always_run = true
+pass_filenames = false
+groups = ["builtin", "policy", "fast"]
+priority = "policy"
+
+[[repos.hooks]]
+id = "forbid-new-submodules"
+types = ["directory"]
+stages = ["pre-commit", "pre-push"]
+groups = ["builtin", "security", "fast", "ci"]
+priority = "security"
+
 [[repos]]
 repo = "https://github.com/hadolint/hadolint"
 rev = "v2.15.1"
@@ -65,8 +238,9 @@ entry = "ghcr.io/hadolint/hadolint:v2.15.1@sha256:32dac94127fd60b7b7e3fbfc65e138
 types = ["dockerfile"]
 always_run = false
 pass_filenames = true
-groups = ["docker", "lint", "ci"]
-stages = ["pre-commit", "pre-merge-commit"]
+groups = ["docker", "lint", "slow", "ci"]
+# Starting Docker, and pulling the image on first use, is too slow for every commit.
+stages = ["pre-push"]
 require_serial = false
 priority = "analyze"
 log_file = ".prek-hadolint.log"
@@ -84,7 +258,7 @@ entry = "ruff check"
 types_or = ["python", "pyi", "jupyter", "markdown", "pyproject"]
 always_run = false
 pass_filenames = true
-groups = ["python", "lint", "ci"]
+groups = ["python", "lint", "fast", "ci"]
 stages = ["pre-commit", "pre-merge-commit"]
 require_serial = true
 priority = "analyze"
@@ -99,8 +273,243 @@ args = ["--check"]
 types_or = ["python", "pyi", "jupyter", "markdown"]
 always_run = false
 pass_filenames = true
-groups = ["python", "format-check", "ci"]
+groups = ["python", "format-check", "fast", "ci"]
 stages = ["pre-commit", "pre-merge-commit"]
 require_serial = true
 priority = "analyze"
 log_file = ".prek-ruff-format.log"
+
+[[repos]]
+repo = "https://github.com/lycheeverse/lychee.git"
+rev = "lychee-v0.24.2"
+
+[[repos.hooks]]
+id = "lychee"
+name = "Lychee documentation links"
+description = "Checks links in the project's Markdown documentation."
+args = ["LYCHEE_VERSION=0.24.2", "--config=lychee.toml", "--no-progress"]
+types = ["markdown"]
+exclude = '^\.agents/plugins/python-conventions/'
+pass_filenames = true
+groups = ["links", "validate", "slow", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "analyze"
+log_file = ".prek-lychee.log"
+
+# Install the locked workspace and contract dependencies with `just sync` first.
+# --no-sync keeps concurrent hooks from modifying their shared environment.
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "commitizen"
+name = "Commitizen commit message"
+entry = "uv run --locked --no-progress --no-sync cz --config cz.toml check"
+args = ["--allow-abort", "--commit-msg-file"]
+language = "system"
+pass_filenames = true
+groups = ["commit-message"]
+stages = ["commit-msg"]
+priority = "commit_message"
+
+[[repos.hooks]]
+id = "zizmor"
+name = "Zizmor GitHub Actions security"
+entry = "uv run --locked --no-progress --no-sync zizmor"
+args = ["--config=zizmor.yaml", "--no-progress", "--strict-collection", "--persona=pedantic", ".github"]
+language = "system"
+files = '^(\.github/.*\.ya?ml|zizmor\.yaml)$'
+pass_filenames = false
+groups = ["github-actions", "security", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "security"
+
+[[repos.hooks]]
+id = "pip-audit"
+name = "Pip-audit locked workspace dependencies"
+entry = "uv run --locked --no-progress --no-sync bash scripts/pip_audit.sh"
+args = ["--cache-dir=.cache/pip-audit", "--strict", "--aliases=on", "--progress-spinner=off"]
+language = "system"
+# Audit when locked dependencies change; scheduled CI catches newly published advisories.
+files = { glob = ["uv.lock", "scripts/pip_audit.sh", "prek.toml"] }
+pass_filenames = false
+groups = ["python", "dependencies", "security", "slow", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "security"
+
+[[repos.hooks]]
+id = "betterleaks"
+name = "Betterleaks staged secrets"
+entry = "bash scripts/betterleaks.sh git"
+args = ["--config=betterleaks.toml", "--pre-commit", "--redact", "--staged"]
+language = "system"
+always_run = true
+pass_filenames = false
+groups = ["secrets", "security", "fast"]
+stages = ["pre-commit"]
+require_serial = true
+priority = "security"
+log_file = ".prek-betterleaks.log"
+
+[[repos.hooks]]
+id = "markdownlint-cli2"
+name = "Markdownlint"
+entry = "npx --yes --package=markdownlint-cli2@0.23.2 markdownlint-cli2 --config .markdownlint-cli2.jsonc"
+language = "system"
+types = ["markdown"]
+exclude = '^\.agents/plugins/python-conventions/'
+groups = ["markdown", "lint", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+# Separate from Taplo's initial npm installation into the shared cache.
+priority = "quality"
+log_file = ".prek-markdownlint-cli2.log"
+
+[[repos.hooks]]
+id = "taplo-format"
+name = "Taplo format (check)"
+description = "Checks TOML formatting using the repository's Taplo configuration."
+# Invoke npm through PATH so CI's Safe Chain wrapper protects installation.
+entry = "npx --yes --package=@taplo/cli@0.7.0 taplo format --check --config taplo.toml"
+language = "system"
+types = ["toml"]
+# uv generates its lockfile layout.
+exclude = '^uv\.lock$'
+pass_filenames = true
+groups = ["toml", "format-check", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "normalize_structured"
+log_file = ".prek-taplo-format.log"
+
+[[repos.hooks]]
+id = "taplo-lint"
+name = "Taplo lint"
+description = "Checks TOML syntax and available schemas with Taplo."
+entry = "npx --yes --package=@taplo/cli@0.7.0 taplo lint --config taplo.toml"
+language = "system"
+types = ["toml"]
+exclude = '^uv\.lock$'
+pass_filenames = true
+groups = ["toml", "lint", "slow", "ci"]
+# Schema validation fetches remote schemas, so keep network access out of commits.
+stages = ["pre-push"]
+require_serial = true
+priority = "analyze"
+log_file = ".prek-taplo-lint.log"
+
+[[repos.hooks]]
+id = "yamllint"
+name = "Yamllint"
+description = "Checks handwritten YAML with the repository's style and syntax policy."
+entry = "uv run --locked --no-progress --no-sync yamllint --strict --config-file .yamllint.yaml"
+language = "system"
+types = ["yaml"]
+pass_filenames = true
+groups = ["yaml", "lint", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+priority = "analyze"
+log_file = ".prek-yamllint.log"
+
+[[repos.hooks]]
+id = "typos"
+name = "Typos spell check"
+description = "Checks spelling while respecting generated files and documented vendor identifiers."
+entry = "uv run --locked --no-progress --no-sync typos"
+args = ["--force-exclude", "--config", "typos.toml"]
+language = "system"
+types = ["text"]
+pass_filenames = true
+groups = ["spelling", "lint", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+priority = "analyze"
+log_file = ".prek-typos.log"
+
+[[repos.hooks]]
+id = "loq"
+name = "Loq file-size limits"
+description = "Enforces line limits for handwritten files, with explicit legacy baselines."
+entry = "uv run --locked --no-progress --no-sync loq check"
+language = "system"
+# Check the changed files on each commit; CI checks every tracked file.
+types = ["text"]
+groups = ["quality", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+priority = "quality"
+log_file = ".prek-loq.log"
+
+# Path-gated hooks run only when commits or pushes change their inputs.
+[[repos.hooks]]
+id = "pyrefly"
+name = "Pyrefly type checking"
+description = "Type-checks both Python package source trees with strict Pyrefly settings."
+entry = "uv run --locked --no-progress --no-sync pyrefly check --config pyrefly.toml"
+language = "system"
+# A whole-project check takes about a second, so it runs with each commit.
+files = { glob = ["packages/{sdk,mcp}/{src/**,pyproject.toml}", "{pyrefly,pyproject,prek}.toml", "uv.lock"] }
+pass_filenames = false
+groups = ["python", "typecheck", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "typecheck"
+log_file = ".prek-pyrefly.log"
+
+[[repos.hooks]]
+id = "pytest-sdk"
+name = "Pytest (SDK)"
+description = "Runs offline SDK tests and writes isolated coverage and HTML reports."
+entry = "uv run --locked --no-progress --no-sync pytest packages/sdk/tests --cov-config=packages/sdk/.coveragerc.toml --html=.cache/pytest/sdk-report.html -o cache_dir=.cache/pytest/sdk"
+language = "system"
+files = { glob = [
+    "packages/sdk/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
+    # SDK contract tests exercise every service against the reference documents.
+    "api_reference/**/*.{yaml,json}",
+    "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
+] }
+pass_filenames = false
+groups = ["python", "test", "slow", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "test"
+log_file = ".prek-pytest-sdk.log"
+
+[[repos.hooks]]
+id = "pytest-mcp"
+name = "Pytest (MCP)"
+description = "Runs offline MCP tests and writes isolated coverage and HTML reports."
+entry = "uv run --locked --no-progress --no-sync pytest packages/mcp/tests --cov-config=packages/mcp/.coveragerc.toml --html=.cache/pytest/mcp-report.html -o cache_dir=.cache/pytest/mcp"
+language = "system"
+files = { glob = [
+    "packages/mcp/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
+    # MCP runs on the installed SDK.
+    "packages/sdk/{src/**,pyproject.toml}",
+    "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
+] }
+pass_filenames = false
+groups = ["python", "test", "slow", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "test"
+log_file = ".prek-pytest-mcp.log"
+
+[[repos.hooks]]
+id = "pytest-contracts"
+name = "Pytest (offline contracts)"
+description = "Tests API reference tooling and contract validation without live API calls."
+entry = "uv run --locked --no-progress --no-sync pytest tests/contracts --no-cov --html=.cache/pytest/contracts-report.html -o cache_dir=.cache/pytest/contracts"
+language = "system"
+files = { glob = [
+    "tests/{__init__.py,contracts/**}",
+    "scripts/api_reference/*.py",
+    "api_reference/**/*.{yaml,json}",
+    "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
+] }
+pass_filenames = false
+groups = ["python", "test", "slow", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "test"
+log_file = ".prek-pytest-contracts.log"

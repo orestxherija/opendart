@@ -1,0 +1,88 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="mcp-architecture" name="MCP architecture">
+    <mxGraphModel dx="1120" dy="1020" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1120" pageHeight="1020" math="0" shadow="0" background="#ffffff" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="OpenDART MCP · package design" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=27;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#cbd5e1;fillColor=none;strokeColor=none;align=left;spacing=0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="24" y="22" width="1072" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="packages/mcp · import opendart_mcp · native process or local Docker Compose service" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#cbd5e1;fillColor=none;strokeColor=none;align=left;spacing=0;" vertex="1" parent="1">
+          <mxGeometry x="24" y="68" width="1072" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="runtime" value="RUNTIME · local Streamable HTTP service" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f5f3ff;strokeColor=#c4b5fd;shape=swimlane;startSize=36;horizontal=1;align=left;spacingLeft=16;fontStyle=1;collapsible=0;pointerEvents=0;swimlaneFillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="24" y="110" width="1072" height="460" as="geometry" />
+        </mxCell>
+        <mxCell id="service" value="Local service · opendart_mcp/server.py" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ede9fe;strokeColor=#a78bfa;shape=swimlane;startSize=36;horizontal=1;align=left;spacingLeft=16;fontStyle=1;collapsible=0;pointerEvents=0;swimlaneFillColor=#ffffff;" vertex="1" parent="runtime">
+          <mxGeometry x="276" y="55" width="470" height="365" as="geometry" />
+        </mxCell>
+        <mxCell id="mcp-client" value="&lt;b&gt;AI / MCP client&lt;/b&gt;&lt;br&gt;Streamable HTTP&lt;br&gt;Project config: .mcp.json" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#a78bfa;" vertex="1" parent="runtime">
+          <mxGeometry x="24" y="120" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="listener" value="&lt;b&gt;MCPServer(&amp;quot;OpenDART&amp;quot;)&lt;/b&gt;&lt;br&gt;/mcp · Streamable HTTP&lt;br&gt;Host / Origin allowlists&lt;br&gt;DNS rebinding protection" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ede9fe;strokeColor=#8b5cf6;" vertex="1" parent="service">
+          <mxGeometry x="20" y="60" width="430" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="settings" value="&lt;b&gt;Listener settings&lt;/b&gt;&lt;br&gt;OPENDART_MCP_HTTP__*&lt;br&gt;Validated at startup" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#94a3b8;" vertex="1" parent="service">
+          <mxGeometry x="20" y="230" width="205" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="ping" value="&lt;b&gt;Registered tool&lt;/b&gt;&lt;br&gt;ping() → &amp;quot;pong&amp;quot;&lt;br&gt;No key or network calls" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ede9fe;strokeColor=#8b5cf6;" vertex="1" parent="service">
+          <mxGeometry x="245" y="230" width="205" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="sdk-dependency" value="&lt;b&gt;opendart-sdk dependency&lt;/b&gt;&lt;br&gt;Installed with the server&lt;br&gt;Not invoked by ping" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#fef3c7;strokeColor=#f59e0b;" vertex="1" parent="runtime">
+          <mxGeometry x="796" y="120" width="250" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="boundary" value="&lt;b&gt;Deployment boundary&lt;/b&gt;&lt;br&gt;Native: 127.0.0.1:8000&lt;br&gt;Container: 0.0.0.0:8000&lt;br&gt;Compose publishes loopback only&lt;br&gt;No disclosure tools registered yet" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#cbd5e1;" vertex="1" parent="runtime">
+          <mxGeometry x="796" y="260" width="250" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="connection" value="&lt;b&gt;Client connection&lt;/b&gt;&lt;br&gt;Start the service first&lt;br&gt;127.0.0.1:8000/mcp" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#cbd5e1;" vertex="1" parent="runtime">
+          <mxGeometry x="24" y="290" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="build" value="CONTAINER · Dockerfile + docker-compose.yml" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f5f3ff;strokeColor=#c4b5fd;shape=swimlane;startSize=36;horizontal=1;align=left;spacingLeft=16;fontStyle=1;collapsible=0;pointerEvents=0;swimlaneFillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="24" y="600" width="1072" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="builder" value="&lt;b&gt;DHI builder + uv&lt;/b&gt;&lt;br&gt;Locked SDK and MCP packages&lt;br&gt;No development groups" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f5f3ff;strokeColor=#a78bfa;" vertex="1" parent="build">
+          <mxGeometry x="24" y="55" width="250" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="image" value="&lt;b&gt;DHI runtime image&lt;/b&gt;&lt;br&gt;UID/GID 10001 · read-only&lt;br&gt;Compose CPU / memory / PID limits" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ede9fe;strokeColor=#8b5cf6;" vertex="1" parent="build">
+          <mxGeometry x="341" y="55" width="330" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="compose" value="&lt;b&gt;Local Docker Compose&lt;/b&gt;&lt;br&gt;127.0.0.1:8000 → :8000&lt;br&gt;Health check + restart policy" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f5f3ff;strokeColor=#a78bfa;" vertex="1" parent="build">
+          <mxGeometry x="736" y="55" width="310" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="delivery" value="VALIDATION AND DELIVERY · GitHub Actions" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#cbd5e1;shape=swimlane;startSize=36;horizontal=1;align=left;spacingLeft=16;fontStyle=1;collapsible=0;pointerEvents=0;swimlaneFillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="24" y="790" width="1072" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="checks" value="&lt;b&gt;Protocol / container checks&lt;/b&gt;&lt;br&gt;Discovery · ping · Host / Origin&lt;br&gt;Runtime restrictions + secrets" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#94a3b8;" vertex="1" parent="delivery">
+          <mxGeometry x="24" y="60" width="270" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="publish" value="&lt;b&gt;Manual GHCR publishing&lt;/b&gt;&lt;br&gt;Build → test → scan → sign&lt;br&gt;Promote same verified digest" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ede9fe;strokeColor=#8b5cf6;" vertex="1" parent="delivery">
+          <mxGeometry x="356" y="60" width="310" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="audit" value="&lt;b&gt;Daily image audit&lt;/b&gt;&lt;br&gt;Verify signature + rescan digest&lt;br&gt;Trivy vulnerabilities + secrets" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#94a3b8;" vertex="1" parent="delivery">
+          <mxGeometry x="731" y="60" width="315" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="Blue: tool requests / responses · Gray: settings · Dashed purple: container build and release flow" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#cbd5e1;fillColor=none;strokeColor=none;align=left;spacing=0;" vertex="1" parent="1">
+          <mxGeometry x="24" y="988" width="1072" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#2563eb;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=0;entryPerimeter=0;defaultLabelBackgroundColor=gap;startArrow=block;startFill=1;" edge="1" parent="runtime" source="mcp-client" target="listener">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#2563eb;endArrow=block;endFill=1;exitX=0.7616279069767442;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;defaultLabelBackgroundColor=gap;startArrow=block;startFill=1;" edge="1" parent="service" source="listener" target="ping">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#64748b;endArrow=block;endFill=1;exitX=0.5;exitY=0;entryX=0.23837209302325582;entryY=1;exitPerimeter=0;entryPerimeter=0;defaultLabelBackgroundColor=gap;" edge="1" parent="service" source="settings" target="listener">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#7c3aed;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=0;entryPerimeter=0;defaultLabelBackgroundColor=gap;dashed=1;dashPattern=6 4;" edge="1" parent="build" source="builder" target="image">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#7c3aed;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=0;entryPerimeter=0;defaultLabelBackgroundColor=gap;dashed=1;dashPattern=6 4;" edge="1" parent="build" source="image" target="compose">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#7c3aed;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=0;entryPerimeter=0;defaultLabelBackgroundColor=gap;dashed=1;dashPattern=6 4;" edge="1" parent="delivery" source="publish" target="audit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

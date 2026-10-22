@@ -11,7 +11,9 @@ class RequestModel(BaseModel):
     Unknown fields are rejected. Subclasses define endpoint-specific constraints.
     """
 
-    model_config = ConfigDict(extra="forbid", frozen=True, strict=True, populate_by_name=True)
+    model_config = ConfigDict(
+        extra="forbid", frozen=True, strict=True, validate_by_name=True, validate_by_alias=True
+    )
 
     def query(self) -> dict[str, str | int]:
         """Serialize query fields, omitting None and joining array values with commas.
@@ -33,4 +35,6 @@ class ResponseModel(BaseModel):
     their Python name or their upstream name.
     """
 
-    model_config = ConfigDict(extra="allow", strict=True, populate_by_name=True)
+    model_config = ConfigDict(
+        extra="allow", strict=True, validate_by_name=True, validate_by_alias=True
+    )

@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from contextlib import contextmanager
 from io import BytesIO
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, override
 from xml.etree.ElementTree import ParseError
 from zipfile import is_zipfile
 
@@ -68,6 +68,7 @@ class _QueryKeyAuth(httpx2.Auth):
         """
         self._key = settings.api_key
 
+    @override
     def auth_flow(self, request: httpx2.Request) -> Generator[httpx2.Request, httpx2.Response]:
         """Attach the FSS query credential to an outgoing request.
 

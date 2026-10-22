@@ -17,10 +17,11 @@ format:
 # Check types.
 typecheck:
     uv run --no-sync mypy packages/sdk/src
+    uv run --no-sync pyrefly check --config pyrefly.toml packages/sdk/src
 
 # Run SDK tests.
 test:
-    uv run --no-sync pytest packages/sdk/tests
+    uv run --no-sync prek run pytest-sdk --all-files --stage pre-push
 
 # Check the SDK and generated-file freshness.
 check: lint typecheck test

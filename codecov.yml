@@ -23,14 +23,24 @@ coverage:
       sdk:
         flags:
           - sdk
+      mcp:
+        flags:
+          - mcp
     project:
       default: false
       sdk:
         flags:
           - sdk
+      mcp:
+        flags:
+          - mcp
 
 flags:
   sdk:
     paths:
       - packages/sdk/src/opendart/
+    carryforward: false
+  mcp:
+    paths:
+      - packages/mcp/src/opendart_mcp/
     carryforward: false

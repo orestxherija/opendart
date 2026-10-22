@@ -1,0 +1,51 @@
+* text=auto eol=lf
+* whitespace=blank-at-eol,blank-at-eof,space-before-tab
+
+.gitattributes text eol=lf
+.gitignore     text eol=lf
+*.py           text eol=lf diff=python
+*.pyi          text eol=lf diff=python
+*.sh           text eol=lf
+Dockerfile     text eol=lf
+justfile       text eol=lf
+
+*.css      diff=css
+*.html     diff=html
+*.md       diff=markdown
+*.json     text diff
+*.lock     text diff
+*.toml     text diff
+*.xml      text diff
+*.yaml     text diff
+*.yml      text diff
+*.svg      text diff
+*.drawio   text diff
+
+*.gif    binary
+*.ico    binary
+*.jpeg   binary
+*.jpg    binary
+*.pdf    binary
+*.png    binary
+*.webp   binary
+
+# These modules are emitted by scripts/generate_sdk.py; the model base is handwritten.
+/packages/sdk/src/opendart/models/*.py    linguist-generated
+/packages/sdk/src/opendart/models/_base.py linguist-generated=false
+/packages/sdk/src/opendart/resources/*.py linguist-generated
+
+# The reviewed catalog snapshot feeds the generated OpenAPI documents.
+/api_reference/sources/catalog.json linguist-generated
+/api_reference/sources/contract-audit-*.json linguist-generated
+/api_reference/openapi.yaml    linguist-generated
+/api_reference/parameters.yaml linguist-generated
+/api_reference/examples.yaml   linguist-generated
+/api_reference/paths/*.yaml     linguist-generated
+/api_reference/schemas/*.yaml   linguist-generated
+
+/api_reference/**       linguist-documentation
+/packages/*/docs/**     linguist-documentation
+*.md                    linguist-documentation
+
+# Installed agent conventions are maintained outside this project.
+/.agents/plugins/python-conventions/** linguist-vendored

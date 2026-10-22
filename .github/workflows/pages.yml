@@ -7,8 +7,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: reference-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
+    name: Build API reference
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -27,7 +32,7 @@ jobs:
         with:
           node-version: "22.23.3"
           cache: npm
-          cache-dependency-path: api_reference/package-lock.json
+          cache-dependency-path: scripts/api_reference/package-lock.json
       - name: Set up Aikido Safe Chain
         uses: ./.github/actions/setup-safe-chain
       - name: Install Python dependencies
@@ -38,19 +43,28 @@ jobs:
         run: |
           uv run --no-sync ruff check scripts/api_reference tests
           uv run --no-sync ruff format --check scripts/api_reference tests
-          uv run --no-sync pytest tests/contracts -o addopts=''
+          uv run --no-sync prek run pytest-contracts --all-files --stage pre-push
+      - name: Upload offline contract test report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: contracts-test-report
+          path: .cache/pytest/contracts-report.html
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Validate reference and generated files
         run: uv run --no-sync python scripts/api_reference/check.py
       - name: Install Redocly
         run: |
           npm safe-chain-verify
-          npm --prefix api_reference ci
+          npm --prefix scripts/api_reference ci
       - name: Lint OpenAPI
-        run: npm --prefix api_reference run lint
+        run: npm --prefix scripts/api_reference run lint
       - name: Build static reference
         run: |
           mkdir -p site
-          npm --prefix api_reference run build
+          npm --prefix scripts/api_reference run build
       - name: Upload reference artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
@@ -58,14 +72,15 @@ jobs:
           retention-days: 7
 
   deploy:
+    name: Deploy API reference
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 10
     permissions:
       contents: read
-      pages: write
-      id-token: write
+      pages: write # Publish the validated reference artifact to GitHub Pages.
+      id-token: write # Authenticate the Pages deployment with OIDC.
     concurrency:
       group: pages
       cancel-in-progress: false

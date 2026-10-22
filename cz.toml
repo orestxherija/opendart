@@ -1,0 +1,151 @@
+# Commitizen configuration reference: https://commitizen-tools.github.io/commitizen/config/configuration_file/
+#
+# Release policy is explicit below, including Commitizen defaults. Options whose
+# default is null, which TOML cannot represent, remain commented with an example.
+# Keep the `tool.commitizen` path even in this standalone file so this table can be
+# moved into pyproject.toml without being rewritten.
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+use_shortcuts = true
+encoding = "utf-8"
+
+# Questionary prompt-style overrides. Entries merge with Commitizen's defaults.
+# Supported roles are shown below as a ready-to-edit example.
+style = [
+    # ["qmark", "fg:#ff9d00 bold"],
+    # ["question", "bold"],
+    # ["answer", "fg:#ff9d00 bold"],
+    # ["pointer", "fg:#ff9d00 bold"],
+    # ["highlighted", "fg:#ff9d00 bold"],
+    # ["selected", "fg:#cc5454"],
+    # ["separator", "fg:#cc5454"],
+    # ["instruction", ""],
+    # ["text", ""],
+    # ["disabled", "fg:#858585 italic"],
+]
+
+# The workspace root is virtual. Both distributions share this release version;
+# never bump the root's unrelated project.version.
+version_provider = "commitizen"
+version = "0.1.0"
+version_files = ["packages/sdk/pyproject.toml:version", "packages/mcp/pyproject.toml:version"]
+version_scheme = "pep440"
+
+# TAGS
+
+tag_format = "v$version"
+ignored_tag_formats = []
+
+# Create annotated or GPG-signed release tags. A tag message also implies an
+# annotated tag.
+annotated_tag = false
+# annotated_tag_message = "Annotated release tag"
+gpg_sign = false
+
+# BUMP AND RELEASE
+
+# Variables: $current_version and $new_version.
+bump_message = "bump: version $current_version → $new_version"
+
+# Keep breaking changes within 0.x by bumping the minor version. Enable only
+# while the current major version is zero.
+major_version_zero = true
+
+# First numeric suffix used for alpha, beta, rc, and development releases.
+prerelease_offset = 0
+
+# Commands run after version files are updated but before the release commit,
+# and after the release commit and tag, respectively.
+pre_bump_hooks = []
+post_bump_hooks = []
+
+# COMMIT
+
+# Reuse the saved message after a failed `cz commit` attempt.
+retry_after_failure = false
+
+# Add Git's Signed-off-by trailer to commits created by `cz commit`.
+always_signoff = false
+
+# Add `!` to interactive breaking-change subjects in addition to the footer.
+breaking_change_exclamation_in_title = false
+
+# CHECK
+
+# Permit an empty message (normally used to abort a commit).
+allow_abort = false
+
+# Prefixes skipped by `cz check`.
+allowed_prefixes = ["Merge", "Revert", "Pull request", "fixup!", "squash!", "amend!"]
+
+# Maximum first-line length for `cz commit` and `cz check`; zero disables it.
+message_length_limit = 0
+
+# CHANGELOG
+
+changelog_file = "CHANGELOG.md"
+
+# Built-in format is "markdown". If omitted, Commitizen infers the format from
+# changelog_file; installed changelog-format plugins may add other values.
+changelog_format = "markdown"
+
+# Preserve manual edits by prepending only changes since the newest release
+# already present in the changelog.
+changelog_incremental = false
+
+# Ignore commits older than this Git revision when generating a changelog.
+# changelog_start_rev = "v0.1.0"
+
+# Fold prerelease changes into the next full release instead of listing each
+# prerelease separately.
+changelog_merge_prerelease = false
+
+# Generate/update the changelog as part of every `cz bump`.
+update_changelog_on_bump = false
+
+# Optional path to a custom Jinja changelog template.
+# template = "templates/changelog.md.j2"
+
+# Variables exposed to a custom changelog template.
+extras = {}
+
+# Optional top-level overrides for changelog headings and their ordering. Empty
+# values retain the selected convention's mappings and default ordering.
+change_type_map = {}
+change_type_order = []
+
+# CUSTOM CONVENTION (OPTIONAL)
+#
+# Uncomment this section and change `name` above to "cz_customize" to define a
+# convention in TOML. This interface may be removed or renamed in Commitizen 5.
+# Every supported custom-convention field and prompt field is represented below.
+#
+# [tool.commitizen.customize]
+# message_template = "{{change_type}}{% if scope %}({{scope}}){% endif %}: {{message}}"
+# example = "feat(cli): add a guided setup command"
+# schema = "<type>(<scope>): <message>"
+# schema_pattern = '^(feat|fix)(\([^()\r\n]+\))?!?: .+'
+# info_path = "docs/commit-convention.txt"
+# info = "Use the repository's custom commit convention."
+# bump_pattern = '^(BREAKING CHANGE|feat|fix)'
+# bump_map = { "BREAKING CHANGE" = "MAJOR", feat = "MINOR", fix = "PATCH" }
+# bump_map_major_version_zero = { "BREAKING CHANGE" = "MINOR", feat = "MINOR", fix = "PATCH" }
+# change_type_order = ["BREAKING CHANGE", "Feat", "Fix"]
+# commit_parser = '^(?P<change_type>feat|fix)(?:\((?P<scope>[^()\r\n]+)\))?!?:\s(?P<message>.*)'
+# changelog_pattern = '^(BREAKING CHANGE|feat|fix)'
+# change_type_map = { feat = "Feat", fix = "Fix" }
+#
+# [[tool.commitizen.customize.questions]]
+# type = "list" # Common values: list, select, input, and confirm.
+# name = "change_type"
+# message = "Select the type of change"
+# choices = [
+#     { value = "feat", name = "feat: A new feature", key = "f" },
+#     { value = "fix", name = "fix: A bug fix", key = "x" },
+# ]
+# default = "feat"
+# use_search_filter = false
+# use_jk_keys = true
+# multiline = false
+# filter = "" # Reserved for a string-based answer filter; currently work in progress.
