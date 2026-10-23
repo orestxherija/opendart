@@ -170,8 +170,9 @@ HTML for interrupted or offline work. Cache filenames must be official guide IDs
 the chosen cache directory. Use a fresh directory when checking for upstream changes; an existing cache is reused.
 Fetching uses a 60-second timeout per page and does not call the authenticated data API.
 
-With Node.js **22.23.3** available, install the locked dependencies and build the
-static reference using **Redoc CE 3.0.1** and **Redocly CLI 2.64.1**:
+With Node.js 22 or newer available, install the locked dependencies and build the
+static reference with the Redoc CE and Redocly CLI versions locked in
+[`package-lock.json`](../scripts/api_reference/package-lock.json):
 
 ```sh
 npm --prefix scripts/api_reference ci

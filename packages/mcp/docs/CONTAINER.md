@@ -91,11 +91,11 @@ Native execution still accepts `OPENDART_API__API_KEY`. Compose's explicit
 the secret file path. The build context excludes `.env` variants, secret files,
 local virtual environments, and files outside the build allowlist.
 
-The image uses matching Docker Hardened Images for Python 3.14.8 on Alpine 3.24:
-`dhi.io/python:3.14.8-alpine3.24-dev` for the builder and
-`dhi.io/python:3.14.8-alpine3.24` for the runtime. Both base images and uv 0.11.20
-are pinned by version and digest. The builder uses DHI's `/usr/bin/python3.14`,
-so the copied virtual environment resolves the same interpreter in the runtime.
+The image uses matching Docker Hardened Images for Python 3.14 on Alpine: the
+`dhi.io/python` `-dev` variant for the builder and the plain variant for the runtime.
+The Dockerfile pins both base images and the uv binary by version and digest.
+The builder uses DHI's `/usr/bin/python3.14`, so the copied virtual environment
+resolves the same interpreter in the runtime.
 See the [DHI Python guide](https://hub.docker.com/hardened-images/catalog/dhi/python/guides).
 Dependencies are locked,
 installed without development groups, and compiled to bytecode for faster startup.

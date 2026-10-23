@@ -20,12 +20,11 @@ paths = [
 [python]
 paths = ["ruff.toml", "pytest.toml"]
 
-# Zizmor and pip-audit, plus the CI selection tests.
+# Zizmor and pip-audit, plus the CI tests of change selection and shared tool pins.
 [audit]
 paths = [
     "prek.toml",
     "pytest.toml",
-    "zizmor.yaml",
     "uv.lock",
     "scripts/pip_audit.sh",
     ".github/justfile",
@@ -33,6 +32,7 @@ paths = [
     ".github/actions/**",
     ".github/scripts/**",
     ".github/workflows/**",
+    "packages/mcp/Dockerfile",
     "tests/ci/**",
 ]
 

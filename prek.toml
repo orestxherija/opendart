@@ -317,9 +317,9 @@ priority = "commit_message"
 id = "zizmor"
 name = "Zizmor GitHub Actions security"
 entry = "uv run --locked --no-progress --no-sync zizmor"
-args = ["--config=zizmor.yaml", "--no-progress", "--strict-collection", "--persona=pedantic", ".github"]
+args = ["--no-progress", "--strict-collection", "--persona=pedantic", ".github"]
 language = "system"
-files = '^(\.github/.*\.ya?ml|zizmor\.yaml)$'
+files = '^\.github/.*\.ya?ml$'
 pass_filenames = false
 groups = ["github-actions", "security", "fast", "ci"]
 stages = ["pre-commit", "pre-merge-commit"]
@@ -623,12 +623,13 @@ log_file = ".prek-mcp-conformance.log"
 
 [[repos.hooks]]
 id = "pytest-ci"
-name = "Pytest (CI selection)"
-description = "Tests which CI checks each changed path and event selects."
+name = "Pytest (CI)"
+description = "Tests which CI checks each change selects and that shared tool pins match."
 entry = "uv run --locked --no-progress --no-sync pytest tests/ci --no-cov --html=.cache/pytest/ci-report.html -o cache_dir=.cache/pytest/ci"
 language = "system"
 files = { glob = [
-    ".github/{ci-paths.toml,scripts/select_components.py}",
+    ".github/{ci-paths.toml,scripts/select_components.py,actions/setup/action.yml}",
+    "packages/mcp/Dockerfile",
     "tests/ci/**",
     "{pytest,prek}.toml",
     "uv.lock",

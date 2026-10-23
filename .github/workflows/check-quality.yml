@@ -8,7 +8,7 @@ on:
         type: boolean
         default: true
       audit:
-        description: Workflow security, locked dependency audit, and CI selection tests
+        description: Workflow security, locked dependency audit, and CI tests
         type: boolean
         default: false
       links:
@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: just audit
-      - name: Test CI change selection
+      - name: Test CI change selection and shared tool pins
         run: just ci test
 
   links:
