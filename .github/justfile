@@ -9,6 +9,6 @@ default:
 plan base='origin/main' head='' event='pull_request':
     uv run --no-sync python .github/scripts/select_components.py --event {{ event }} --base {{ quote(base) }} --head {{ quote(head) }}
 
-# Test CI change selection.
+# Test CI change selection and the tool pins that must match.
 test:
     uv run --no-sync pytest tests/ci --no-cov --html=.cache/pytest/ci-report.html -o cache_dir=.cache/pytest/ci

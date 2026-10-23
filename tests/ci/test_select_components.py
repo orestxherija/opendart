@@ -40,7 +40,7 @@ def selected(event: Event, *paths: str) -> set[str]:
         ("packages/mcp/tests/test_server.py", {"mcp"}),
         ("packages/mcp/docs/COMPONENT_DESIGN.md", {"mcp"}),
         ("packages/mcp/docs/CONTAINER.md", set()),
-        ("packages/mcp/Dockerfile", {"mcp", "image", "distributions", "release"}),
+        ("packages/mcp/Dockerfile", {"mcp", "image", "distributions", "release", "audit"}),
         (
             "packages/sdk/src/opendart/client.py",
             {"sdk", "mcp", "image", "distributions", "release"},

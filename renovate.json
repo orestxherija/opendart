@@ -129,6 +129,17 @@
       "prBodyNotes": [
         "Update each SHA-256 checksum next to the bumped version from the release's published checksums before merging."
       ]
+    },
+    {
+      "description": "uv records build constraints in uv.lock, so CI's locked sync fails until the lockfile is refreshed.",
+      "matchDepTypes": [
+        "build-constraint"
+      ],
+      "groupName": "build constraints",
+      "automerge": false,
+      "prBodyNotes": [
+        "Run `uv lock` on this branch and commit the updated lockfile before merging."
+      ]
     }
   ],
   "customManagers": [
@@ -226,6 +237,20 @@
       "depNameTemplate": "docker/scout-cli",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Build tools pinned for packages that install from source, in pyproject.toml.",
+      "managerFilePatterns": [
+        "/^pyproject\\.toml$/"
+      ],
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        "build-constraint-dependencies = \\[[^\\]]*\\]",
+        "\"(?<depName>[A-Za-z0-9._-]+)==(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "pypi",
+      "depTypeTemplate": "build-constraint"
     }
   ]
 }
