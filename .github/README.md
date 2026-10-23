@@ -97,10 +97,10 @@ and Dependabot use that directory; `api_reference/` holds API documents and data
   manual runs, also build both wheels and source archives, check their metadata
   and readmes, and smoke-test isolated installations. The isolated installs catch
   runtime imports that only the development environment provides.
-- [SDK checks](workflows/sdk.yml): lint, format, type-check with mypy and Pyrefly,
+- [SDK checks](workflows/sdk.yml): lint, format, type-check with Pyrefly,
   verify generated code, run SDK tests, upload coverage, and build the SDK package
   on Python 3.14.
-- [MCP checks](workflows/mcp.yml): Hadolint, Python lint, format, mypy and Pyrefly
+- [MCP checks](workflows/mcp.yml): Hadolint, Python lint, format, Pyrefly
   type checks, test listener settings, smoke-test the local HTTP server, build the
   MCP package, and validate Compose on Python 3.14.
 - [MCP image checks](workflows/mcp-image.yml): when the image's inputs change, and

@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/github/orestxherija/opendart/branch/main/graph/badge.svg?flag=sdk&token=8TTWOC0RC4)](https://codecov.io/github/orestxherija/opendart)
 ![Python](https://img.shields.io/badge/python-3.14%2B-blue)
 [![code style: Ruff](https://img.shields.io/badge/code%20style-ruff-46a2f1.svg)](https://github.com/astral-sh/ruff)
-[![type check: mypy](https://img.shields.io/badge/type%20check-mypy-blueviolet)](https://mypy.readthedocs.io/)
+[![type check: Pyrefly](https://img.shields.io/badge/type%20check-pyrefly-blueviolet)](https://pyrefly.org/)
 
 [![Project coverage grid](https://codecov.io/github/orestxherija/opendart/branch/main/graphs/tree.svg?token=8TTWOC0RC4&width=700&height=250)](https://codecov.io/github/orestxherija/opendart)
 

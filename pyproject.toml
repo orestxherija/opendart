@@ -44,7 +44,6 @@ quality = [
   "loq>=0.1,<0.2",
   "pip-audit==2.10.1",
   "ruff>=0.17.1,<0.18",
-  "mypy>=1.15,<2",
   "pyrefly>=1.1.1,<1.2",
   "types-PyYAML>=6,<7",
   "typos==1.48.0",
@@ -69,9 +68,3 @@ source = ["packages/sdk/src/opendart", "packages/mcp/src/opendart_mcp"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-
-[tool.mypy]
-python_version = "3.14"
-strict = true
-files = ["packages/sdk/src", "packages/mcp/src"]
-plugins = ["pydantic.mypy"]

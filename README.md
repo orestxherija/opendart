@@ -142,7 +142,6 @@ the contract test harness lives in `tests/contracts/`.
 ```sh
 uv sync --locked --all-packages --group contracts
 uv run --no-sync pytest
-uv run --no-sync mypy
 uv run --no-sync pyrefly check
 uv run --no-sync ruff check packages scripts tests
 uv run --no-sync ruff format --check packages scripts tests
@@ -157,7 +156,7 @@ configuration and marker checks, randomized order, up to eight parallel workers,
 timeouts, blocked network sockets, and HTML reports. The existing AnyIO tests use
 their explicit markers. Run `uv run --no-sync pytest -n 0` for a serial run.
 [`pyrefly.toml`](pyrefly.toml) applies strict type checking to both packages' source
-trees, including generated SDK code, alongside the existing mypy checks.
+trees, including generated SDK code.
 
 After syncing, run `uv run --no-sync prek install` to install the configured Git
 hooks. Commitizen validates new commit messages at the `commit-msg` stage using
