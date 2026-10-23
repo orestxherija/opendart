@@ -24,6 +24,12 @@ max_line_length = 100
 indent_size = 2
 tab_width = 2
 
+# Shfmt also reads these keys; direnv runs .envrc with bash.
+[{*.sh,.envrc}]
+indent_size = 2
+tab_width = 2
+switch_case_indent = true
+
 # Taplo uses four spaces for other TOML files and two for package manifests.
 [pyproject.toml]
 indent_size = 2

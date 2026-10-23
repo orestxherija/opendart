@@ -164,7 +164,7 @@ a `title`, tags (`identity`, `filings`, `documents`, `financials`, `events`, `ow
   only failures from the suite's fixture components, features the server does not offer, and one upstream SDK
   leniency. A pre-push hook and an MCP workflow job (skipped for drafts) run it.
 - The MCP workflow, path filters, prek hooks, and `just mcp` recipes gain these checks; FastMCP and `mcp` update in
-  one Dependabot group.
+  one Renovate group.
 - The container sets `TOKIO_WORKER_THREADS=1`, `PYTHON_CPU_COUNT=1`, `FASTMCP_SHOW_SERVER_BANNER=false`, and a
   directory cache under `/tmp`; its memory limit is raised after measuring the loaded directory and document cache.
 

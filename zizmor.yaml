@@ -1,8 +1,14 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/zizmorcore/zizmor/v1.29.0/support/zizmor.schema.json
 ---
 
-# Keep every audit enabled; match the workspace's 48-hour release cooldown.
+# Keep every audit enabled. Called workflows inherit their caller's concurrency group.
 rules:
-  dependabot-cooldown:
-    config:
-      days: 2
+  concurrency-limits:
+    ignore:
+      - check-mcp-image.yml
+      - check-mcp.yml
+      - check-quality.yml
+      - check-reference.yml
+      - check-release.yml
+      - check-sdk.yml
+      - test-live-contracts.yml

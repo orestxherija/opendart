@@ -23,6 +23,11 @@ test:
 check: lint test
     uv run --no-sync python scripts/api_reference/check.py
 
+# Check operations against the live API: those changed since base, or all without one. Needs a key.
+contracts base='':
+    uv run --no-sync python -m tests.contracts.selection --base {{ quote(base) }} --head "$(git rev-parse HEAD)" --output contract-results/selection.json
+    uv run --no-sync python -m tests.contracts.run --selection contract-results/selection.json --report contract-results/report.json
+
 # Regenerate the OpenAPI reference from the source snapshot.
 generate:
     uv run --no-sync python scripts/api_reference/build.py

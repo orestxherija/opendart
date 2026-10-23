@@ -22,9 +22,12 @@ typecheck:
 test:
     uv run --no-sync prek run pytest-sdk --all-files --stage pre-push
 
-# Check the SDK and generated-file freshness.
-check: lint typecheck test
+# Check that the generated SDK files match the reference.
+generated:
     uv run --no-sync python scripts/generate_sdk.py --check
+
+# Check the SDK and generated-file freshness.
+check: lint typecheck test generated
 
 # Regenerate the SDK from the checked-in reference.
 generate:

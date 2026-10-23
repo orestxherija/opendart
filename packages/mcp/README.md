@@ -296,7 +296,7 @@ as a secret, memory limits, image metadata, and publishing.
 ## Publish to GHCR
 
 CI publishes the image to `ghcr.io/orestxherija/opendart-mcp` when a push to `main` changes its inputs and passes
-every selected check. The **MCP container** workflow tests, scans, and signs one candidate, then promotes that
+every selected check. The **Publish MCP image** workflow tests, scans, and signs one candidate, then promotes that
 digest to `main` and `sha-<full-commit>`; a `vX.Y.Z` release tag promotes the tagged commit's digest. Pin
 deployments to the digest:
 

@@ -1,15 +1,10 @@
-name: API reference Pages
+name: Check API reference
 
 on:
   workflow_call:
-  workflow_dispatch:
 
 permissions:
   contents: read
-
-concurrency:
-  group: reference-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -21,29 +16,16 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Set up Python
-        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - name: Set up
+        uses: ./.github/actions/setup
         with:
-          version: "0.11.20"
-          python-version: "3.14"
-          enable-cache: true
-      - name: Set up Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "22.23.3"
-          cache: npm
-          cache-dependency-path: scripts/api_reference/package-lock.json
-      - name: Set up Aikido Safe Chain
-        uses: ./.github/actions/setup-safe-chain
-      - name: Install Python dependencies
-        run: |
-          uv safe-chain-verify
-          uv sync --locked --only-group dev --only-group contracts
-      - name: Check reference tooling and test contracts offline
-        run: |
-          uv run --no-sync ruff check scripts/api_reference tests
-          uv run --no-sync ruff format --check scripts/api_reference tests
-          uv run --no-sync prek run pytest-contracts --all-files --stage pre-push
+          sync: --only-group dev --only-group contracts
+          node: true
+          npm-cache: scripts/api_reference/package-lock.json
+      - name: Install Redocly
+        run: just reference sync
+      - name: Check tooling, offline contract tests, OpenAPI lint, and generated files
+        run: just reference check
       - name: Upload offline contract test report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -53,19 +35,9 @@ jobs:
           include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 7
-      - name: Validate reference and generated files
-        run: uv run --no-sync python scripts/api_reference/check.py
-      - name: Install Redocly
-        run: |
-          npm safe-chain-verify
-          npm --prefix scripts/api_reference ci
-      - name: Lint OpenAPI
-        run: npm --prefix scripts/api_reference run lint
       - name: Build static reference
-        run: |
-          mkdir -p site
-          npm --prefix scripts/api_reference run build
-      - name: Upload reference artifact
+        run: just reference build
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: site

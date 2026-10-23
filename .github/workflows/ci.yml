@@ -4,174 +4,166 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    # Drafts skip the expensive checks; marking a draft ready runs them.
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
+    inputs:
+      quality:
+        description: File, style, and secret checks
+        type: boolean
+        default: true
+      audit:
+        description: Workflow security and locked dependency audit
+        type: boolean
+        default: true
+      release:
+        description: Release metadata and helper tests
+        type: boolean
+        default: true
+      distributions:
+        description: Build and smoke-test both distributions
+        type: boolean
+        default: true
+      sdk:
+        description: SDK checks
+        type: boolean
+        default: true
+      mcp:
+        description: MCP checks and protocol conformance
+        type: boolean
+        default: true
+      image:
+        description: Build, test, and scan the MCP image
+        type: boolean
+        default: true
+      reference:
+        description: API reference build; deploys from main
+        type: boolean
+        default: true
+      contracts:
+        description: Test every operation against the live API; main only
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  # Only supersede runs for the same PR. Each main push must keep its own
-  # comparison, even when a later push changes a different component.
   group: ci-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  changes:
-    name: Detect changes
-    # Light jobs use the cheaper single-CPU runner; it has Git and Python.
+  select:
+    name: Select checks
     runs-on: ubuntu-slim
     timeout-minutes: 5
-    permissions:
-      contents: read
-      pull-requests: read # Read the complete PR diff for component selection.
     outputs:
-      # Pushes to main rerun only what the pull request cannot cover: SDK and MCP
-      # tests check merged Python changes and upload Codecov's baseline, and the
-      # reference build feeds the Pages deployment. Publishing and the release
-      # steps recheck the image and distributions before anything ships.
-      quality: >-
-        ${{ github.event_name == 'workflow_dispatch'
-        || (github.event_name == 'pull_request' && steps.filter.outputs.quality == 'true') }}
-      audit: >-
-        ${{ github.event_name == 'workflow_dispatch'
-        || (github.event_name == 'pull_request' && steps.filter.outputs.audit == 'true') }}
-      release: >-
-        ${{ github.event_name == 'workflow_dispatch'
-        || (github.event_name == 'pull_request' && (steps.filter.outputs.release == 'true'
-        || (!github.event.pull_request.draft && steps.filter.outputs.distributions == 'true'))) }}
-      sdk: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.sdk == 'true' }}
-      mcp: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.mcp == 'true' }}
-      reference: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.reference == 'true' }}
-      # Expensive builds run when their inputs change, except on draft PRs.
-      distributions: >-
-        ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request'
-        && !github.event.pull_request.draft && steps.filter.outputs.distributions == 'true') }}
-      container: >-
-        ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request'
-        && !github.event.pull_request.draft && steps.filter.outputs.container == 'true') }}
-      # Pushes to main that change the image's inputs or its publisher publish it
-      # after CI passes.
-      publish: >-
-        ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'
-        && (steps.filter.outputs.container == 'true' || steps.filter.outputs.publisher == 'true') }}
-      base-images: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.base-images == 'true' }}
-      vulnerabilities: >-
-        ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.vulnerabilities == 'true' }}
+      selection: ${{ steps.select.outputs.selection }}
+      skippable: ${{ steps.select.outputs.skippable }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Fetch push comparison history before checkout removes credentials.
           fetch-depth: 0
           persist-credentials: false
-      - name: Find affected components
-        if: github.event_name != 'workflow_dispatch'
-        id: filter
-        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+      - name: Set up Python
+        uses: ./.github/actions/setup
         with:
-          # On pushes, compare the full push with its previous commit. PRs use
-          # the complete PR diff through the GitHub API instead.
-          base: ${{ github.event_name == 'push' && github.ref || '' }}
-          filters: .github/ci-paths.yml
-          # A leading ! excludes matching files from that filter.
-          predicate-quantifier: some-with-excludes
+          cache: false
+      - name: Select checks for the changed files
+        id: select
+        run: uv run --no-project .github/scripts/select_components.py
 
   quality:
-    name: Repository quality
-    needs: changes
-    if: needs.changes.outputs.quality == 'true'
-    uses: ./.github/workflows/quality.yml
+    name: Quality
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).quality
+    uses: ./.github/workflows/check-quality.yml
     with:
-      audit: ${{ needs.changes.outputs.audit == 'true' }}
+      style: ${{ fromJSON(needs.select.outputs.selection).style }}
+      audit: ${{ fromJSON(needs.select.outputs.selection).audit }}
 
   release:
     name: Release
-    needs: changes
-    if: needs.changes.outputs.release == 'true'
-    uses: ./.github/workflows/release.yml
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).release
+    uses: ./.github/workflows/check-release.yml
     with:
-      build: ${{ needs.changes.outputs.distributions == 'true' }}
+      build: ${{ fromJSON(needs.select.outputs.selection).distributions }}
 
   sdk:
     name: SDK
-    needs: changes
-    if: needs.changes.outputs.sdk == 'true'
-    uses: ./.github/workflows/sdk.yml
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).sdk
+    uses: ./.github/workflows/check-sdk.yml
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   mcp:
     name: MCP
-    needs: changes
-    if: needs.changes.outputs.mcp == 'true'
-    uses: ./.github/workflows/mcp.yml
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).mcp
+    uses: ./.github/workflows/check-mcp.yml
+    with:
+      conformance: ${{ fromJSON(needs.select.outputs.selection).conformance }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  container:
+  image:
     name: MCP image
-    needs: changes
-    if: needs.changes.outputs.container == 'true'
-    uses: ./.github/workflows/mcp-image.yml
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).image
+    uses: ./.github/workflows/check-mcp-image.yml
     with:
-      verify-base-images: ${{ needs.changes.outputs.base-images == 'true' }}
-      scan-vulnerabilities: ${{ needs.changes.outputs.vulnerabilities == 'true' }}
+      verify-base-images: ${{ fromJSON(needs.select.outputs.selection).base_images }}
+      scan-vulnerabilities: ${{ fromJSON(needs.select.outputs.selection).vulnerabilities }}
     secrets:
       DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
 
   reference:
     name: API reference
-    needs: changes
-    if: needs.changes.outputs.reference == 'true'
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).reference
     permissions:
       contents: read
-      pages: write # The called Pages workflow publishes the reference site.
+      pages: write # The called workflow deploys the reference site from main.
       id-token: write # The Pages deployment authenticates with OIDC.
-    uses: ./.github/workflows/pages.yml
+    uses: ./.github/workflows/check-reference.yml
 
   checks:
     name: CI checks
     if: always()
-    needs: [changes, quality, release, sdk, mcp, container, reference]
+    needs: [select, quality, release, sdk, mcp, image, reference]
     runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
-      - name: Require every selected component to pass
-        env:
-          NEEDS_JSON: ${{ toJSON(needs) }}
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-
-          needs = json.loads(os.environ["NEEDS_JSON"])
-          if needs["changes"]["result"] != "success":
-              raise SystemExit("Change detection did not succeed")
-          for component in ("quality", "release", "sdk", "mcp", "container", "reference"):
-              selected = needs["changes"]["outputs"][component]
-              if selected not in ("true", "false"):
-                  raise SystemExit(f"Invalid change-detection output for {component}")
-              expected = "success" if selected == "true" else "skipped"
-              actual = needs[component]["result"]
-              print(f"{component}: {actual} (expected {expected})")
-              if actual != expected:
-                  raise SystemExit(f"{component} did not complete as expected")
-          PY
+      - name: Require every selected check to pass
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}
+          allowed-skips: ${{ needs.select.outputs.skippable }}
 
   publish:
     name: Publish MCP image
-    # Publish only after every selected check passes for this push. The called
-    # workflow serializes publishers and never moves main to an older commit.
-    needs: [changes, checks]
-    if: ${{ !cancelled() && needs.changes.outputs.publish == 'true' && needs.checks.result == 'success' }}
+    needs: [select, checks]
+    if: >-
+      !cancelled() && needs.select.result == 'success' && needs.checks.result == 'success'
+      && fromJSON(needs.select.outputs.selection).publish
     permissions:
       contents: read
       packages: write # Push, promote, and tag the verified image in GHCR.
       id-token: write # Sign the image digest with keyless Cosign OIDC.
-    uses: ./.github/workflows/mcp-container.yml
+    uses: ./.github/workflows/publish-mcp-image.yml
     secrets:
       DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
       DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
+
+  contracts:
+    name: Live API contracts
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).contracts
+    uses: ./.github/workflows/test-live-contracts.yml
+    with:
+      base: ${{ github.event_name == 'push' && github.event.before || '' }}
+    secrets:
+      OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}

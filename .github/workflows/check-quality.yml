@@ -1,0 +1,90 @@
+name: Check quality
+
+on:
+  workflow_call:
+    inputs:
+      style:
+        description: File, style, and secret checks across the repository
+        type: boolean
+        default: true
+      audit:
+        description: Workflow security, locked dependency audit, and CI selection tests
+        type: boolean
+        default: false
+      links:
+        description: Documentation links, including external sites
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  style:
+    name: Files, style, and secrets
+    if: inputs.style
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - name: Checkout with complete history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The secret scan covers intermediate commits, even when a later commit removes a secret.
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          sync: --only-group hooks --only-group quality
+          node: true
+      - name: Check files, style, workflows, spelling, and file lengths
+        run: just quality
+      - name: Scan Git history for secrets
+        run: just secrets
+
+  audit:
+    name: Workflow and dependency audit
+    if: inputs.audit
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          sync: --only-group hooks --only-group quality --only-group test
+      - name: Audit workflows and locked Python dependencies
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: just audit
+      - name: Test CI change selection
+        run: just ci test
+
+  links:
+    name: Documentation links
+    if: inputs.links
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          sync: --only-group hooks
+      - name: Check documentation links
+        run: just links
+      - name: Upload link report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: documentation-link-report
+          path: .prek-lychee.log
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7

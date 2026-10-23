@@ -327,6 +327,21 @@ require_serial = true
 priority = "security"
 
 [[repos.hooks]]
+id = "actionlint"
+name = "Actionlint GitHub Actions workflows"
+description = "Checks workflow syntax, expressions, and run scripts with ShellCheck."
+entry = "uv run --locked --no-progress --no-sync actionlint"
+args = ["-no-color", "-pyflakes="]
+language = "system"
+files = '^\.github/workflows/.*\.ya?ml$'
+pass_filenames = true
+groups = ["github-actions", "lint", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "analyze"
+log_file = ".prek-actionlint.log"
+
+[[repos.hooks]]
 id = "pip-audit"
 name = "Pip-audit locked workspace dependencies"
 entry = "uv run --locked --no-progress --no-sync bash scripts/pip_audit.sh"
@@ -413,6 +428,50 @@ groups = ["yaml", "lint", "fast", "ci"]
 stages = ["pre-commit", "pre-merge-commit"]
 priority = "analyze"
 log_file = ".prek-yamllint.log"
+
+[[repos.hooks]]
+id = "shellcheck"
+name = "ShellCheck"
+description = "Checks shell scripts for portability and correctness."
+entry = "uv run --locked --no-progress --no-sync shellcheck"
+language = "system"
+types = ["shell"]
+exclude = '^\.agents/plugins/python-conventions/'
+pass_filenames = true
+groups = ["shell", "lint", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+priority = "analyze"
+log_file = ".prek-shellcheck.log"
+
+[[repos.hooks]]
+id = "shfmt"
+name = "Shfmt format (check)"
+description = "Checks shell formatting against the repository's EditorConfig settings."
+entry = "uv run --locked --no-progress --no-sync shfmt"
+args = ["--diff"]
+language = "system"
+types = ["shell"]
+exclude = '^\.agents/plugins/python-conventions/'
+pass_filenames = true
+groups = ["shell", "format-check", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+priority = "normalize_structured"
+log_file = ".prek-shfmt.log"
+
+[[repos.hooks]]
+id = "renovate-config"
+name = "Renovate configuration"
+description = "Validates renovate.json with Renovate's strict validator."
+# Renovate needs Node.js 24 and validates its own configuration on every run, so CI skips this.
+entry = "npx --yes --package=renovate@44.181.0 renovate-config-validator --strict"
+language = "system"
+files = '^renovate\.json$'
+pass_filenames = false
+groups = ["renovate", "validate", "slow"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "analyze"
+log_file = ".prek-renovate-config.log"
 
 [[repos.hooks]]
 id = "typos"
@@ -561,6 +620,25 @@ stages = ["pre-push"]
 require_serial = true
 priority = "test"
 log_file = ".prek-mcp-conformance.log"
+
+[[repos.hooks]]
+id = "pytest-ci"
+name = "Pytest (CI selection)"
+description = "Tests which CI checks each changed path and event selects."
+entry = "uv run --locked --no-progress --no-sync pytest tests/ci --no-cov --html=.cache/pytest/ci-report.html -o cache_dir=.cache/pytest/ci"
+language = "system"
+files = { glob = [
+    ".github/{ci-paths.toml,scripts/select_components.py}",
+    "tests/ci/**",
+    "{pytest,prek}.toml",
+    "uv.lock",
+] }
+pass_filenames = false
+groups = ["python", "test", "fast", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "test"
+log_file = ".prek-pytest-ci.log"
 
 [[repos.hooks]]
 id = "pytest-contracts"

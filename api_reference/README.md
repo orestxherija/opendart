@@ -220,7 +220,7 @@ The lint exceptions are intentional and narrow:
 
 ## Publish with GitHub Pages
 
-The [Pages workflow](../.github/workflows/pages.yml) validates generated-file
+The [reference workflow](../.github/workflows/check-reference.yml) validates generated-file
 freshness, coverage, schemas, and examples with `check.py` (which also runs
 `build.py --check`), then runs Redocly lint and HTML generation. Python
 dependencies come from `uv.lock`; Redocly comes from
@@ -229,7 +229,7 @@ via `npm ci`. The build reads the checked-in reference and makes no OpenDART API
 
 [CI](../.github/workflows/ci.yml) calls this workflow when the reference, shared
 Python dependencies, or relevant CI setup changes; see the
-[path rules](../.github/ci-paths.yml). SDK-only and MCP-only changes skip it.
+[path rules](../.github/ci-paths.toml). SDK-only and MCP-only changes skip it.
 On pull requests, the workflow uploads a `github-pages` artifact containing the
 generated HTML for review, retained for seven days. Pull requests do not deploy.
 Relevant pushes to `main`, and manual runs on `main`, deploy the same generated
@@ -246,19 +246,19 @@ To enable publication:
    merge or push to `main`.
 3. Open the **CI** run in **Actions** and expand **API reference**. Its deployment
    links to the published site, normally `https://orestxherija.github.io/opendart/`.
-   To rebuild without a new commit, open **API reference Pages** and use
-   **Run workflow** with the `main` branch.
+   To rebuild without a new commit, open **CI**, use **Run workflow** with the
+   `main` branch, and keep **reference** selected.
 
 Only `site/` is published. Jekyll and a separate hosting service are unnecessary.
 A custom domain can be configured in **Settings → Pages**, with the corresponding
 DNS records at the domain provider. With Actions publication, a repository
 `CNAME` file is not required. Pages hosts the reference; FSS hosts the API.
 
-Dependabot checks npm, Python, and action dependencies. Review renderer updates
+Renovate checks npm, Python, and action dependencies. Review renderer updates
 with the generated output and check navigation, search, color modes, and examples.
 
 Live operation-level contract checks are implemented in the
-[contract workflow](../.github/workflows/contracts.yml). Upstream-guide refresh
+[contract workflow](../.github/workflows/test-live-contracts.yml). Upstream-guide refresh
 automation and semantic compatibility classification are not yet implemented. Refresh into a fresh cache and review the
 resulting diff separately
 from publication. Formatting and schema lint cannot detect upstream changes;

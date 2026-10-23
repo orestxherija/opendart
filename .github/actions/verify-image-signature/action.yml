@@ -1,0 +1,36 @@
+name: Verify image signature
+description: Optionally sign an image digest with keyless Cosign, then verify the publishing workflow signed it.
+
+inputs:
+  image:
+    description: Image reference with an immutable digest
+    required: true
+  sign:
+    description: Sign the digest first; the job needs id-token write
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      with:
+        cosign-release: v3.1.4
+    - name: Sign digest
+      if: inputs.sign == 'true'
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+      run: cosign sign --yes "$IMAGE"
+    # Fulcio records the workflow that defines the job, so CI and manual publishes share this identity.
+    - name: Verify publishing workflow identity
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+      run: >-
+        cosign verify "$IMAGE"
+        --certificate-identity
+        "https://github.com/$GITHUB_REPOSITORY/.github/workflows/publish-mcp-image.yml@refs/heads/$DEFAULT_BRANCH"
+        --certificate-oidc-issuer https://token.actions.githubusercontent.com
