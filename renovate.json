@@ -61,6 +61,13 @@
       "enabled": false
     },
     {
+      "description": "opendart-sdk is a workspace member, not a PyPI package; releases update MCP's range with the SDK version.",
+      "matchPackageNames": [
+        "opendart-sdk"
+      ],
+      "enabled": false
+    },
+    {
       "description": "fastmcp-tasks patches mcp internals: upgrade FastMCP and the MCP SDK together, gated by the task tests and the component lock check.",
       "matchDatasources": [
         "pypi"
