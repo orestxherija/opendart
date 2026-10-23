@@ -458,6 +458,47 @@ priority = "typecheck"
 log_file = ".prek-pyrefly.log"
 
 [[repos.hooks]]
+id = "mcp-components"
+name = "MCP component lock"
+description = "Checks MCP component versions, definition fingerprints, and the tool token budget against the lock."
+entry = "uv run --locked --no-progress --no-sync python scripts/check_mcp_components.py"
+language = "system"
+# Building the server's manifest offline takes about a second, so it runs with each commit.
+files = { glob = [
+    "packages/mcp/{src/**,pyproject.toml,components.lock.json}",
+    "scripts/check_mcp_components.py",
+    "{prek.toml,uv.lock}",
+] }
+pass_filenames = false
+groups = ["python", "mcp", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "quality"
+log_file = ".prek-mcp-components.log"
+
+[[repos.hooks]]
+id = "mcp-registry"
+name = "MCP registry freshness"
+description = "Checks that the generated MCP service registry matches the API catalog and the SDK naming rules."
+entry = "uv run --locked --no-progress --no-sync python scripts/generate_mcp_registry.py --check"
+language = "system"
+# Generation takes about five seconds, so it runs before pushes that change its inputs.
+files = { glob = [
+    "api_reference/{sources/catalog.json,paths/**}",
+    "scripts/generate_{mcp_registry,sdk}.py",
+    "packages/mcp/src/opendart_mcp/registry/_generated.py",
+    # The generator formats its output with the locked Ruff and the repository configuration.
+    "{ruff,prek}.toml",
+    "uv.lock",
+] }
+pass_filenames = false
+groups = ["python", "mcp", "slow", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "quality"
+log_file = ".prek-mcp-registry.log"
+
+[[repos.hooks]]
 id = "pytest-sdk"
 name = "Pytest (SDK)"
 description = "Runs offline SDK tests and writes isolated coverage and HTML reports."
@@ -486,6 +527,11 @@ files = { glob = [
     "packages/mcp/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
     # MCP runs on the installed SDK.
     "packages/sdk/{src/**,pyproject.toml}",
+    # Registry tests run the generator on its inputs and parse the component design;
+    # manifest tests run the component lock script.
+    "packages/mcp/docs/COMPONENT_DESIGN.md",
+    "scripts/{check_mcp_components,generate_mcp_registry,generate_sdk}.py",
+    "api_reference/{sources/catalog.json,paths/**}",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
 ] }
 pass_filenames = false
@@ -494,6 +540,27 @@ stages = ["pre-push"]
 require_serial = true
 priority = "test"
 log_file = ".prek-pytest-mcp.log"
+
+[[repos.hooks]]
+id = "mcp-conformance"
+name = "MCP conformance"
+description = "Runs the official MCP conformance suite in both protocol eras against an isolated server without an API key."
+entry = "uv run --locked --no-progress --no-sync python scripts/check_mcp_conformance.py"
+language = "system"
+# Starting a server and running the pinned suite takes a few seconds once npx has cached
+# it, so it runs before pushes that change the server, its SDK, the baseline, or the runner.
+files = { glob = [
+    "packages/mcp/{src/**,pyproject.toml,conformance-baseline.yaml}",
+    "packages/sdk/{src/**,pyproject.toml}",
+    "scripts/check_mcp_conformance.py",
+    "{prek.toml,uv.lock}",
+] }
+pass_filenames = false
+groups = ["python", "mcp", "slow", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "test"
+log_file = ".prek-mcp-conformance.log"
 
 [[repos.hooks]]
 id = "pytest-contracts"

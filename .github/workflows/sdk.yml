@@ -40,8 +40,6 @@ jobs:
         run: uv run --no-sync ruff check packages/sdk scripts/generate_sdk.py
       - name: Check SDK and generator formatting
         run: uv run --no-sync ruff format --check packages/sdk scripts/generate_sdk.py
-      - name: Check SDK types with mypy
-        run: uv run --no-sync mypy packages/sdk/src
       - name: Check SDK types with Pyrefly
         run: uv run --no-sync pyrefly check --config pyrefly.toml packages/sdk/src
       - name: Check generated SDK files

@@ -9,6 +9,7 @@ services:
     environment:
       OPENDART_MCP_HTTP__HOST: "0.0.0.0"
       OPENDART_MCP_HTTP__PORT: "8000"
+      OPENDART_MCP_DIRECTORY__CACHE_DIR: /var/cache/opendart-mcp
     ports:
       - "127.0.0.1:${OPENDART_MCP_HTTP__PORT:-8000}:8000"
     user: "10001:10001"
@@ -18,10 +19,16 @@ services:
     security_opt:
       - no-new-privileges:true
     tmpfs:
-      - /tmp:rw,noexec,nosuid,nodev,size=16m,mode=1777
+      - /tmp:rw,noexec,nosuid,nodev,size=32m,mode=1777
+    # The cached company directory archive (about 4 MiB), kept across restarts so they
+    # skip the minutes-long download; the root filesystem stays read-only.
+    volumes:
+      - directory-cache:/var/cache/opendart-mcp
     cpus: "1.0"
-    mem_limit: 256m
-    memswap_limit: 256m
+    # Measured in this container: about 135 MiB after startup, about 260 MiB peak with the
+    # company directory indexed and a large annual report cached (documents cap near 50 MiB).
+    mem_limit: 512m
+    memswap_limit: 512m
     pids_limit: 64
     init: true
     stop_grace_period: 10s
@@ -32,3 +39,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  directory-cache:

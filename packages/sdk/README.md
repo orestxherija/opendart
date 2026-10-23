@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/github/orestxherija/opendart/branch/main/graph/badge.svg?flag=sdk&token=8TTWOC0RC4)](https://codecov.io/github/orestxherija/opendart)
 ![Python](https://img.shields.io/badge/python-3.14%2B-blue)
 [![code style: Ruff](https://img.shields.io/badge/code%20style-ruff-46a2f1.svg)](https://github.com/astral-sh/ruff)
-[![type check: mypy](https://img.shields.io/badge/type%20check-mypy-blueviolet)](https://mypy.readthedocs.io/)
+[![type check: Pyrefly](https://img.shields.io/badge/type%20check-pyrefly-blueviolet)](https://pyrefly.org/)
 
 [![Project coverage grid](https://codecov.io/github/orestxherija/opendart/branch/main/graphs/tree.svg?token=8TTWOC0RC4&width=700&height=250)](https://codecov.io/github/orestxherija/opendart)
 
@@ -270,11 +270,23 @@ TLS verification. Phase timeouts default to five seconds, with a separate
 can wrap a complete operation in `asyncio.timeout(...)`. Quotas and reset times
 are not assumed, and the SDK does not retry quota failures.
 
-FSS requires the API key in the `crtfc_key` query parameter. SDK exception messages
-exclude keys, URLs, and upstream diagnostic text. Underlying exception causes and
-HTTP-library debug/request logs may include full URLs or response data. Log only
-allowlisted exception attributes; configure HTTP logging accordingly before
-enabling request logs or forwarding tracebacks.
+FSS requires the API key in the `crtfc_key` query parameter, so every request URL
+carries it. The SDK keeps the key out of logs and exceptions without configuration:
+
+- Creating a client attaches `opendart.redaction.RedactSecrets` to the httpx2 and
+  httpcore2 loggers, so request logs read `crtfc_key=[REDACTED]` at any level. The
+  filter is added once; logger levels, handlers, and other filters are left alone.
+- SDK exception messages exclude keys, URLs, and upstream diagnostic text. Chained
+  causes keep their type, but the key is redacted from their messages, notes, and
+  `request.url`; a cause whose text would still show the key is dropped. Response
+  model validation errors omit input values, so echoed bodies stay out of causes.
+- Other failures leaving an endpoint call, such as a custom transport's errors, are
+  redacted in place and re-raised unchanged in type.
+
+`opendart.redaction` also provides `redact` and `RedactingFormatter` for handlers
+that may render URLs from other sources. Tools that capture frame locals, such as
+error trackers or tracebacks with locals, can still see the outgoing request inside
+HTTP-library frames; configure their scrubbing for `crtfc_key`.
 
 Tests inject `httpx2.MockTransport` through the client's `transport=` argument.
 A custom production transport owns its own TLS, proxy, and pool configuration.

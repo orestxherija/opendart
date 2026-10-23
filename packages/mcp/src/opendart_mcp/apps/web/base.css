@@ -1,0 +1,115 @@
+/* Shared styles of the OpenDART apps. Host theme variables (MCP Apps hostContext.styles) take
+   precedence; every fallback follows the light or dark color scheme the host selects. */
+:root {
+  color-scheme: light dark;
+  --table-max-height: 480px;
+  --line: var(--color-border-secondary, rgba(128, 128, 128, 0.3));
+  --surface: var(--color-background-primary, Canvas);
+  --raised: var(--color-background-secondary, rgba(128, 128, 128, 0.14));
+  --danger: var(--color-text-danger, #c62828);
+  font-family: var(--font-sans, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: var(--font-text-sm-size, 13px);
+  line-height: var(--font-text-sm-line-height, 1.45);
+  color: var(--color-text-primary, CanvasText);
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+body { margin: 0; padding: 12px; background: var(--surface); }
+[hidden] { display: none !important; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; margin-bottom: 8px; }
+h1 {
+  margin: 0;
+  font-size: var(--font-heading-xs-size, 15px);
+  font-weight: var(--font-weight-semibold, 600);
+}
+p { margin: 6px 0; }
+.muted { color: var(--color-text-secondary, GrayText); }
+.small { font-size: var(--font-text-xs-size, 12px); }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 8px; }
+.toolbar:not(:has(> :not([hidden]))) { display: none; }
+.group { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+button, select { font: inherit; color: inherit; }
+button {
+  cursor: pointer;
+  padding: 2px 8px;
+  background: transparent;
+  border: var(--border-width-regular, 1px) solid var(--color-border-primary, rgba(128, 128, 128, 0.5));
+  border-radius: var(--border-radius-sm, 6px);
+}
+button[aria-pressed="true"] { background: var(--raised); font-weight: var(--font-weight-semibold, 600); }
+button:disabled { cursor: default; opacity: 0.55; }
+button:focus-visible, select:focus-visible {
+  outline: 2px solid var(--color-ring-primary, Highlight);
+  outline-offset: 1px;
+}
+button.link {
+  padding: 0;
+  border: 0;
+  color: var(--color-text-info, LinkText);
+  text-decoration: underline;
+}
+select {
+  padding: 2px 4px;
+  background: var(--surface);
+  border: var(--border-width-regular, 1px) solid var(--color-border-primary, rgba(128, 128, 128, 0.5));
+  border-radius: var(--border-radius-sm, 6px);
+}
+.wrap {
+  overflow: auto;
+  max-height: var(--table-max-height);
+  border: 1px solid var(--line);
+  border-radius: var(--border-radius-md, 8px);
+}
+table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+tbody tr:last-child > * { border-bottom: 0; }
+tbody th { font-weight: normal; }
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-weight: var(--font-weight-semibold, 600);
+  background: linear-gradient(var(--raised), var(--raised)), var(--surface);
+}
+th:first-child, td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  max-width: 24em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  background: var(--surface);
+}
+thead th:first-child { z-index: 3; background: linear-gradient(var(--raised), var(--raised)), var(--surface); }
+td.text { text-align: left; white-space: normal; }
+td.empty { padding: 12px 8px; text-align: left; }
+.neg { color: var(--danger); }
+.chip {
+  display: inline-block;
+  margin: 2px 4px 2px 0;
+  padding: 1px 8px;
+  border-radius: var(--border-radius-full, 999px);
+  background: var(--raised);
+}
+.status { margin: 6px 0; }
+.status:empty { display: none; }
+.status.error { color: var(--danger); }
+.callout {
+  margin: 8px 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--color-border-warning, #d97706);
+  border-radius: var(--border-radius-sm, 6px);
+  background: var(--color-background-warning, rgba(217, 119, 6, 0.08));
+}
+.callout ul { margin: 4px 0 0; padding-left: 18px; }
+.fallback {
+  white-space: pre-wrap;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--font-text-xs-size, 12px);
+}
+footer { margin-top: 8px; }
+.notes { margin: 0; padding-left: 18px; }
+.notes:empty { display: none; }
+:root[data-fill] body { box-sizing: border-box; height: 100vh; display: flex; flex-direction: column; }
+:root[data-fill] .wrap { flex: 1 1 auto; min-height: 0; max-height: none; }

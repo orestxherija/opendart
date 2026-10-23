@@ -1,0 +1,16 @@
+/* Peer comparison app. */
+.hi {
+  font-weight: var(--font-weight-semibold, 600);
+  background: var(--color-background-info, rgba(37, 99, 235, 0.14));
+}
+.lo { background: var(--color-background-warning, rgba(217, 119, 6, 0.14)); }
+th > button.sort { padding: 0; border: 0; font-weight: inherit; text-align: inherit; }
+th[aria-sort="ascending"] > button.sort::after { content: " \25B2"; }
+th[aria-sort="descending"] > button.sort::after { content: " \25BC"; }
+.badge {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--border-radius-full, 999px);
+  background: var(--raised);
+  font-size: var(--font-text-xs-size, 12px);
+}

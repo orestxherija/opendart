@@ -16,7 +16,6 @@ format:
 
 # Check types.
 typecheck:
-    uv run --no-sync mypy packages/sdk/src
     uv run --no-sync pyrefly check --config pyrefly.toml packages/sdk/src
 
 # Run SDK tests.

@@ -55,7 +55,7 @@
         <mxCell id="validation" value="VALIDATION" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#cbd5e1;shape=swimlane;startSize=36;horizontal=1;align=left;spacingLeft=16;fontStyle=1;collapsible=0;pointerEvents=0;swimlaneFillColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="24" y="820" width="1072" height="86" as="geometry" />
         </mxCell>
-        <mxCell id="checks" value="pytest + httpx2.MockTransport + synthetic responses · Ruff · mypy · generated-file freshness checks" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#cbd5e1;fillColor=none;strokeColor=none;align=left;spacing=0;" vertex="1" parent="validation">
+        <mxCell id="checks" value="pytest + httpx2.MockTransport + synthetic responses · Ruff · Pyrefly · generated-file freshness checks" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#cbd5e1;fillColor=none;strokeColor=none;align=left;spacing=0;" vertex="1" parent="validation">
           <mxGeometry x="24" y="45" width="1024" height="24" as="geometry" />
         </mxCell>
         <mxCell id="legend" value="Blue: request / response flow · Gray: settings · Dashed teal: offline code generation" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#cbd5e1;fillColor=none;strokeColor=none;align=left;spacing=0;" vertex="1" parent="1">

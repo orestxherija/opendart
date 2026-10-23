@@ -142,7 +142,6 @@ the contract test harness lives in `tests/contracts/`.
 ```sh
 uv sync --locked --all-packages --group contracts
 uv run --no-sync pytest
-uv run --no-sync mypy
 uv run --no-sync pyrefly check
 uv run --no-sync ruff check packages scripts tests
 uv run --no-sync ruff format --check packages scripts tests
@@ -157,7 +156,7 @@ configuration and marker checks, randomized order, up to eight parallel workers,
 timeouts, blocked network sockets, and HTML reports. The existing AnyIO tests use
 their explicit markers. Run `uv run --no-sync pytest -n 0` for a serial run.
 [`pyrefly.toml`](pyrefly.toml) applies strict type checking to both packages' source
-trees, including generated SDK code, alongside the existing mypy checks.
+trees, including generated SDK code.
 
 After syncing, run `uv run --no-sync prek install` to install the configured Git
 hooks. Commitizen validates new commit messages at the `commit-msg` stage using
@@ -186,8 +185,8 @@ those XML reports to Codecov with separate `sdk` and `mcp` flags, configured in
 
 The quality configs exclude generated API/SDK files where appropriate and the
 vendored convention plugins. Loq caps handwritten files at 500 lines, with explicit
-adoption limits for three existing larger files. Pull requests and `main` pushes
-run the same built-in, Ruff, Markdown, YAML, TOML, spelling, and file-length checks
+adoption limits for three existing larger files. Pull requests run the same
+built-in, Ruff, Markdown, YAML, TOML, spelling, and file-length checks
 across the repository through [repository quality CI](.github/workflows/quality.yml),
 and scan the full fetched Git history with Betterleaks, including secrets removed in
 later commits. Zizmor audits workflows and pip-audit checks locked Python

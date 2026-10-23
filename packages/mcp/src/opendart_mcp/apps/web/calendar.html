@@ -1,0 +1,30 @@
+<header>
+  <h1 id="title">Corporate-action calendar</h1>
+  <span id="subtitle" class="muted"></span>
+</header>
+<div class="toolbar" role="group" aria-label="Filters">
+  <label>Company <select id="company"></select></label>
+  <label>Action <select id="action"></select></label>
+  <span id="count" class="muted"></span>
+</div>
+<p id="status" class="status muted" role="status" aria-live="polite">Waiting for data…</p>
+<div class="wrap">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">Company</th>
+        <th scope="col">Action</th>
+        <th scope="col">Event</th>
+        <th scope="col">Terms</th>
+        <th scope="col">Filing</th>
+      </tr>
+    </thead>
+    <tbody id="body"></tbody>
+  </table>
+</div>
+<pre id="fallback" class="fallback" hidden></pre>
+<footer class="muted small">
+  <ul id="notes" class="notes"></ul>
+  <p id="sources"></p>
+</footer>

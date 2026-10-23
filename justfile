@@ -57,7 +57,8 @@ release-build:
     uv run --no-sync twine check --strict dist/*
     .venv/bin/python scripts/smoke_distributions.py
 
-# Regenerate the reference before the SDK.
+# Regenerate the reference, then the SDK and the MCP registry built from it.
 generate:
     just reference generate
     just sdk generate
+    just mcp generate

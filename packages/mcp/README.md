@@ -4,63 +4,259 @@
 [![codecov](https://codecov.io/github/orestxherija/opendart/branch/main/graph/badge.svg?flag=mcp&token=8TTWOC0RC4)](https://codecov.io/github/orestxherija/opendart)
 ![Python](https://img.shields.io/badge/python-3.14%2B-blue)
 [![code style: Ruff](https://img.shields.io/badge/code%20style-ruff-46a2f1.svg)](https://github.com/astral-sh/ruff)
-[![type check: mypy](https://img.shields.io/badge/type%20check-mypy-blueviolet)](https://mypy.readthedocs.io/)
+[![type check: Pyrefly](https://img.shields.io/badge/type%20check-pyrefly-blueviolet)](https://pyrefly.org/)
 
 [![Project coverage grid](https://codecov.io/github/orestxherija/opendart/branch/main/graphs/tree.svg?token=8TTWOC0RC4&width=700&height=250)](https://codecov.io/github/orestxherija/opendart)
 
-Local Streamable HTTP server using the [official MCP Python SDK](https://py.sdk.modelcontextprotocol.io/run/).
-It exposes one tool, `ping`, which returns `pong` without an API key or network calls.
-OpenDART tools will use the async `OpenDart` client from `opendart-sdk`.
+A local [Model Context Protocol](https://modelcontextprotocol.io/) server for the regulatory filings of Korean
+companies, served over Streamable HTTP on the loopback interface. It is built on [FastMCP](https://gofastmcp.com/) and
+reads [OpenDART](https://opendart.fss.or.kr/) through the async `OpenDart` client from `opendart-sdk`. Thirteen
+read-only tools answer analyst questions: company identity, filings and their original documents, financial
+statements, peer tables, material events, ownership, share capital, debt, dividends, governance, and upcoming corporate
+actions. Resources add browsable context, and prompts package multi-step workflows. Every tool accepts a company by
+name (English or Korean), stock code, or DART corp code.
 
 ## Table of contents
 
+- [Components](#components)
 - [Design](#design)
 - [Run locally](#run-locally)
+- [Configuration](#configuration)
+- [Background tasks](#background-tasks)
+- [Versions and the component lock](#versions-and-the-component-lock)
+- [Smoke test and health route](#smoke-test-and-health-route)
+- [Protocol conformance](#protocol-conformance)
 - [Connect an MCP client](#connect-an-mcp-client)
 - [Docker](#docker)
-- [Image metadata](#image-metadata)
 - [Publish to GHCR](#publish-to-ghcr)
+
+## Components
+
+### Tools
+
+| Tool | What it answers |
+| --- | --- |
+| `find_company` | Ranked matches in the DART company directory, to confirm an identity or choose among candidates. |
+| `get_company_profile` | Names, codes, market, CEO, industry, fiscal year end, contacts, and the latest periodic report. |
+| `search_filings` | What was filed, for one company or market-wide, by category, date window, and title text. |
+| `read_filing` | The outline, sections, and text search of an original filing; Korean text with the filing's English headings. |
+| `get_financials` | Statements, summaries with derived margins, ratios, equity investments, and preliminary earnings. |
+| `compare_companies` | A peer table of key accounts or ratios for up to 20 companies. |
+| `get_corporate_events` | Capital raises, convertible debt, buybacks, M&A, asset deals, distress, legal events, and overseas listings. |
+| `get_ownership` | Largest shareholders, control changes, 5% holder and insider reports, and a free-float estimate. |
+| `get_capital_structure` | Share counts, treasury stock, capital changes, and the use of raised funds. |
+| `get_debt_profile` | A maturity ladder of debt securities and the issuance record. |
+| `get_dividends` | Dividends per share, payout, and yields as filed, across fiscal years. |
+| `get_governance` | Auditor and opinion, board, executives, compensation, and employees, with red flags. |
+| `get_corporate_action_calendar` | Upcoming subscription, record, meeting, listing, conversion, and maturity dates for up to 20 companies. |
+
+Every tool is annotated read-only, declares a version, and returns Markdown text plus `structuredContent` that matches
+its `outputSchema`, with null fields omitted. `response_format="detailed"` adds every labeled field where a tool offers
+it. An ambiguous company name returns the candidates with their codes; hosts that support elicitation are asked to
+choose instead. "No data" from OpenDART is an empty result with a note, not an error. `read_filing`,
+`get_corporate_events`, and `get_corporate_action_calendar` can run as [background tasks](#background-tasks).
+
+Two escape hatches, `list_services` and `call_service`, search all 85 OpenDART services and call one with labeled,
+normalized output. They are off by default; set `OPENDART_MCP_TOOLS__ENABLE_SERVICE_TOOLS=true` to register them.
+
+### Resources
+
+| URI | Type | Content |
+| --- | --- | --- |
+| `opendart://company/{corp_code}` | JSON | The `get_company_profile` payload. |
+| `opendart://company/{corp_code}/filings{?since,category}` | JSON | The company's filing index; 90 days and every category by default. |
+| `opendart://filing/{filing_number}` | JSON | Filing metadata and its section outline. |
+| `opendart://filing/{filing_number}/sections/{section_id}` | Markdown | One rendered section, unpaged. |
+| `opendart://reference/vocabulary` | Markdown | Periods, markets, units, dates, categories, and limitations such as the absence of prices. |
+| `opendart://reference/filing-categories` | JSON | Filing category names and their upstream codes. |
+| `opendart://reference/event-kinds` | JSON | Event groups and kinds with their services, key terms, and date fields. |
+| `opendart://server/status` | JSON | Version, key configured, directory state, requests today, cache statistics, and per-component usage. |
+
+### Prompts
+
+| Prompt | Arguments | Workflow |
+| --- | --- | --- |
+| `company_briefing` | `company` | One-page brief with a list of what to watch. |
+| `earnings_review` | `company`, `fiscal_year`, `period` | Statements for a period with year-on-year and quarter-on-quarter changes. |
+| `event_impact` | `company`, `event`, `filing_number` | Terms, dilution or leverage effect, and dates of one event. |
+| `dilution_overhang` | `company`, `lookback`, `share_price` | Potential new shares from convertibles, warrants, rights issues, and disposals. |
+| `ownership_and_control` | `company` | Control snapshot, holder activity, free float, and control risk. |
+| `credit_and_liquidity` | `company` | Debt ladder, issuance, cash flow, distress signals, and refinancing risk. |
+| `peer_comparison` | `companies`, `fiscal_year`, `focus` | Ranked peer table with commentary on outliers. |
+| `filings_screen` | `since`, `market`, `focus` | Market-wide filings screen, prioritized by tradable events. |
+| `pre_trade_checklist` | `company`, `direction`, `horizon` | Pass or flag checklist for a trade horizon. |
+| `watchlist_digest` | `companies`, `since` | New filings and events per company, items needing action first. |
+| `summarize_filing` | `filing_number`, `focus` | English summary of a Korean filing with key numbers and section IDs. |
+
+Company, corp code, and vocabulary arguments of prompts and resource templates complete from the loaded company
+directory and the server's code tables. `get_financials`, `compare_companies`, and
+`get_corporate_action_calendar` link to interactive [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview)
+(`ui://opendart/financials.v1.html`, `peers.v1.html`, and `calendar.v1.html`): self-contained HTML views with sorting,
+filters, and view switches for hosts that render apps. Other hosts get the same text and structured results.
 
 ## Design
 
-![MCP design: local Streamable HTTP service and ping tool, listener settings, Docker deployment, validation, and signed container publishing](docs/architecture.svg)
+![MCP server design: an MCP client calls /mcp over Streamable HTTP; middleware, then tools, resources, and prompts; services; one caching gateway; opendart-sdk; the FSS English API. Server state and checked-in generated files sit alongside](docs/architecture.svg)
 
-MCP clients connect to the local `/mcp` endpoint. The server currently registers
-only `ping`; it installs the SDK but makes no OpenDART calls. Native execution and
-Docker Compose use the same server, with validated listener settings and localhost
-Host and Origin checks.
+MCP clients connect to `/mcp` over Streamable HTTP in either protocol era: 2026-07-28 discovery or the 2025-11-25
+initialize handshake. Each request passes through access logging, rate limiting, usage metrics, and error recovery,
+then reaches a component. Components call services, which resolve the company and the period and read OpenDART through
+one shared gateway.
 
-Edit the [draw.io source](docs/architecture.drawio), then export it as SVG to
-update [the README diagram](docs/architecture.svg). Keep the source and SVG together.
+- **Results**: tools return compact Markdown tables as text and the typed result as `structuredContent`. Some hosts,
+  Claude Code among them, give the model the structured JSON instead of the text, so concise results stay small.
+  Amounts are integers in won; `unit` scales only the text, and never ratios, per-share amounts, or share counts.
+- **Errors are instructions**: an ambiguous name lists candidates, an unknown company points to `find_company`, a
+  missing key explains how to configure one, and an exhausted quota says when to retry. Unexpected failures are masked
+  and logged.
+- **Upstream access**: the gateway caches responses by method and arguments, coalesces identical calls, sends at most
+  five requests at once, retries a transient failure once (never quota or maintenance errors), and counts requests per
+  KST day.
+- **Company directory**: the corporation-code archive loads in the background, from a disk cache that is refreshed
+  daily. Corp codes work while it loads.
+- **Slow calls** report progress at least every five seconds and stop waiting at a deadline while the work continues,
+  so repeating the call a minute later returns the cached result.
+
+[IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) records the architecture and decisions,
+[COMPONENT_DESIGN.md](docs/COMPONENT_DESIGN.md) specifies each component, and [FILING_DOCUMENTS.md](docs/FILING_DOCUMENTS.md)
+covers filing documents. Edit the [draw.io source](docs/architecture.drawio), then export it as SVG to update
+[the README diagram](docs/architecture.svg). Keep the source and SVG together.
 
 ## Run locally
 
-From the repository root, run locally:
+From the repository root:
 
 ```sh
 uv sync --locked --all-packages
 uv run --no-sync opendart-mcp
 ```
 
-`uv run --no-sync python -m opendart_mcp` is equivalent. The server stays running
-at `http://127.0.0.1:8000/mcp`. Stop it with Ctrl-C.
+`uv run --no-sync python -m opendart_mcp.server` is equivalent. The server listens at
+`http://127.0.0.1:8000/mcp` until you stop it with Ctrl-C.
 
-The native process binds to `127.0.0.1` by default. Set
-`OPENDART_MCP_HTTP__PORT` to choose another port. Settings are validated with
-Pydantic and loaded from the process environment at startup; `.env` loading stays
-explicit through direnv or Compose's `--env-file` option. An API key is optional
-for the current `ping` tool.
+Tools read OpenDART with your API key. Set `OPENDART_API__API_KEY` or mount the key file as
+`/run/secrets/OPENDART_API__API_KEY`. Without a key the server still starts and lists every component, and tool calls
+explain how to configure one. Settings are validated with Pydantic and loaded from the process environment at startup;
+`.env` loading stays explicit through direnv or Compose's `--env-file` option. The first start downloads the company
+directory, which OpenDART can take minutes to send, and caches it in `~/.cache/opendart-mcp`; until then, tools accept
+8-digit corp codes.
 
-In another terminal, verify discovery, legacy initialization, and real HTTP tool calls:
+The FastMCP CLI loads the server through [`fastmcp.json`](fastmcp.json), for example
+`cd packages/mcp && uv run --no-sync fastmcp inspect fastmcp.json`. `fastmcp run` skips `main()`, and with it the
+server's Host and Origin allowlists, so serve clients with `opendart-mcp`.
+
+## Configuration
+
+Settings come from `OPENDART_MCP_*` environment variables; nested groups use a double underscore.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `OPENDART_API__API_KEY` | none | OpenDART API key, read by the SDK; or the file `/run/secrets/OPENDART_API__API_KEY`. |
+| `OPENDART_MCP_HTTP__HOST` | `127.0.0.1` | Bind address: `127.0.0.1`, `localhost`, or `0.0.0.0` inside containers. |
+| `OPENDART_MCP_HTTP__PORT` | `8000` | Listener port. |
+| `OPENDART_MCP_HTTP__CACHE_TTL` | `300` | Seconds that 2026-07-28 clients may cache lists and reads, with private scope. |
+| `OPENDART_MCP_HTTP__LIST_PAGE_SIZE` | none | Page size of component lists; unset returns every component in one page. |
+| `OPENDART_MCP_HTTP__RATE_LIMIT` | `20` | Requests per second across all clients. |
+| `OPENDART_MCP_HTTP__RATE_BURST` | `50` | Requests allowed in a burst above the rate. |
+| `OPENDART_MCP_TASKS__CONCURRENCY` | `4` | Background tasks running at once; more are queued. |
+| `OPENDART_MCP_TASKS__QUEUE` | `opendart` | Task queue name. |
+| `OPENDART_MCP_TOOLS__ENABLE_SERVICE_TOOLS` | `false` | Register the `list_services` and `call_service` escape hatches. |
+| `OPENDART_MCP_TOOLS__ELICIT_AMBIGUOUS_COMPANY` | `true` | Ask hosts that support elicitation to choose among matching companies. |
+| `OPENDART_MCP_UPSTREAM__TIMEOUT` | `30` | Read, write, and pool timeout of JSON services, in seconds. |
+| `OPENDART_MCP_UPSTREAM__CONNECT_TIMEOUT` | `10` | Connection timeout, in seconds. |
+| `OPENDART_MCP_UPSTREAM__MAX_CONCURRENCY` | `5` | Simultaneous OpenDART requests. |
+| `OPENDART_MCP_UPSTREAM__RETRY_DELAY` | `1` | Seconds before the single retry of a transient failure. |
+| `OPENDART_MCP_UPSTREAM__CACHE_RECORDS` | `50000` | Response cache bound, in upstream records. |
+| `OPENDART_MCP_DIRECTORY__CACHE_DIR` | `~/.cache/opendart-mcp` | Company directory cache; follows `XDG_CACHE_HOME`, and is `/tmp/opendart-mcp` in the image. |
+| `OPENDART_MCP_DIRECTORY__MAX_AGE_HOURS` | `24` | Age after which the directory is downloaded again. |
+| `OPENDART_MCP_DIRECTORY__DEADLINE` | `900` | Overall directory download deadline, in seconds. |
+| `OPENDART_MCP_DIRECTORY__WAIT` | `15` | Seconds a tool waits for a loading directory before answering that it is loading. |
+| `OPENDART_MCP_DOCUMENTS__TIMEOUT` | `90` | Per-phase filing download timeout, in seconds. |
+| `OPENDART_MCP_DOCUMENTS__CONNECT_TIMEOUT` | `10` | Filing download connection timeout, in seconds. |
+| `OPENDART_MCP_DOCUMENTS__WAIT` | `45` | Seconds a call waits for a filing download before answering that it continues. |
+| `OPENDART_MCP_DOCUMENTS__CACHE_CHARS` | `4000000` | Bound of the rendered-document cache, in characters. |
+
+Misspelled variables within a group are rejected at startup. To turn off a setting whose default is a value, use the
+group's JSON form, which merges with the variables above: `OPENDART_MCP_HTTP='{"rate_limit": null}'` disables rate
+limiting, and `OPENDART_MCP_DIRECTORY='{"cache_dir": null}'` disables the directory's disk cache.
+
+## Background tasks
+
+`read_filing`, `get_corporate_events`, and `get_corporate_action_calendar` support the MCP tasks extension in optional
+mode. A client that declares the extension on a 2026-07-28 connection receives a task at once and polls it; the task's
+status message follows the tool's progress. Tasks run in the server process, four at a time by default, and their
+results stay available for 15 minutes. Every other client, including handshake-era clients and hosts without the
+extension, runs the same tools synchronously and receives progress notifications.
+
+These tools enforce their own deadlines: about 40 seconds in the foreground, which stays under common client request
+timeouts, and 110 seconds as a task. At the deadline the call answers that the work is still in progress while the work
+continues into the cache, so the same call a minute later returns the result. Tasks do not survive a restart; clients
+then receive "task not found" and call again.
+
+## Versions and the component lock
+
+Every tool, resource, template, and prompt declares `version="MAJOR.MINOR.PATCH"`. FastMCP publishes it as
+`_meta.fastmcp.version`, and clients can pin it by sending `"_meta": {"fastmcp": {"version": "1.0.0"}}` with a request.
+[`components.lock.json`](components.lock.json) records each definition exactly as clients receive it, with its SHA-256,
+a hash of each top-level part, and token estimates. `scripts/check_mcp_components.py` compares the server with the lock
+and fails when:
+
+- a component declares no version, or one that is not `MAJOR.MINOR.PATCH`;
+- a definition changed under a recorded version (the message suggests the smallest acceptable version);
+- a new version is a smaller bump than its changes need, compared with the previous recorded version;
+- a component or a pinnable older version disappeared, a component was added, or the server's name, version, or
+  instructions changed, and the lock was not updated;
+- the default tools' model-visible definitions (name, title, description, and input schema) exceed an estimated 10,000
+  tokens.
+
+| Change | Bump |
+| --- | --- |
+| Input schema: removed or renamed property, newly required property, removed type or enum value, tighter bound, new or changed pattern or format | MAJOR |
+| Output schema: removed property or changed type | MAJOR |
+| Removed or newly required prompt argument, changed MIME type, or a tool that starts requiring tasks | MAJOR |
+| Other schema changes, such as a new optional property, wider types or values, a changed input default, or output enum values | MINOR |
+| Descriptions, titles, annotations, icons, or `_meta` only | PATCH |
+
+After an intended change, bump `version=` on the component, record the new definitions, and commit the lock:
+
+```sh
+just mcp lock                   # scripts/check_mcp_components.py --update
+just mcp lock --accept-changes  # after review, also record changes the rules refuse; writes the first lock
+```
+
+`--update` records new, removed, and properly bumped components, and refuses missing versions, an exceeded token
+budget, changes under recorded versions or with short bumps, and a missing or unreadable lock. `--accept-changes`
+records all but the first two, for example when a FastMCP or Pydantic upgrade changes generated schemas while
+components stay the same; review the lock diff, which shows every definition change. Without a lock, every component
+looks new, so `--update` cannot tell reviewed changes from unreviewed ones: the first lock needs
+`just mcp lock --accept-changes`. When the lock has merge conflicts, take either side's lock whole
+(`git checkout --theirs -- packages/mcp/components.lock.json`, or `--ours`) and run `just mcp lock`, which records the
+other side's version bumps on top of it. The check runs as a commit hook when MCP source or the lock changes (about
+a second), and in CI. `--tokens` lists each tool's estimated model-visible tokens. At runtime,
+`opendart_mcp.manifest.build_manifest` and `component_fingerprints` produce the same hashes.
+
+## Smoke test and health route
+
+`GET /health` answers with the status and version, such as `{"status": "ok", "version": "0.1.0"}`, without spending a
+tool slot. The smoke test checks a running server over real HTTP:
 
 ```sh
 uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
 ```
 
-Expected output: `MCP smoke test passed: ping -> pong; hostile Host and Origin rejected`.
+It requires hostile Host and Origin headers to be rejected with 421 and 403, `/health` to answer, both protocol eras
+to list every default tool recorded in the lock, the vocabulary resource to be readable, and `find_company` to answer
+or to explain what is missing: an API key, or a company directory that is still loading. Without `--url`, it starts an
+isolated native server on an unused loopback port and stops it afterward; CI runs it that way.
 
-Without `--url`, the smoke test starts an isolated native HTTP server on an unused
-loopback port and stops it afterward. This is also used in CI.
+## Protocol conformance
+
+`just mcp conformance` runs the pinned [official MCP conformance suite](https://github.com/modelcontextprotocol/conformance)
+(it needs Node.js) against an isolated server without an API key, at the suite's default wires and again at 2026-07-28.
+`packages/mcp/conformance-baseline.yaml` lists the expected failures check by check, each with its reason: the suite's
+fixture components (`test://` resources, `test_prompt_*`, `slow_compute`, and so on), features this server does not
+offer, and one MCP SDK leniency. Any other failure, or a listed check that passes, fails the run; results are written
+to `.cache/conformance/`.
 
 ## Connect an MCP client
 
@@ -86,223 +282,27 @@ default port.
 
 ## Docker
 
-Local image builds require Docker with BuildKit and Compose v2 or newer, plus a
-Docker account to pull the Python base images from `dhi.io`.
-[DHI Community images require registry authentication](https://docs.docker.com/dhi/how-to/use/).
-
-1. [Create a Docker account](https://app.docker.com/signup) if needed and verify
-   your email address. Use your Docker ID as the registry username.
-2. In [Docker Home](https://app.docker.com), open **Account settings → Personal
-   access tokens → Generate new token**. Give the token read access to public
-   repositories and save it in your password manager. An existing Docker PAT
-   with this permission also works. See the
-   [Docker PAT guide](https://docs.docker.com/security/access-tokens/personal-access-tokens/).
-3. Start Docker and authenticate to the DHI registry:
-
-   ```sh
-   docker login dhi.io --username YOUR_DOCKER_ID
-   ```
-
-   Paste the Docker PAT at the password prompt. Docker stores the credentials
-   through its configured credential store. Keep the PAT out of the repository,
-   Dockerfile, build arguments, and application `.env` files.
-
-Lint the Dockerfile with the pinned Hadolint image (Docker required). The hook also
-runs before pushes that change the Dockerfile:
+From the repository root, after `docker login dhi.io` (the Python base images come from Docker Hardened Images):
 
 ```sh
-uv run prek run hadolint-docker --all-files --stage pre-push
-```
-
-From the repository root, validate the Compose configuration, build
-`opendart-mcp:dev`, then start the HTTP service:
-
-```sh
-docker compose -f packages/mcp/docker-compose.yml config --quiet
 docker compose -f packages/mcp/docker-compose.yml build mcp
 docker compose -f packages/mcp/docker-compose.yml up --detach --wait mcp
-```
-
-Test the running container through its localhost HTTP endpoint:
-
-```sh
 uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
 ```
 
-Compose publishes `127.0.0.1:8000:8000`, making the service reachable only from
-the local machine. Inside the container it binds to `0.0.0.0:8000` so Docker can
-forward requests. Localhost Host and Origin checks stay enabled with either bind.
-Set `OPENDART_MCP_HTTP__PORT=9000` in your shell to publish `127.0.0.1:9000`
-instead; the container's internal port stays `8000`. The native server uses the
-same environment variable for its listener port.
-
-The image's health check tests TCP listener readiness; the smoke test additionally
-checks the MCP protocol. Compose waits for readiness with `up --wait`, restarts
-the service unless explicitly stopped, and leaves it running between client
-connections. Manage the service with:
-
-```sh
-docker compose -f packages/mcp/docker-compose.yml logs --tail 100 mcp
-docker compose -f packages/mcp/docker-compose.yml down
-```
-
-To make an API key available for future OpenDART tools, store only its value in a
-file outside the source tree or in the ignored root `.secrets/` directory. Set
-`OPENDART_API_KEY_FILE` to that file's absolute host path and add the secrets overlay:
-
-```sh
-export OPENDART_API_KEY_FILE=/absolute/path/to/opendart-api-key
-docker compose -f packages/mcp/docker-compose.yml -f packages/mcp/compose.secrets.yml up --detach --wait mcp
-```
-
-Compose mounts the file read-only at `/run/secrets/OPENDART_API__API_KEY`; its
-contents are absent from container environment variables and image layers.
-The SDK's nested settings source reads and validates it when an authenticated
-client is created. The `ping` tool needs no key and does not read it. The base
-Compose file runs without the overlay or a key file.
-
-File-backed Compose secrets retain the host file's ownership and permissions.
-Ensure UID/GID `10001:10001` can read it: on a Linux host, give the file group
-`10001` and mode `0440`. Keep its host directory accessible only to its owner.
-The source file remains plaintext on the host; Compose does not encrypt it.
-See [Compose secrets](https://docs.docker.com/compose/how-tos/use-secrets/).
-
-Native execution still accepts `OPENDART_API__API_KEY`. Compose's explicit
-`--env-file` option can load non-secret settings such as the published port or
-the secret file path. The build context excludes `.env` variants, secret files,
-local virtual environments, and files outside the build allowlist.
-
-The image uses matching Docker Hardened Images for Python 3.14.8 on Alpine 3.24:
-`dhi.io/python:3.14.8-alpine3.24-dev` for the builder and
-`dhi.io/python:3.14.8-alpine3.24` for the runtime. Both base images and uv 0.11.20
-are pinned by version and digest. The builder uses DHI's `/usr/bin/python3.14`,
-so the copied virtual environment resolves the same interpreter in the runtime.
-See the [DHI Python guide](https://hub.docker.com/hardened-images/catalog/dhi/python/guides).
-Dependencies are locked,
-installed without development groups, and compiled to bytecode for faster startup.
-The builder installs dependencies before copying package source, so source-only
-edits reuse the dependency layer. BuildKit caches uv downloads; CI also caches
-build layers between runs. See [uv's Docker guidance](https://docs.astral.sh/uv/guides/integration/docker/).
-
-Only the installed runtime environment is copied from the builder. Package code
-stays owned by root, and the runtime does not contain uv, the build cache, or the
-source checkout. The runtime uses numeric UID/GID `10001:10001` directly because
-the DHI runtime has no shell for user-management commands. It retains the packages
-provided by the DHI runtime; the Dockerfile does not uninstall pip or delete
-bundled libraries. When the Dockerfile changes, CI verifies both DHI bases' signed
-SBOM and provenance with Docker's public key before building. CI scans every built
-image for secrets, and scans for vulnerabilities when the base images or locked
-dependencies change. It blocks fixable high or critical vulnerabilities and detected
-secrets, and retains a full vulnerability report including unfixed findings for 30
-days. Publishing always runs every check on the exact candidate.
-
-Keep both base-image digests current through the weekly Dependabot Docker
-updates; a pinned digest must change to receive base-image fixes. The two DHI
-references are grouped in one update. Repository maintainers must configure
-[DHI credentials for Actions and Dependabot](../../.github/README.md#docker-hardened-images-credentials).
-
-Compose runs as UID/GID `10001:10001` with a read-only root filesystem, all Linux
-capabilities dropped, and privilege escalation disabled. Temporary files use a
-16 MiB `/tmp` mount with execution disabled. Limits are one CPU, 256 MiB of memory
-with swap disabled, and 64 processes/threads. Adjust these limits in a Compose
-override when tools need more resources. Docker's init process forwards signals
-and reaps child processes; shutdown has a 10-second grace period. See the
-[Compose service reference](https://docs.docker.com/reference/compose-file/services/)
-and [tmpfs options](https://docs.docker.com/engine/storage/tmpfs/).
-
-CI exercises these restrictions inside the running image, verifies installed code
-is protected and CA certificates exist, and tests loading a synthetic file secret.
-The HTTP smoke test also requires hostile Host and Origin requests to be rejected.
-
-The `local` [logging driver](https://docs.docker.com/engine/logging/configure/)
-retains service logs with rotation: at most three 10 MiB files. MCP responses
-travel over HTTP. The image is built or pulled explicitly, so starting the
-service does not fetch a mutable tag. Set `OPENDART_MCP_IMAGE` to use an already
-pulled image tag or digest with the same Compose restrictions. Outbound networking
-remains available for OpenDART API calls.
-
-## Image metadata
-
-The Dockerfile declares the standard
-[OCI image labels](https://github.com/opencontainers/image-spec/blob/main/annotations.md):
-title, description, authors, vendor, project URL, documentation URL, source URL,
-version, revision, creation time, and licenses. Both CI workflows supply the
-package version from `packages/mcp/pyproject.toml`, the source commit, and the
-build timestamp. Registry tags identify a build separately from the package version.
-
-Local builds default to package version `0.1.0`. Revision and creation time stay
-empty unless supplied. To include them in a Compose build:
-
-```sh
-docker compose -f packages/mcp/docker-compose.yml build \
-  --build-arg IMAGE_VERSION="$(uv run --no-sync python -c 'from importlib.metadata import version; print(version("opendart-mcp"))')" \
-  --build-arg IMAGE_REVISION="$(git rev-parse HEAD)" \
-  --build-arg IMAGE_CREATED="$(date -u +%Y-%m-%dT%H:%M:%SZ)" mcp
-```
-
-The repository currently declares no project license, so the Dockerfile leaves
-the license label empty. `IMAGE_LICENSES` accepts an SPDX license expression when
-a license has been selected. Published builds also use any license declared in
-the repository's GitHub metadata.
+The [container guide](docs/CONTAINER.md) covers DHI credentials, the hardened Compose service, passing the API key
+as a secret, memory limits, image metadata, and publishing.
 
 ## Publish to GHCR
 
-After pushing the workflow to the repository's default branch, open GitHub
-**Actions → MCP container → Run workflow**. The workflow builds a Linux amd64
-candidate once, pushes it under `candidate-<run-id>-<attempt>`, and pulls its
-immutable digest. It runs protocol and security checks and Trivy scans against
-that exact digest. After those pass, it signs and verifies the digest with
-[Cosign](https://docs.sigstore.dev/quickstart/quickstart-ci/) and promotes the same
-image index to consumer tags without rebuilding. Candidate tags are staging
-artifacts and may refer to images that failed checks; use promoted tags or their
-verified digests. Local builds support native arm64; publication targets amd64.
-
-Images in `ghcr.io/orestxherija/opendart-mcp` receive `sha-<full-commit>` and
-`run-<run-id>-<attempt>` tags. Default-branch runs also update `test`. OCI labels
-record the source, revision, and build date. The image includes
-[SBOM and provenance attestations](https://docs.docker.com/build/ci/github-actions/attestations/).
-The workflow records the verified digest in its summary. Pin consumers to that
-digest for an immutable image selection; a commit
-tag can be updated when the same commit is rebuilt.
-Publishing to GHCR uses the built-in `GITHUB_TOKEN` with `packages: write`.
-Building the image also requires the `DHI_USERNAME` and `DHI_TOKEN` repository
-secrets described in the [CI setup](../../.github/README.md#docker-hardened-images-credentials).
-Machines that only pull and run the published GHCR image do not need DHI
-credentials; DHI authentication is needed when building from its base images.
-
-Signing uses GitHub Actions OIDC and the public Sigstore service, with no separate
-subscription or signing key secret. The signature records the repository,
-publishing workflow, and branch identity in the public transparency log. Verify
-a default-branch build before running it (replace `main` if necessary):
+CI publishes the image to `ghcr.io/orestxherija/opendart-mcp` when a push to `main` changes its inputs and passes
+every selected check. The **MCP container** workflow tests, scans, and signs one candidate, then promotes that
+digest to `main` and `sha-<full-commit>`; a `vX.Y.Z` release tag promotes the tagged commit's digest. Pin
+deployments to the digest:
 
 ```sh
-cosign verify ghcr.io/orestxherija/opendart-mcp@sha256:YOUR_DIGEST \
-  --certificate-identity=https://github.com/orestxherija/opendart/.github/workflows/mcp-container.yml@refs/heads/main \
-  --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+docker pull ghcr.io/orestxherija/opendart-mcp@sha256:YOUR_DIGEST
 ```
 
-**MCP published image security** runs daily and can also run manually. It resolves
-the current `test` tag once, verifies the default-branch publishing identity,
-and rescans that digest for vulnerabilities and secrets without rebuilding it.
-An optional manual `digest` input audits an older default-branch build. Reports
-include unfixed CVEs; fixable HIGH/CRITICAL CVEs and secrets fail the job. Publish
-a signed default-branch image once before enabling this daily audit. Updating a
-base-image pin or lockfile and publishing again is still required to deliver fixes.
-
-To test the published image on a machine with Docker, authenticate to GHCR if the
-package is private, then run:
-
-```sh
-export OPENDART_MCP_IMAGE=ghcr.io/orestxherija/opendart-mcp:test
-docker pull "$OPENDART_MCP_IMAGE"
-docker compose -f packages/mcp/docker-compose.yml up --detach --wait mcp
-uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
-```
-
-For private packages, use a personal access token (classic) with `read:packages`
-when running `docker login ghcr.io --username orestxherija`. New GHCR packages are
-private by default; visibility can be changed in the package settings.
-See [GitHub's Container registry documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
-
-Use the same localhost client URL for published images. GHCR stores the image;
-the HTTP server runs locally with the Compose restrictions when you start it.
+See [Publish to GHCR](docs/CONTAINER.md#publish-to-ghcr) in the container guide for tags, pinning, signature
+verification, and manual republishing.

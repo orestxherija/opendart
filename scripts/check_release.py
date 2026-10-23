@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGES = ("sdk", "mcp")
 ASSETS = {
     "sdk": {"opendart/__init__.py", "opendart/client.py", "opendart/py.typed"},
-    "mcp": {"opendart_mcp/__init__.py", "opendart_mcp/__main__.py", "opendart_mcp/server.py"},
+    "mcp": {"opendart_mcp/__init__.py", "opendart_mcp/server.py"},
 }
 
 
