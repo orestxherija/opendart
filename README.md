@@ -106,7 +106,7 @@ clients. Start the server before connecting. To run without Docker,
 use `uv run --no-sync opendart-mcp` after syncing the workspace.
 See the [MCP guide](packages/mcp/README.md#docker) for PAT creation, smoke tests,
 host configuration, and the manual GHCR publishing workflow. Repository
-maintainers must also [configure DHI secrets for CI and Dependabot](.github/README.md#docker-hardened-images-credentials).
+maintainers must also [configure DHI secrets for CI and Renovate](packages/mcp/docs/CONTAINER.md#dhi-credentials).
 
 ## Develop
 
@@ -116,14 +116,16 @@ The HTTP and settings implementations follow the repository's `python-http` and
 The root [`.editorconfig`](.editorconfig) makes every standard editor property
 explicit and matches the repository's file formats and formatter settings.
 
-For task shortcuts, install [Just](https://just.systems/) 1.33 or newer. Run `just`
+`uv sync` installs the locked [Just](https://just.systems/) task runner into `.venv`; run it
+through the activated environment, direnv as described below, or `uv run just`. Run `just`
 to list commands, `just sync` to install the Python workspace and offline test
 dependencies, and `just reference sync` to install documentation dependencies.
 Use `just sdk test`, `just mcp run`, or `just reference build` from the root, or
 run `just test` inside a package. `just check` runs repository quality checks and
 all offline component checks. `just quality` runs repository checks, including
-Zizmor audits of workflows, shared actions, and Dependabot. `just audit` checks all
-locked Python dependencies against current vulnerability advisories;
+actionlint and ShellCheck. `just audit` runs Zizmor against workflows and shared
+actions and checks all locked Python dependencies against current advisories;
+`just ci plan` previews which CI checks the current changes select;
 `just secrets` scans all local Git history, and `just links` audits external
 documentation links. Taplo and Markdownlint require Node.js 22+ and npm; their
 pinned CLIs are installed on first use, and TOML schema validation can fetch
@@ -187,7 +189,7 @@ The quality configs exclude generated API/SDK files where appropriate and the
 vendored convention plugins. Loq caps handwritten files at 500 lines, with explicit
 adoption limits for three existing larger files. Pull requests run the same
 built-in, Ruff, Markdown, YAML, TOML, spelling, and file-length checks
-across the repository through [repository quality CI](.github/workflows/quality.yml),
+across the repository through [quality CI](.github/workflows/check-quality.yml),
 and scan the full fetched Git history with Betterleaks, including secrets removed in
 later commits. Zizmor audits workflows and pip-audit checks locked Python
 dependencies when those files change; both also run weekly and manually. External
@@ -204,7 +206,7 @@ Run `uv lock` after changing dependencies and commit the updated `uv.lock`.
 `just release-build` also builds wheels and source archives, checks their metadata,
 and smoke-tests isolated installations. See the [release guide](docs/RELEASING.md)
 for version updates, the [changelog](CHANGELOG.md), and artifact preparation.
-Dependabot uses the same cooldown for Python and npm updates.
+Renovate waits the same two days before proposing any dependency update.
 
 To load local environment variables and activate `.venv` automatically when entering
 the project, install [direnv](https://direnv.net/docs/installation.html) and

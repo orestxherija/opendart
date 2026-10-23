@@ -24,10 +24,24 @@ typecheck:
 test:
     uv run --no-sync prek run pytest-mcp --all-files --stage pre-push
 
-# Check the MCP package, the generated registry, and the component lock.
-check: lint typecheck test
+# Lint the Dockerfile with Hadolint; needs Docker.
+dockerfile:
+    uv run --no-sync prek run hadolint-docker --all-files --stage pre-push
+
+# Check that the generated registry matches the API catalog and the SDK naming rules.
+generated:
     uv run --no-sync python scripts/generate_mcp_registry.py --check
+
+# Check component versions, definition fingerprints, and the tool token budget against the lock.
+components:
     uv run --no-sync python scripts/check_mcp_components.py
+
+# Validate the Compose configuration.
+compose:
+    docker compose -f packages/mcp/docker-compose.yml config --quiet
+
+# Check the MCP package, the generated registry, and the component lock.
+check: lint typecheck test generated components
 
 # Regenerate the service registry from the API catalog and the SDK naming rules.
 generate:

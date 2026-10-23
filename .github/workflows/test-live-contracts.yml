@@ -1,0 +1,51 @@
+name: Test live API contracts
+
+on:
+  workflow_call:
+    inputs:
+      base:
+        description: Commit before the push; empty checks every operation
+        type: string
+        default: ""
+    secrets:
+      OPENDART_API_KEY:
+        description: OpenDART API key for live requests
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    name: Changed OpenDART operations
+    # Never send the key from a pull request or a feature branch.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The base commit covers the entire push, including multi-commit merges.
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          sync: --only-group contracts --only-group hooks
+      - name: Check selected operations with Schemathesis
+        env:
+          BASE: ${{ inputs.base }}
+          OPENDART_API__API_KEY: ${{ secrets.OPENDART_API_KEY }}
+        run: just reference contracts "$BASE"
+      - name: Upload selection and sanitized findings
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: contract-findings-${{ github.sha }}
+          path: contract-results/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Summarize findings
+        if: always() && hashFiles('contract-results/report.md') != ''
+        run: cat contract-results/report.md >> "$GITHUB_STEP_SUMMARY"

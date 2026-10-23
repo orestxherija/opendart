@@ -1,7 +1,7 @@
 """Check the container's actual privileges, filesystem, and optional mounted API key.
 
 Run inside the container through stdin so this check need not ship in the image.
-The check-mcp-container composite action supplies the Compose command.
+The CI script .github/scripts/check_mcp_container.sh supplies the Compose command.
 """
 
 from __future__ import annotations

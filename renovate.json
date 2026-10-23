@@ -1,9 +1,65 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    ":semanticCommits"
+  ],
+  "schedule": [
+    "* 0-5 * * 1"
+  ],
+  "minimumReleaseAge": "2 days",
+  "internalChecksFilter": "strict",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "rebaseWhen": "conflicted",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "* 0-5 * * 1"
+    ]
+  },
+  "hostRules": [
+    {
+      "description": "Docker Hardened Images; store both secrets in the Mend developer portal.",
+      "matchHost": "dhi.io",
+      "hostType": "docker",
+      "username": "{{ secrets.DHI_USERNAME }}",
+      "password": "{{ secrets.DHI_TOKEN }}"
+    }
   ],
   "packageRules": [
+    {
+      "description": "One weekly pull request for minor updates, reviewed before merging.",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "groupName": "minor updates",
+      "groupSlug": "minor"
+    },
+    {
+      "description": "Patches and digests merge themselves after CI checks pass.",
+      "matchUpdateTypes": [
+        "patch",
+        "digest",
+        "pin",
+        "pinDigest"
+      ],
+      "groupName": "patch and digest updates",
+      "groupSlug": "patch",
+      "automerge": true
+    },
+    {
+      "description": "Python and the DHI base images stay on 3.14 until a deliberate upgrade.",
+      "matchPackageNames": [
+        "python",
+        "dhi.io/python"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "enabled": false
+    },
     {
       "description": "fastmcp-tasks patches mcp internals: upgrade FastMCP and the MCP SDK together, gated by the task tests and the component lock check.",
       "matchDatasources": [
@@ -16,7 +72,63 @@
         "mcp",
         "mcp-types"
       ],
-      "groupName": "FastMCP and MCP SDK"
+      "groupName": "FastMCP and MCP SDK",
+      "automerge": false
+    },
+    {
+      "description": "The uv in workflows and the image must match.",
+      "matchPackageNames": [
+        "astral-sh/uv",
+        "ghcr.io/astral-sh/uv"
+      ],
+      "groupName": "uv"
+    },
+    {
+      "description": "The Ruff hook in prek.toml must match the locked Ruff, so raise the range and the lock with it.",
+      "matchPackageNames": [
+        "ruff",
+        "astral-sh/ruff-pre-commit"
+      ],
+      "groupName": "Ruff",
+      "rangeStrategy": "bump"
+    },
+    {
+      "description": "The Hadolint hook revision and its image move together.",
+      "matchPackageNames": [
+        "hadolint/hadolint",
+        "ghcr.io/hadolint/hadolint"
+      ],
+      "groupName": "Hadolint"
+    },
+    {
+      "description": "Lychee tags its releases lychee-vX.Y.Z.",
+      "matchDatasources": [
+        "github-tags"
+      ],
+      "matchPackageNames": [
+        "lycheeverse/lychee"
+      ],
+      "versioning": "regex:^lychee-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    },
+    {
+      "description": "The Lychee hook revision and its LYCHEE_VERSION argument move together.",
+      "matchPackageNames": [
+        "lycheeverse/lychee"
+      ],
+      "groupName": "Lychee"
+    },
+    {
+      "description": "These downloads are pinned by SHA-256, so CI fails until the checksum in the same pull request matches.",
+      "matchPackageNames": [
+        "AikidoSec/safe-chain",
+        "betterleaks/betterleaks",
+        "docker/scout-cli"
+      ],
+      "groupName": "checksum-pinned tools",
+      "automerge": false,
+      "prBodyNotes": [
+        "Update each SHA-256 checksum next to the bumped version from the release's published checksums before merging."
+      ]
     }
   ],
   "customManagers": [
@@ -30,6 +142,90 @@
         "\"(?<depName>@modelcontextprotocol/conformance)@(?<currentValue>[^\"]+)\""
       ],
       "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": "Prek hook repository revisions.",
+      "managerFilePatterns": [
+        "/^prek\\.toml$/"
+      ],
+      "matchStrings": [
+        "repo = \"https://github\\.com/(?<depName>[^\"]+?)(?:\\.git)?\"\\nrev = \"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-tags"
+    },
+    {
+      "customType": "regex",
+      "description": "The Hadolint image that the prek hook runs.",
+      "managerFilePatterns": [
+        "/^prek\\.toml$/"
+      ],
+      "matchStrings": [
+        "entry = \"(?<depName>ghcr\\.io/hadolint/hadolint):(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "npm packages that prek hooks run through npx.",
+      "managerFilePatterns": [
+        "/^prek\\.toml$/"
+      ],
+      "matchStrings": [
+        "--package=(?<depName>@?[a-z0-9][a-z0-9./_-]*)@(?<currentValue>\\d[^\\s\"]*)"
+      ],
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": "The Lychee binary version that the prek hook downloads.",
+      "managerFilePatterns": [
+        "/^prek\\.toml$/"
+      ],
+      "matchStrings": [
+        "LYCHEE_VERSION=(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ],
+      "depNameTemplate": "lycheeverse/lychee",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^lychee-v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Aikido Safe Chain installer release.",
+      "managerFilePatterns": [
+        "/^\\.github/scripts/install_safe_chain\\.sh$/"
+      ],
+      "matchStrings": [
+        "\\nversion=(?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"
+      ],
+      "depNameTemplate": "AikidoSec/safe-chain",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Betterleaks release used by local hooks and CI.",
+      "managerFilePatterns": [
+        "/^scripts/betterleaks\\.sh$/"
+      ],
+      "matchStrings": [
+        "\\nversion=(?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"
+      ],
+      "depNameTemplate": "betterleaks/betterleaks",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Docker Scout CLI used to verify DHI attestations.",
+      "managerFilePatterns": [
+        "/^\\.github/scripts/verify_dhi\\.sh$/"
+      ],
+      "matchStrings": [
+        "\\nversion=(?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"
+      ],
+      "depNameTemplate": "docker/scout-cli",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ]
 }

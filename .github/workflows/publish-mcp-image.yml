@@ -1,0 +1,116 @@
+name: Publish MCP image
+
+on:
+  workflow_call:
+    outputs:
+      digest:
+        description: Digest of the verified, signed, and promoted image
+        value: ${{ jobs.publish.outputs.digest }}
+    secrets:
+      DHI_USERNAME:
+        description: Docker ID used to pull Docker Hardened Images
+        required: true
+      DHI_TOKEN:
+        description: Docker personal access token with read access to DHI
+        required: true
+  # A manual run republishes the tip of the default branch.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build, verify, sign, and promote image
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # One publisher at a time, so the main tag check sees the latest promotion.
+    concurrency:
+      group: publish-mcp-image
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write # Push and promote the verified image in GHCR.
+      id-token: write # Sign the image digest with keyless Cosign OIDC.
+    outputs:
+      digest: ${{ steps.candidate.outputs.digest }}
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/opendart-mcp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The main tag check compares commits in the default branch history.
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up the MCP client
+        uses: ./.github/actions/setup
+        with:
+          sync: --package opendart-workspace --package opendart-mcp --no-dev --group hooks
+          # Publishing must not restore caches that check workflows populate.
+          cache: false
+      - name: Lint Dockerfile
+        run: just mcp dockerfile
+      - name: Validate Compose configuration
+        run: just mcp compose
+      - name: Log in to Docker Hardened Images
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: dhi.io
+          username: ${{ secrets.DHI_USERNAME }}
+          password: ${{ secrets.DHI_TOKEN }}
+      - name: Verify DHI base images
+        env:
+          DOCKER_SCOUT_HUB_USER: ${{ secrets.DHI_USERNAME }}
+          DOCKER_SCOUT_HUB_PASSWORD: ${{ secrets.DHI_TOKEN }}
+        run: .github/scripts/verify_dhi.sh
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Generate image labels
+        id: meta
+        uses: ./.github/actions/image-metadata
+        with:
+          image: ${{ env.IMAGE }}
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Build and push an untagged candidate
+        id: candidate
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: packages/mcp/Dockerfile
+          platforms: linux/amd64
+          pull: true
+          # No tag refers to the candidate until it passes every check.
+          tags: ${{ env.IMAGE }}
+          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+          labels: ${{ steps.meta.outputs.labels }}
+          no-cache: true
+          provenance: mode=max
+          sbom: true
+      - name: Pull the candidate by digest
+        env:
+          DIGEST: ${{ steps.candidate.outputs.digest }}
+        run: docker pull "$IMAGE@$DIGEST"
+      - name: Test runtime restrictions, file secrets, and the MCP protocol
+        env:
+          DIGEST: ${{ steps.candidate.outputs.digest }}
+        run: .github/scripts/check_mcp_container.sh "$IMAGE@$DIGEST"
+      - name: Scan the candidate
+        uses: ./.github/actions/scan-container
+        with:
+          image: ${{ env.IMAGE }}@${{ steps.candidate.outputs.digest }}
+      - name: Sign and verify the candidate
+        uses: ./.github/actions/verify-image-signature
+        with:
+          image: ${{ env.IMAGE }}@${{ steps.candidate.outputs.digest }}
+          sign: true
+      - name: Promote the digest to its commit tag and main
+        env:
+          DIGEST: ${{ steps.candidate.outputs.digest }}
+        run: .github/scripts/promote_image.sh "$IMAGE" "$DIGEST" "sha-$GITHUB_SHA" main

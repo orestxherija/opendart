@@ -83,12 +83,12 @@ opendart_mcp-0.1.0.tar.gz
 
 ## CI and publication
 
-The release job in `.github/workflows/release.yml` checks versions and tests the release
-helpers when release inputs change. When either package or the release tooling changes,
-and on manual runs, it also builds distributions, validates metadata with Twine, and runs
-installation smoke checks. Draft pull requests skip the build until they are marked ready,
-and pushes to `main` skip the job because the pull request already ran it; before tagging,
-run **Release artifacts** manually on the release commit. It does not publish packages or
+The release job in `.github/workflows/check-release.yml` checks versions and tests the
+release helpers when release inputs change. When either package or the release tooling
+changes, it also builds distributions, validates metadata with Twine, and runs installation
+smoke checks. Draft pull requests skip the build until they are marked ready, and pushes to
+`main` skip the job because the pull request already ran it; before tagging, run **CI**
+manually on the release commit with **release** and **distributions** selected. It does not publish packages or
 create tags.
 
 After reviewing the artifacts, choose the registry and configure package ownership and
@@ -97,12 +97,12 @@ on it. Create an annotated or signed version tag on the validated release commit
 separate release step; do not move a tag that has already been distributed.
 
 Pushing the version tag also releases the MCP container image. For tags matching `vX.Y.Z`,
-the **MCP container** workflow checks that the tag matches the `opendart-mcp` version and
+the **Release MCP image** workflow checks that the tag matches the `opendart-mcp` version and
 marks a commit on `main`, then finds the image CI published for that commit
 (`ghcr.io/orestxherija/opendart-mcp:sha-<full-commit>`). It verifies that image's `main`
 signature, rescans it, and adds the `vX.Y.Z` tag to the same digest without rebuilding. It
 refuses to move an existing release tag to a different digest. Tag a commit that CI
 published; the version bump qualifies because it changes `packages/mcp/pyproject.toml`. If
-the tagged commit has no image yet, run **MCP container** on `main` while that commit is its
-tip, then rerun the failed release job. See the
+the tagged commit has no image yet, run **Publish MCP image** on `main` while that commit is
+its tip, then rerun the failed release job. See the
 [container guide](../packages/mcp/docs/CONTAINER.md#publish-to-ghcr) for tags and pinning.

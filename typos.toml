@@ -35,6 +35,8 @@ extend-exclude = [
 locale = "en"
 
 [default.extend-words]
+# The re-actors/alls-green action.
+alls = "alls"
 # Ruff's copyright rule prefix, and upstream endpoint names used in docs/tests.
 cpy = "cpy"
 singl = "singl"

@@ -1,0 +1,56 @@
+name: Scheduled image scan
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+    inputs:
+      digest:
+        description: Optional sha256 digest; defaults to the current main tag
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-image-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    name: Verify and scan the published MCP image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read # Pull the published image from GHCR.
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/opendart-mcp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Resolve and pull one immutable digest
+        id: image
+        env:
+          REQUESTED: ${{ inputs.digest || 'main' }}
+        run: .github/scripts/resolve_image.sh "$IMAGE" "$REQUESTED"
+      - name: Verify the publishing signature
+        uses: ./.github/actions/verify-image-signature
+        with:
+          image: ${{ steps.image.outputs.reference }}
+      - name: Scan the published digest
+        if: ${{ !cancelled() && steps.image.outcome == 'success' }}
+        uses: ./.github/actions/scan-container
+        with:
+          image: ${{ steps.image.outputs.reference }}

@@ -87,12 +87,13 @@ references within `api_reference` are supported by this reference's selector.
 
 ## GitHub Actions
 
-[Live API contracts](../.github/workflows/contracts.yml) runs after a push or merge
-to the repository's configured default branch when generated OpenAPI files have
-changed. It compares `github.event.before` with `github.sha`, covering the entire
+[Live API contracts](../.github/workflows/test-live-contracts.yml) runs from **CI**
+after a push or merge to the repository's configured default branch when generated
+OpenAPI files have changed. It compares `github.event.before` with `github.sha`, covering the entire
 push rather than just the last commit. Feature branches and pull requests never
 make authenticated calls. Separate pushes retain their own runs and selections.
-**Run workflow** on the default branch performs a full audit.
+Running **CI** manually on the default branch with **contracts** selected performs a
+full audit; `just reference contracts` runs the same check locally with a key.
 
 Configure the repository's **Actions secret `OPENDART_API_KEY`** with a key valid
 for the English service. If FSS restricts its allowed IP addresses, the runner's

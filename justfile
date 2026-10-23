@@ -1,6 +1,9 @@
 mod sdk 'packages/sdk/justfile'
 mod mcp 'packages/mcp/justfile'
 mod reference 'scripts/api_reference/justfile'
+mod ci '.github/justfile'
+
+release_files := 'scripts/check_release.py scripts/smoke_distributions.py scripts/smoke_installed.py tests/release'
 
 # List available commands.
 default:
@@ -17,18 +20,19 @@ check:
     just sdk check
     just mcp check
     just reference check
+    just ci test
 
-# Check file integrity, repository style, workflow security, and file lengths.
+# Check file integrity, style, shell scripts, workflows, spelling, and file lengths.
 quality:
     .venv/bin/prek run --group builtin --require-group ci --all-files --stage pre-commit
     .venv/bin/ruff check
     .venv/bin/ruff format --check
-    .venv/bin/prek run markdownlint-cli2 yamllint taplo-format typos loq --all-files --stage pre-commit
+    .venv/bin/prek run markdownlint-cli2 yamllint taplo-format shellcheck shfmt actionlint typos loq --all-files --stage pre-commit
     .venv/bin/prek run taplo-lint --all-files --stage pre-push
-    .venv/bin/prek run zizmor --all-files --stage pre-commit
 
-# Audit all locked Python dependencies against current vulnerability advisories.
+# Audit workflows with Zizmor and locked Python dependencies against current advisories.
 audit:
+    .venv/bin/prek run zizmor --all-files --stage pre-commit
     .venv/bin/prek run pip-audit --all-files --stage pre-push
 
 # Scan all local Git history with redacted output.
@@ -44,18 +48,22 @@ build:
     just sdk build
     just mcp build
 
-# Validate coordinated package versions and release-checker regression tests.
+# Check release tooling, coordinated package versions, and release-checker regression tests.
 release-check:
+    uv run --no-sync ruff check {{ release_files }}
+    uv run --no-sync ruff format --check {{ release_files }}
     uv run --no-sync python scripts/check_release.py
     uv run --no-sync pytest tests/release --no-cov --html=.cache/pytest/release-report.html -o cache_dir=.cache/pytest/release
 
-# Build and validate both formats, then smoke-test isolated installations.
-release-build:
-    just release-check
+# Build both formats, validate their metadata, and smoke-test isolated installations.
+release-dist:
     uv build --all-packages --no-sources
     uv run --no-sync python scripts/check_release.py --dist dist
     uv run --no-sync twine check --strict dist/*
     .venv/bin/python scripts/smoke_distributions.py
+
+# Run the release checks, then build and smoke-test the distributions.
+release-build: release-check release-dist
 
 # Regenerate the reference, then the SDK and the MCP registry built from it.
 generate:

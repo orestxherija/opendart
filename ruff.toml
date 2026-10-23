@@ -49,7 +49,7 @@ ignore = [
 
 [lint.per-file-ignores]
 # Standalone CLI and generation scripts have dynamic inputs and print progress.
-"scripts/**" = [
+"{scripts,.github/scripts}/**" = [
     "ANN",
     "BLE001",
     "C901",
@@ -176,8 +176,12 @@ ignore = [
 "scripts/api_reference/check.py" = ["FBT002", "FBT003", "PLR2004", "RUF005", "S603"]
 "scripts/api_reference/snapshot.py" = ["C408", "PLR2004", "W505"]
 "scripts/generate_sdk.py" = ["S603"]
+# The CI selector runs Git with fixed arguments.
+".github/scripts/select_components.py" = ["S603", "S607"]
 # Runs the pinned conformance suite through npx.
 "scripts/check_mcp_conformance.py" = ["S603"]
+# CI selection tests drive Git in temporary repositories.
+"tests/ci/**" = ["S603", "S607"]
 # The contract harness intentionally uses subprocesses, broad fixture callbacks,
 # and a linear request runner so its bounded audit steps remain visible.
 "tests/contracts/**" = [

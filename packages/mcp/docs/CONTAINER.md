@@ -115,10 +115,10 @@ dependencies change. It blocks fixable high or critical vulnerabilities and dete
 secrets, and retains a full vulnerability report including unfixed findings for 30
 days. Publishing always runs every check on the exact candidate.
 
-Keep both base-image digests current through the weekly Dependabot Docker
-updates; a pinned digest must change to receive base-image fixes. The two DHI
-references are grouped in one update. Repository maintainers must configure
-[DHI credentials for Actions and Dependabot](../../../.github/README.md#docker-hardened-images-credentials).
+Renovate keeps both base-image digests current in its weekly updates; a pinned
+digest must change to receive base-image fixes. Both DHI references update in the
+same pull request. Repository maintainers must configure
+[DHI credentials for Actions and Renovate](#dhi-credentials).
 
 Compose runs as UID/GID `10001:10001` with a read-only root filesystem, all Linux capabilities dropped, and privilege
 escalation disabled. Temporary files use a 32 MiB `/tmp` mount with execution disabled. The company directory archive is
@@ -145,6 +145,39 @@ travel over HTTP. The image is built or pulled explicitly, so starting the
 service does not fetch a mutable tag. Set `OPENDART_MCP_IMAGE` to use an already
 pulled image tag or digest with the same Compose restrictions. Outbound networking
 remains available for OpenDART API calls.
+
+## DHI credentials
+
+CI pulls the base images from `dhi.io` with a Docker ID and a Docker personal access
+token that has read access to public repositories; create both as described in the
+[MCP Docker setup](../README.md#docker). Add them as `DHI_USERNAME` and `DHI_TOKEN`
+under **Settings → Secrets and variables → Actions**, or with the GitHub CLI, which
+prompts for each value:
+
+```sh
+gh secret set DHI_USERNAME
+gh secret set DHI_TOKEN
+```
+
+Renovate needs its own copy to look up DHI tags and digests. In the
+[Mend developer portal](https://developer.mend.io/), open this repository's settings
+and add `DHI_USERNAME` and `DHI_TOKEN` under **Credentials**. Renovate stops updating
+the repository if a credential that `renovate.json` references is missing.
+
+Only the image check and the publishing workflow receive these secrets, and only
+publishing receives `packages: write` and `id-token: write`. Both log in with
+`docker/login-action`, which logs out when the job ends. DHI signature checks use the
+free Docker Scout CLI, which authenticates through `DOCKER_SCOUT_HUB_USER` and
+`DOCKER_SCOUT_HUB_PASSWORD`; logging in to `dhi.io` alone does not authenticate Scout.
+The daily scan of the published image needs only `packages: read`.
+
+GitHub does not give repository secrets to pull requests from forks. For a fork change
+to the image's inputs, a maintainer must review it and run the pull request from a
+branch in this repository. Keep the workflows on `pull_request`; never expose registry
+credentials with `pull_request_target`.
+
+When the PAT expires or is rotated, update it in GitHub and in the Mend portal, and run
+`docker login dhi.io --username YOUR_DOCKER_ID` again on development machines.
 
 ## Image metadata
 
@@ -173,10 +206,9 @@ the repository's GitHub metadata.
 ## Publish to GHCR
 
 Publishing is automatic. When a push to `main` changes the image's inputs (the same
-`container` paths that select the pull request image check in
-[ci-paths.yml](../../../.github/ci-paths.yml)) or the publisher workflow itself, and
-every selected CI check passes,
-**CI** calls the **MCP container** workflow. It builds a Linux amd64 candidate once
+`image` filter that selects the pull request image check in
+[ci-paths.toml](../../../.github/ci-paths.toml)) or the publisher itself, and every
+selected CI check passes, **CI** calls the **Publish MCP image** workflow. It builds a Linux amd64 candidate once
 and pushes it by digest only, so no tag refers to it yet. It runs protocol and
 security checks and Trivy scans against that exact digest. After those pass, it
 signs and verifies the digest with
@@ -206,13 +238,13 @@ release step does not rebuild, so tag a commit that CI published. Every version
 bump publishes, because it changes `packages/mcp/pyproject.toml`.
 
 To republish the tip of `main`, for example to pick up base-image fixes, open
-**Actions → MCP container → Run workflow** on `main`. Manual runs on other branches
-fail rather than publish; pull request images are checked without being pushed.
-Running the workflow on a release tag retries that release's promotion.
+**Actions → Publish MCP image → Run workflow** on `main`. Runs on other branches skip
+publishing; pull request images are checked without being pushed. To retry a
+release's promotion, run **Release MCP image** on its tag.
 
 Publishing to GHCR uses the built-in `GITHUB_TOKEN` with `packages: write`.
 Building the image also requires the `DHI_USERNAME` and `DHI_TOKEN` repository
-secrets described in the [CI setup](../../../.github/README.md#docker-hardened-images-credentials).
+secrets described in [DHI credentials](#dhi-credentials).
 Machines that only pull and run the published GHCR image do not need DHI
 credentials; DHI authentication is needed when building from its base images.
 Failed candidates remain as untagged package versions. Clean them up by hand if
@@ -243,18 +275,19 @@ Use the result as `ghcr.io/orestxherija/opendart-mcp@sha256:YOUR_DIGEST`.
 Signing uses GitHub Actions OIDC and the public Sigstore service, with no separate
 subscription or signing key secret. The signature records the repository,
 publishing workflow, and branch identity in the public transparency log. The
-identity is the **MCP container** workflow on `main`, both when CI calls it and on
-manual runs, because the certificate names the workflow that defines the job.
+identity is the **Publish MCP image** workflow on `main`, both when CI calls it and on
+manual runs, because the certificate names the workflow that defines the job. Images
+published before that workflow was renamed carry `mcp-container.yml` instead.
 Release tags reuse the `main` digest and its signature. Verify a digest before
 running it:
 
 ```sh
 cosign verify ghcr.io/orestxherija/opendart-mcp@sha256:YOUR_DIGEST \
-  --certificate-identity=https://github.com/orestxherija/opendart/.github/workflows/mcp-container.yml@refs/heads/main \
+  --certificate-identity=https://github.com/orestxherija/opendart/.github/workflows/publish-mcp-image.yml@refs/heads/main \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com
 ```
 
-**MCP published image security** runs daily and can also run manually. It resolves
+**Scheduled image scan** runs daily and can also run manually. It resolves
 the current `main` tag once, verifies the default-branch publishing identity,
 and rescans that digest for vulnerabilities and secrets without rebuilding it.
 An optional manual `digest` input audits an older default-branch build. Reports

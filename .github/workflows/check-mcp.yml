@@ -1,0 +1,94 @@
+name: Check MCP
+
+on:
+  workflow_call:
+    inputs:
+      conformance:
+        description: Run the MCP conformance suite
+        type: boolean
+        default: true
+    secrets:
+      CODECOV_TOKEN:
+        description: Codecov upload token
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  mcp:
+    name: Python 3.14
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          sync: --package opendart-workspace --package opendart-mcp
+      - name: Lint Dockerfile
+        run: just mcp dockerfile
+      - name: Lint
+        run: just mcp lint
+      - name: Check types
+        run: just mcp typecheck
+      - name: Check the generated registry
+        run: just mcp generated
+      - name: Check component versions, fingerprints, and token budget
+        run: just mcp components
+      - name: Run tests
+        run: just mcp test
+      - name: Upload test report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mcp-test-report
+          path: .cache/pytest/mcp-report.html
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload coverage
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          disable_search: true
+          fail_ci_if_error: true
+          files: .cache/coverage/mcp.xml
+          flags: mcp
+          name: mcp-python-3.14
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Check MCP protocol
+        run: just mcp smoke
+      - name: Build distributions
+        run: just mcp build
+      - name: Validate Compose configuration
+        run: just mcp compose
+
+  conformance:
+    name: Protocol conformance
+    if: inputs.conformance
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          sync: --package opendart-workspace --package opendart-mcp --no-default-groups --group hooks
+          node: true
+      - name: Run the conformance suite in both protocol eras
+        run: just mcp conformance
+      - name: Upload conformance results
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mcp-conformance-results
+          path: .cache/conformance
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7

@@ -34,7 +34,8 @@ filterwarnings = []
 
 cache_dir = ".cache/pytest"
 testpaths = ["packages/sdk/tests", "packages/mcp/tests", "tests"]
-pythonpath = ["."]
+# CI selection tests import the selector by module name.
+pythonpath = [".", ".github/scripts"]
 consider_namespace_packages = true
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
