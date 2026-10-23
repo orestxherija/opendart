@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.14"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -1150,17 +1150,17 @@ wheels = [
 
 [[package]]
 name = "loq"
-version = "0.1.0"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/97/81/a17733cc91f34192c7ebfa946df89e14385dc384952485fcacde759d0dc7/loq-0.1.0.tar.gz", hash = "sha256:2c0748bfbd0f36a7899d19bfa50af2609dbdd09351fc8951f7c4741ed4340c86", size = 73416, upload-time = "2026-03-15T15:54:52.304Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/80/a3/54405649a3beb599fc64790b3ac48da2570c80b8f8eca6ab971bd5549d31/loq-0.2.0.tar.gz", hash = "sha256:ee953ce910e4bb5add3a80d0f36640e3d9286de5b9640e62b795b27c42f908e3", size = 77234, upload-time = "2026-10-18T18:39:34.964Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7a/24/66fb5fb05c1381d3f7006ed0f3ea02f44e18f8908f616bb4a9c4a052388d/loq-0.1.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:3609a7cb924fe3a91f4e2783302f103c4800fb77d3aa44f25751d7e59671b8c4", size = 1348859, upload-time = "2026-03-15T15:54:46.504Z" },
-    { url = "https://files.pythonhosted.org/packages/ab/51/f0e99405c265dd700b6a325bd9c096a2fe6982ec251614470c10ff9ebd44/loq-0.1.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:06fbbb2d879bec68cbc3bf245ca9c0b3f1b34378520f088d43906ca4b005dcbc", size = 1264194, upload-time = "2026-03-15T15:54:42.6Z" },
-    { url = "https://files.pythonhosted.org/packages/5b/7c/9898a91f70ba757c07395bf4827953245ad1721b03f2a88750d4d789d342/loq-0.1.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:98781f2da950c8a2f8ff1e136f7199abdfd1456b921253e97891eba1a6d8f7d7", size = 1285358, upload-time = "2026-03-15T15:54:44.035Z" },
-    { url = "https://files.pythonhosted.org/packages/1c/a5/57f6a11fa86d3e75f16283dbdb7925796bd430ec298407d2824e23de2740/loq-0.1.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5f37096eb4e7deb8c11928aad914a472b0b74485a5dbebd16f17f223ef973e22", size = 1389403, upload-time = "2026-03-15T15:54:50.878Z" },
-    { url = "https://files.pythonhosted.org/packages/c1/1e/77fd1ac28d4bbb79a0006a7489aa527e6df00fef7668c47d7a69c46804e8/loq-0.1.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:2af38e4e503986b930d036ec867720648a8dff468d6a938b6f3579024deace9c", size = 1334234, upload-time = "2026-03-15T15:54:45.162Z" },
-    { url = "https://files.pythonhosted.org/packages/a9/bd/eaea9d747ac43384c5e319886a23edb6b61007be6ca856f480110a57cb52/loq-0.1.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:97fbd077ed12627bc8a9897f863489cc0a535dee884a100c419c8039fd758b64", size = 1457837, upload-time = "2026-03-15T15:54:47.894Z" },
-    { url = "https://files.pythonhosted.org/packages/0e/84/3477378f4a22c89f4b0268ffeb45738fc67d629067bbd6ad9a7de40e0ed0/loq-0.1.0-py3-none-win_amd64.whl", hash = "sha256:dcb0da5c60ba65d8978e91fd0e8116c920c79374dff78092cd1cc6a732fbaebf", size = 1368085, upload-time = "2026-03-15T15:54:49.468Z" },
+    { url = "https://files.pythonhosted.org/packages/51/d9/c17515be994dd660b9819ed0abfa54e3131d2697ec3ea0a1d4c2eb9aeedd/loq-0.2.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:8370ae3310827b42ab92ccb4fdb7c525d939ad8e6ccd7fdc50ffd8bd7d29dd89", size = 1314495, upload-time = "2026-10-18T18:39:25.718Z" },
+    { url = "https://files.pythonhosted.org/packages/27/0d/c13d11d617a7c14102099de6278bf1ab4df32aba468011c7f8b2fb3f7ce4/loq-0.2.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:433ef7781be480eadb9a27a18de7f5a47b30c0f14e13028a4665cff33a45ea22", size = 1234940, upload-time = "2026-10-18T18:39:27.279Z" },
+    { url = "https://files.pythonhosted.org/packages/2a/ea/473ceafffbbd0b0906c40ffef231c9433f4efba6dfd7e0a64572adae762a/loq-0.2.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1e5e7ba3f04a6918cadb5cef10229a5f95a9f5a78bf1612f63bd1368bc7e06a8", size = 1262896, upload-time = "2026-10-18T18:39:28.786Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/3b/2c9c752b0590d7d55735502212345bf78c90390e619f7534fef46eda1463/loq-0.2.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a58625d7d0948affa2c3d7e54c27f2650d5f2d19b2c1e0c78a84b28f72f4c044", size = 1360783, upload-time = "2026-10-18T18:39:29.983Z" },
+    { url = "https://files.pythonhosted.org/packages/bf/97/40e0a1274933def21e3b9fd48d8fa02d3d766abade227de3e19febac1210/loq-0.2.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:884d751e34db6d835acf4b42a5e08b35b277133a96878e5df4f471b3c5ef014f", size = 1307175, upload-time = "2026-10-18T18:39:31.118Z" },
+    { url = "https://files.pythonhosted.org/packages/51/bd/3147365b59e1d158ec1f5e62bb9a56146727e5a8d432616c3c46151a7b77/loq-0.2.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:ab0b47010022bff5bad98f573b55b9b74aeb2db43c368264418016b1c1b7c3d1", size = 1427087, upload-time = "2026-10-18T18:39:32.568Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/22/cb252bf24b2894af7d6b82f747b8de8eee572935f2b6548b6f0e0129f8da/loq-0.2.0-py3-none-win_amd64.whl", hash = "sha256:8a3e448f1eec1015fff8c6571c885f9e0f7363b0e5e51ed432b47ad8ff5ebab5", size = 1343398, upload-time = "2026-10-18T18:39:33.836Z" },
 ]
 
 [[package]]
@@ -1582,7 +1582,7 @@ dev = [
     { name = "commitizen", specifier = "==4.17.0" },
     { name = "coverage", extras = ["toml"], specifier = ">=7.15.2,<8" },
     { name = "jsonschema", specifier = "==4.26.0" },
-    { name = "loq", specifier = ">=0.1,<0.2" },
+    { name = "loq", specifier = ">=0.2,<0.3" },
     { name = "openapi-spec-validator", specifier = "==0.9.0" },
     { name = "packaging", specifier = ">=25,<27" },
     { name = "pip-audit", specifier = "==2.10.1" },
@@ -1606,7 +1606,7 @@ dev = [
 ]
 hooks = [{ name = "prek", specifier = ">=0.4.13,<0.5" }]
 quality = [
-    { name = "loq", specifier = ">=0.1,<0.2" },
+    { name = "loq", specifier = ">=0.2,<0.3" },
     { name = "pip-audit", specifier = "==2.10.1" },
     { name = "pyrefly", specifier = ">=1.1.1,<1.2" },
     { name = "ruff", specifier = ">=0.17.1,<0.18" },

@@ -41,7 +41,7 @@ test = [
   "jsonschema==4.26.0",
 ]
 quality = [
-  "loq>=0.1,<0.2",
+  "loq>=0.2,<0.3",
   "pip-audit==2.10.1",
   "ruff>=0.17.1,<0.18",
   "pyrefly>=1.1.1,<1.2",
