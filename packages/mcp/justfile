@@ -1,18 +1,20 @@
 # Use the shared workspace configuration, including when invoked as a module.
 set working-directory := '../..'
 
+scripts := 'scripts/check_mcp.py scripts/check_mcp_runtime.py scripts/check_mcp_components.py scripts/check_mcp_conformance.py scripts/generate_mcp_registry.py'
+
 # List available commands.
 default:
     @just --justfile '{{ source_file() }}' --list
 
 # Check lint and formatting.
 lint:
-    uv run --no-sync ruff check packages/mcp scripts/check_mcp.py
-    uv run --no-sync ruff format --check packages/mcp scripts/check_mcp.py
+    uv run --no-sync ruff check packages/mcp {{ scripts }}
+    uv run --no-sync ruff format --check packages/mcp {{ scripts }}
 
 # Format Python files.
 format:
-    uv run --no-sync ruff format packages/mcp scripts/check_mcp.py
+    uv run --no-sync ruff format packages/mcp {{ scripts }}
 
 # Check types.
 typecheck:
@@ -23,8 +25,26 @@ typecheck:
 test:
     uv run --no-sync prek run pytest-mcp --all-files --stage pre-push
 
-# Check the MCP package.
+# Check the MCP package, the generated registry, and the component lock.
 check: lint typecheck test
+    uv run --no-sync python scripts/generate_mcp_registry.py --check
+    uv run --no-sync python scripts/check_mcp_components.py
+
+# Regenerate the service registry from the API catalog and the SDK naming rules.
+generate:
+    uv run --no-sync python scripts/generate_mcp_registry.py
+
+# Record intended component changes in the lock; pass --accept-changes after review, and for the first lock.
+lock *args:
+    uv run --no-sync python scripts/check_mcp_components.py --update {{ args }}
+
+# Smoke-test an isolated native server over HTTP.
+smoke:
+    uv run --no-sync python scripts/check_mcp.py
+
+# Run the official MCP conformance suite in both protocol eras; needs Node.js. Pass --scenario NAME for one.
+conformance *args:
+    uv run --no-sync python scripts/check_mcp_conformance.py {{ args }}
 
 # Build the Python package.
 build:

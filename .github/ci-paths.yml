@@ -90,10 +90,22 @@ mcp:
   - 'codecov.yml'
   - '.hadolint.yaml'
   - '.github/workflows/mcp.yml'
+  # Includes components.lock.json, which the component check compares.
   - 'packages/mcp/**'
-  - '!packages/mcp/docs/**'
+  # A registry test parses COMPONENT_DESIGN.md, so only the other package docs
+  # are excluded. Only a leading ! negates; !(...) is an extglob.
+  - '!packages/mcp/docs/!(COMPONENT_DESIGN.md)'
+  - '!packages/mcp/docs/*/**'
   - 'scripts/check_mcp.py'
   - 'scripts/check_mcp_runtime.py'
+  - 'scripts/check_mcp_components.py'
+  - 'scripts/check_mcp_conformance.py'
+  # The registry generator and its inputs: the catalog, the operation documents,
+  # and the SDK generator's naming rules.
+  - 'scripts/generate_mcp_registry.py'
+  - 'scripts/generate_sdk.py'
+  - 'api_reference/sources/catalog.json'
+  - 'api_reference/paths/**'
   # MCP installs the SDK; changes to SDK tests or its generator alone do not
   # change the installed package.
   - 'packages/sdk/src/**'
@@ -102,6 +114,7 @@ mcp:
 
 # Expensive: build, exercise, and scan the MCP image. This mirrors the
 # .dockerignore allowlist without READMEs, which add only package metadata.
+# On pushes to main, the same paths select publishing after CI passes.
 container:
   - *shared
   - '.dockerignore'
@@ -118,6 +131,13 @@ container:
   - 'packages/sdk/src/**'
   - 'scripts/check_mcp.py'
   - 'scripts/check_mcp_runtime.py'
+  # The protocol check expects every default tool recorded in the lock.
+  - 'packages/mcp/components.lock.json'
+
+# Publishing only: the publisher runs on main alone, so a pull request image
+# check would not exercise it. Merging a change to it republishes the image.
+publisher:
+  - '.github/workflows/mcp-container.yml'
 
 # Within an image check, verify DHI attestations only when the base digests
 # pinned in the Dockerfile, or their verification, change.

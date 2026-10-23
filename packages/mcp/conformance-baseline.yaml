@@ -1,0 +1,108 @@
+# Expected MCP conformance failures for the OpenDART MCP server.
+#
+# Read by scripts/check_mcp_conformance.py (`just mcp conformance`), which runs the
+# suite twice: with its default wire inference (2025-11-25 for shared scenarios, plus
+# 2026-only and extension scenarios) and at the 2026-07-28 wire. Entries name single
+# checks as <scenario>:<check-id>, so every other check in a listed scenario, including
+# wire-schema-valid, is still enforced. A baselined check that starts passing fails the
+# run until its entry is removed; an entry for a scenario a run skips is ignored.
+#
+# Only three kinds of failure (or SHOULD-level warning) belong here:
+#
+# 1. Reference-server fixtures. These scenarios call components by the names the suite's
+#    own reference server defines (test_simple_prompt, test://static-text,
+#    test_tool_with_progress, slow_compute, and so on) and fail because this server has
+#    no such component. A product server must not grow fake components to satisfy them.
+# 2. Optional features this server deliberately does not offer: resource subscriptions,
+#    SEP-2243 custom headers (no tool parameter is mirrored into an Mcp-Param header), and
+#    SSE stream resumption (no event store, so no priming event or retry field).
+# 3. Upstream behavior outside this repository, with the evidence in the entry's comment.
+#
+# Genuine protocol scenarios must pass and are not listed: initialize, session lifecycle,
+# server/discover and stateless requests, ping, logging/setLevel, completion/complete,
+# tools/list and tool errors, resources/list and unknown-resource errors, prompts/list,
+# caching hints, standard header validation, SSE streams, DNS-rebinding protection, the
+# tasks capability negotiation and dispatch checks, and wire-schema validity everywhere.
+# Fix the server rather than adding a genuine failure here.
+server:
+  # Fixture tools returning image, audio, embedded-resource, or mixed content.
+  - tools-call-image:tools-call-image
+  - tools-call-audio:tools-call-audio
+  - tools-call-embedded-resource:tools-call-embedded-resource
+  - tools-call-mixed-content:tools-call-mixed-content
+  # Fixture tools that log, report progress, sample, or elicit while running.
+  - tools-call-with-logging:tools-call-with-logging
+  - tools-call-with-progress:tools-call-with-progress
+  - tools-call-sampling:tools-call-sampling
+  - tools-call-elicitation:tools-call-elicitation
+  - elicitation-sep1034-defaults:elicitation-sep1034-general
+  - elicitation-sep1330-enums:elicitation-sep1330-general
+  # Fixture tool json_schema_2020_12_tool.
+  - json-schema-2020-12:json-schema-2020-12-tool-found
+  # Fixture tool test_reconnection.
+  - server-sse-polling:incoming-sse-event
+  # Fixture tool test_missing_capability, which requires client sampling.
+  - server-stateless:sep-2575-server-rejects-undeclared-capability
+  - server-stateless:sep-2575-missing-capability-http-400
+  # Fixture resources and resource template under test://.
+  - resources-read-text:resources-read-text
+  - resources-read-binary:resources-read-binary
+  - resources-templates-read:resources-templates-read
+  # Fixture prompts test_simple_prompt and test_prompt_*.
+  - prompts-get-simple:prompts-get-simple
+  - prompts-get-with-args:prompts-get-with-args
+  - prompts-get-embedded-resource:prompts-get-embedded-resource
+  - prompts-get-with-image:prompts-get-with-image
+  # Fixture tools and prompt test_input_required_result_* (2026-07-28 input requests).
+  - input-required-result-basic-elicitation:sep-2322-elicitation-incomplete
+  - input-required-result-basic-sampling:sep-2322-sampling-incomplete
+  - input-required-result-basic-list-roots:sep-2322-list-roots-incomplete
+  - input-required-result-request-state:sep-2322-request-state-incomplete
+  - input-required-result-multiple-input-requests:sep-2322-multiple-inputs-incomplete
+  - input-required-result-multi-round:sep-2322-multi-round-r1
+  - input-required-result-non-tool-request:sep-2322-non-tool-incomplete
+  - input-required-result-result-type:sep-2322-result-type-included
+  - input-required-result-tampered-state:sep-2322-reject-tampered-state
+  - input-required-result-capability-check:sep-2322-respect-client-capabilities
+  - input-required-result-missing-input-response:sep-2322-missing-response-rerequests
+  # Tasks extension fixture tools slow_compute, failing_job, protocol_error_job,
+  # confirm_delete, multi_input, and test_tool_with_task.
+  - tasks-capability-negotiation:tasks-per-request-meta-opt-in
+  - tasks-dispatch-and-envelope:tasks-server-directed-creation-no-hint
+  - tasks-dispatch-and-envelope:sep-2663-durable-create-strong-consistency
+  - tasks-lifecycle:sep-2663-result-type-task-on-create
+  - tasks-lifecycle:sep-2663-tasks-get-status-working
+  - tasks-lifecycle:sep-2663-tasks-get-status-completed
+  - tasks-lifecycle:sep-2663-tool-error-uses-completed-status
+  - tasks-lifecycle:sep-2663-tasks-get-status-failed
+  - tasks-lifecycle:sep-2663-cancel-ack-empty-result
+  - tasks-lifecycle:tasks-cancel-terminal-idempotent-ack
+  - tasks-mrtr-composition:sep-2663-mrtr-synchronous-before-task-creation
+  - tasks-mrtr-input:sep-2663-tasks-get-status-input-required
+  - tasks-mrtr-input:tasks-mrtr-tasks-update-resumes
+  - tasks-mrtr-input:tasks-mrtr-partial-fulfillment
+  - tasks-request-headers:tasks-headers-tolerate-mcp-method-on-tools-call
+  - tasks-request-headers:sep-2663-routing-headers-accepted-on-tasks-get
+  - tasks-request-headers:sep-2663-server-rejects-mismatched-mcp-name-on-tasks-get
+  - tasks-request-state-removal:tasks-request-state-removal-setup
+  - tasks-required-task-error:sep-2663-server-returns-missing-capability-when-required
+  - tasks-wire-fields:tasks-wire-field-renames
+  - tasks-wire-fields:tasks-no-early-ttl-expiry
+  - tasks-wire-fields:tasks-no-related-task-meta-on-inlined-result
+  # Not offered: the server does not declare resources.subscribe.
+  - resources-subscribe:resources-subscribe
+  - resources-unsubscribe:resources-unsubscribe
+  # Not offered: no tool declares x-mcp-header parameters, so nothing is testable.
+  - http-custom-header-server-validation:sep-2243-server-no-xmcp-tool
+  - http-custom-header-server-validation:sep-2243-server-decode-base64
+  - http-custom-header-server-validation:sep-2243-server-validate-param-match
+  - http-custom-header-server-validation:sep-2243-server-reject-invalid-param-chars
+  - http-custom-header-server-validation:sep-2243-server-reject-param-mismatch
+  # Not offered: SSE resumption (SEP-1699 recommendations). Both need an event store, which
+  # FastMCP accepts as http_app(event_store=..., retry_interval=...); the server has none.
+  - server-sse-polling:server-sse-priming-event
+  - server-sse-polling:server-sse-retry-field
+  # Upstream: mcp-types 2.3 declares inputResponses as `InputResponses | None`, so the
+  # MCP SDK reads an explicit null as absent instead of rejecting it (SHOULD-level);
+  # numbers and malformed responses are rejected with -32602.
+  - input-required-result-validate-input:sep-2322-error-on-protocol-error

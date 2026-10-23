@@ -27,21 +27,35 @@ jobs:
       contents: read
       pull-requests: read # Read the complete PR diff for component selection.
     outputs:
-      quality: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.quality == 'true' }}
-      audit: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.audit == 'true' }}
+      # Pushes to main rerun only what the pull request cannot cover: SDK and MCP
+      # tests check merged Python changes and upload Codecov's baseline, and the
+      # reference build feeds the Pages deployment. Publishing and the release
+      # steps recheck the image and distributions before anything ships.
+      quality: >-
+        ${{ github.event_name == 'workflow_dispatch'
+        || (github.event_name == 'pull_request' && steps.filter.outputs.quality == 'true') }}
+      audit: >-
+        ${{ github.event_name == 'workflow_dispatch'
+        || (github.event_name == 'pull_request' && steps.filter.outputs.audit == 'true') }}
       release: >-
-        ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.release == 'true'
-        || (!github.event.pull_request.draft && steps.filter.outputs.distributions == 'true') }}
+        ${{ github.event_name == 'workflow_dispatch'
+        || (github.event_name == 'pull_request' && (steps.filter.outputs.release == 'true'
+        || (!github.event.pull_request.draft && steps.filter.outputs.distributions == 'true'))) }}
       sdk: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.sdk == 'true' }}
       mcp: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.mcp == 'true' }}
       reference: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.reference == 'true' }}
       # Expensive builds run when their inputs change, except on draft PRs.
       distributions: >-
-        ${{ github.event_name == 'workflow_dispatch'
-        || (!github.event.pull_request.draft && steps.filter.outputs.distributions == 'true') }}
+        ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request'
+        && !github.event.pull_request.draft && steps.filter.outputs.distributions == 'true') }}
       container: >-
-        ${{ github.event_name == 'workflow_dispatch'
-        || (!github.event.pull_request.draft && steps.filter.outputs.container == 'true') }}
+        ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request'
+        && !github.event.pull_request.draft && steps.filter.outputs.container == 'true') }}
+      # Pushes to main that change the image's inputs or its publisher publish it
+      # after CI passes.
+      publish: >-
+        ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'
+        && (steps.filter.outputs.container == 'true' || steps.filter.outputs.publisher == 'true') }}
       base-images: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.base-images == 'true' }}
       vulnerabilities: >-
         ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.vulnerabilities == 'true' }}
@@ -146,3 +160,18 @@ jobs:
               if actual != expected:
                   raise SystemExit(f"{component} did not complete as expected")
           PY
+
+  publish:
+    name: Publish MCP image
+    # Publish only after every selected check passes for this push. The called
+    # workflow serializes publishers and never moves main to an older commit.
+    needs: [changes, checks]
+    if: ${{ !cancelled() && needs.changes.outputs.publish == 'true' && needs.checks.result == 'success' }}
+    permissions:
+      contents: read
+      packages: write # Push, promote, and tag the verified image in GHCR.
+      id-token: write # Sign the image digest with keyless Cosign OIDC.
+    uses: ./.github/workflows/mcp-container.yml
+    secrets:
+      DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
+      DHI_TOKEN: ${{ secrets.DHI_TOKEN }}

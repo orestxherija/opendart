@@ -35,6 +35,12 @@ class ResponseModel(BaseModel):
     their Python name or their upstream name.
     """
 
+    # Hide input values in validation errors: a body that echoes the request URL or the
+    # API key must not reach exception text through a ContractError's cause.
     model_config = ConfigDict(
-        extra="allow", strict=True, validate_by_name=True, validate_by_alias=True
+        extra="allow",
+        strict=True,
+        validate_by_name=True,
+        validate_by_alias=True,
+        hide_input_in_errors=True,
     )

@@ -1,0 +1,14 @@
+/* Corporate-action calendar app. */
+.toolbar label { display: inline-flex; align-items: center; gap: 4px; }
+thead th { text-align: left; }
+tbody th, tbody td { text-align: left; }
+tr.week > th {
+  position: static;
+  max-width: none;
+  padding-top: 8px;
+  font-weight: var(--font-weight-semibold, 600);
+  background: linear-gradient(var(--raised), var(--raised)), var(--surface);
+}
+tr.past > * { color: var(--color-text-secondary, GrayText); }
+tr.today > * { font-weight: var(--font-weight-semibold, 600); }
+td.terms { min-width: 16em; }

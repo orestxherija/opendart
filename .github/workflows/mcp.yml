@@ -39,14 +39,22 @@ jobs:
           uv sync --locked --package opendart-workspace --package opendart-mcp
       - name: Lint Dockerfile
         run: uv run --no-sync prek run hadolint-docker --all-files --stage pre-push
-      - name: Lint MCP and container checks
-        run: uv run --no-sync ruff check packages/mcp scripts/check_mcp.py scripts/check_mcp_runtime.py
-      - name: Check MCP and container-check formatting
-        run: uv run --no-sync ruff format --check packages/mcp scripts/check_mcp.py scripts/check_mcp_runtime.py
+      - name: Lint MCP and its scripts
+        run: >-
+          uv run --no-sync ruff check packages/mcp scripts/check_mcp.py scripts/check_mcp_runtime.py
+          scripts/check_mcp_components.py scripts/check_mcp_conformance.py scripts/generate_mcp_registry.py
+      - name: Check MCP and script formatting
+        run: >-
+          uv run --no-sync ruff format --check packages/mcp scripts/check_mcp.py scripts/check_mcp_runtime.py
+          scripts/check_mcp_components.py scripts/check_mcp_conformance.py scripts/generate_mcp_registry.py
       - name: Check MCP types with mypy
         run: uv run --no-sync mypy packages/mcp/src
       - name: Check MCP types with Pyrefly
         run: uv run --no-sync pyrefly check --config pyrefly.toml packages/mcp/src
+      - name: Check the generated MCP registry
+        run: uv run --no-sync python scripts/generate_mcp_registry.py --check
+      - name: Check MCP component versions, fingerprints, and token budget
+        run: uv run --no-sync python scripts/check_mcp_components.py
       - name: Run MCP tests
         run: uv run --no-sync prek run pytest-mcp --all-files --stage pre-push
       - name: Upload MCP test report
@@ -74,3 +82,44 @@ jobs:
       # The image is built, exercised, and scanned by MCP image checks after merges.
       - name: Validate Compose configuration
         run: docker compose -f packages/mcp/docker-compose.yml config --quiet
+
+  conformance:
+    name: Protocol conformance
+    # Drafts skip the suite; marking a draft ready runs it. The server, a pinned npx
+    # package, and two short suite runs fit the cheaper single-CPU runner.
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.11.20"
+          python-version: "3.14"
+          enable-cache: true
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22.23.3"
+      - name: Set up Aikido Safe Chain
+        uses: ./.github/actions/setup-safe-chain
+      - name: Install the MCP server
+        run: |
+          uv safe-chain-verify
+          uv sync --locked --no-default-groups --package opendart-mcp
+          npx safe-chain-verify
+      - name: Run the MCP conformance suite in both protocol eras
+        run: uv run --no-sync python scripts/check_mcp_conformance.py
+      - name: Upload conformance results
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mcp-conformance-results
+          path: .cache/conformance
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7

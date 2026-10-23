@@ -270,11 +270,23 @@ TLS verification. Phase timeouts default to five seconds, with a separate
 can wrap a complete operation in `asyncio.timeout(...)`. Quotas and reset times
 are not assumed, and the SDK does not retry quota failures.
 
-FSS requires the API key in the `crtfc_key` query parameter. SDK exception messages
-exclude keys, URLs, and upstream diagnostic text. Underlying exception causes and
-HTTP-library debug/request logs may include full URLs or response data. Log only
-allowlisted exception attributes; configure HTTP logging accordingly before
-enabling request logs or forwarding tracebacks.
+FSS requires the API key in the `crtfc_key` query parameter, so every request URL
+carries it. The SDK keeps the key out of logs and exceptions without configuration:
+
+- Creating a client attaches `opendart.redaction.RedactSecrets` to the httpx2 and
+  httpcore2 loggers, so request logs read `crtfc_key=[REDACTED]` at any level. The
+  filter is added once; logger levels, handlers, and other filters are left alone.
+- SDK exception messages exclude keys, URLs, and upstream diagnostic text. Chained
+  causes keep their type, but the key is redacted from their messages, notes, and
+  `request.url`; a cause whose text would still show the key is dropped. Response
+  model validation errors omit input values, so echoed bodies stay out of causes.
+- Other failures leaving an endpoint call, such as a custom transport's errors, are
+  redacted in place and re-raised unchanged in type.
+
+`opendart.redaction` also provides `redact` and `RedactingFormatter` for handlers
+that may render URLs from other sources. Tools that capture frame locals, such as
+error trackers or tracebacks with locals, can still see the outgoing request inside
+HTTP-library frames; configure their scrubbing for `crtfc_key`.
 
 Tests inject `httpx2.MockTransport` through the client's `transport=` argument.
 A custom production transport owns its own TLS, proxy, and pool configuration.

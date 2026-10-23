@@ -2,5 +2,34 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "fastmcp-tasks patches mcp internals: upgrade FastMCP and the MCP SDK together, gated by the task tests and the component lock check.",
+      "matchDatasources": [
+        "pypi"
+      ],
+      "matchPackageNames": [
+        "fastmcp",
+        "fastmcp-slim",
+        "fastmcp-tasks",
+        "mcp",
+        "mcp-types"
+      ],
+      "groupName": "FastMCP and MCP SDK"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track the MCP conformance suite that scripts/check_mcp_conformance.py runs through npx. It is a 0.2 prerelease because only those know the 2026-07-28 revision.",
+      "managerFilePatterns": [
+        "/^scripts/check_mcp_conformance\\.py$/"
+      ],
+      "matchStrings": [
+        "\"(?<depName>@modelcontextprotocol/conformance)@(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "npm"
+    }
   ]
 }

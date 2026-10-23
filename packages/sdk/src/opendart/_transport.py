@@ -1,9 +1,14 @@
-"""Owned HTTP clients, bounded bodies, and the OpenDART failure boundary."""
+"""Owned HTTP clients, bounded bodies, and the OpenDART failure boundary.
+
+The API key travels in every request URL, so failures leaving the transport are scrubbed:
+exception messages, notes, and HTTP requests in the chain are redacted, and a chained
+cause whose text still exposes the key is dropped.
+"""
 
 from __future__ import annotations
 
 import re
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from io import BytesIO
 from typing import TYPE_CHECKING, Annotated, override
 from xml.etree.ElementTree import ParseError
@@ -27,6 +32,7 @@ from opendart.errors import (
     UnavailableError,
 )
 from opendart.models._base import ResponseModel
+from opendart.redaction import REDACTED, protect_loggers, redact
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterator
@@ -38,6 +44,8 @@ if TYPE_CHECKING:
     from opendart.settings import OpenDartSettings
 
 Status = Annotated[str, Field(pattern=r"^[0-9]{3}$")]
+_KEY_PARAM = "crtfc_key"
+_MAX_CHAIN = 32
 
 
 class _Envelope(BaseModel):
@@ -52,7 +60,7 @@ class _Envelope(BaseModel):
             invalid types or status syntax.
     """
 
-    model_config = ConfigDict(strict=True)
+    model_config = ConfigDict(strict=True, hide_input_in_errors=True)
     status: Status
     message: str
 
@@ -78,7 +86,7 @@ class _QueryKeyAuth(httpx2.Auth):
         Yields:
             httpx2.Request: The request with its configured query credential.
         """
-        request.url = request.url.copy_set_param("crtfc_key", self._key.get_secret_value())
+        request.url = request.url.copy_set_param(_KEY_PARAM, self._key.get_secret_value())
         yield request
 
 
@@ -102,6 +110,91 @@ def _http_boundary(operation: str) -> Iterator[None]:
         raise ContractError("Response decoding failed", operation=operation) from error
     except httpx2.RequestError as error:
         raise UnavailableError("OpenDART request failed", operation=operation) from error
+
+
+def _chain(error: BaseException) -> list[BaseException]:
+    """List an exception with its causes, contexts, and group members, without cycles.
+
+    Args:
+        error (BaseException): Exception at the head of the chain.
+
+    Returns:
+        list[BaseException]: The head first, then every linked exception, at most
+            _MAX_CHAIN items.
+    """
+    found: list[BaseException] = []
+    pending = [error]
+    while pending and len(found) < _MAX_CHAIN:
+        item = pending.pop()
+        if any(item is seen for seen in found):
+            continue
+        found.append(item)
+        pending.extend(link for link in (item.__cause__, item.__context__) if link is not None)
+        if isinstance(item, BaseExceptionGroup):
+            pending.extend(item.exceptions)
+    return found
+
+
+def _scrub(error: BaseException, secret: str) -> None:
+    """Redact the API key from one exception's arguments, notes, and HTTP request.
+
+    Args:
+        error (BaseException): Exception to rewrite in place.
+        secret (str): API key value to replace.
+    """
+    args = tuple(redact(arg, secret) if isinstance(arg, str) else arg for arg in error.args)
+    if args != error.args:
+        error.args = args
+    notes = getattr(error, "__notes__", None)
+    if isinstance(notes, list):
+        error.__notes__ = [
+            redact(note, secret) if isinstance(note, str) else note for note in notes
+        ]
+    if isinstance(error, httpx2.HTTPError):
+        with suppress(RuntimeError):  # No request is attached.
+            request = error.request
+            if _KEY_PARAM in request.url.params:
+                request.url = request.url.copy_set_param(_KEY_PARAM, REDACTED)
+
+
+def _exposes(error: BaseException, secret: str) -> bool:
+    """Report whether an exception's rendered message still carries the API key.
+
+    Args:
+        error (BaseException): Exception to inspect.
+        secret (str): API key value to look for.
+
+    Returns:
+        bool: True when the message contains the key or a crtfc_key value.
+    """
+    text = str(error)
+    return redact(text, secret) != text
+
+
+@contextmanager
+def _redacting(secret: str) -> Iterator[None]:
+    """Scrub the API key from any exception leaving the managed block.
+
+    Exceptions are rewritten in place and re-raised unchanged in type. When a linked cause
+    or context still renders the key, the head exception's chain is cut.
+
+    Args:
+        secret (str): API key value to replace.
+
+    Yields:
+        None: Control while the caller performs HTTP work and parsing.
+    """
+    try:
+        yield
+    except Exception as error:
+        chain = _chain(error)
+        for item in chain:
+            _scrub(item, secret)
+        if any(_exposes(item, secret) for item in chain[1:]):
+            error.__cause__ = None
+            error.__context__ = None
+            error.__suppress_context__ = True
+        raise
 
 
 def _check_response(response: httpx2.Response, operation: str) -> None:
@@ -290,6 +383,7 @@ class Transport:
             headers={"Accept-Encoding": "identity", "User-Agent": "opendart-sdk/0.1.0"},
             transport=transport,
         )
+        protect_loggers()
 
     async def _read(self, path: str, request: RequestModel, maximum: int) -> bytes:
         """Read a response into memory while enforcing the byte budget.
@@ -345,9 +439,9 @@ class Transport:
             APIError: The application status is not 000; a subclass identifies known rejection,
                 no-data, missing-file, quota, and maintenance statuses.
         """
-        return _parse_json(
-            await self._read(path, request, self.settings.max_response_bytes), path, model
-        )
+        with _redacting(self.settings.api_key.get_secret_value()):
+            body = await self._read(path, request, self.settings.max_response_bytes)
+            return _parse_json(body, path, model)
 
     async def download(self, path: str, request: RequestModel) -> bytes:
         """Fetch ZIP bytes or translate an XML application error.
@@ -371,6 +465,6 @@ class Transport:
             APIError: The application status is not 000; a subclass identifies known rejection,
                 no-data, missing-file, quota, and maintenance statuses.
         """
-        return _parse_archive(
-            await self._read(path, request, self.settings.max_download_bytes), path
-        )
+        with _redacting(self.settings.api_key.get_secret_value()):
+            body = await self._read(path, request, self.settings.max_download_bytes)
+            return _parse_archive(body, path)

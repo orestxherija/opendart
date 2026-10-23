@@ -1,6 +1,7 @@
 # OpenDART MCP server: component design
 
-Status: proposal (2026-10-22). Nothing here is implemented yet; the current server exposes only `ping`.
+Status: implemented (2026-10-22) on FastMCP 4. [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) records the
+implementation decisions and where the implementation deviates from this design.
 
 This document proposes the tools, resources, and prompts for an MCP server built on `opendart-sdk`, aimed at
 discretionary traders, trading and financial analysts, and portfolio managers who follow Korean listed companies. It is
@@ -244,7 +245,7 @@ Event vocabulary (group → kinds, upstream SDK method in parentheses):
 | `mna_and_restructuring` | `merger` (`cmp_mg_decsn`), `split_off` (`cmp_dv_decsn`), `split_merger` (`cmp_dvmg_decsn`), `share_swap_or_transfer` (`stk_extr_decsn`), `business_acquisition` (`bsn_inh_decsn`), `business_transfer` (`bsn_trf_decsn`), `merger_registration` (`mg_rs`), `share_swap_registration` (`extr_rs`), `split_registration` (`dv_rs`) |
 | `asset_and_investment_deals` | `acquire_other_company_shares` (`otcpr_stk_invscr_inh_decsn`), `transfer_other_company_shares` (`otcpr_stk_invscr_trf_decsn`), `acquire_equity_linked_bonds` (`stkrtbd_inh_decsn`), `transfer_equity_linked_bonds` (`stkrtbd_trf_decsn`), `acquire_tangible_assets` (`tgast_inh_decsn`), `transfer_tangible_assets` (`tgast_trf_decsn`), `asset_deal_put_back_option` (`ast_inhtrf_etc_ptbk_opt`) |
 | `distress_and_legal` | `default_or_bankruptcy` (`df_ocr`), `rehabilitation_filing` (`ctrcvs_bgrq`), `creditor_workout_start` (`bnk_mngt_pcbg`), `creditor_workout_suspension` (`bnk_mngt_pcsp`), `dissolution_cause` (`ds_rs_ocr`), `business_suspension` (`bsn_sp`), `lawsuit` (`lwst_lg`) |
-| `overseas_listing` | `overseas_listing_decision` (`ov_lst_decsn`), `overseas_listing` (`ov_lst`), `overseas_delisting_decision` (`ov_dlst_decsn`), `overseas_delisting` (`ov_dlst`) |
+| `overseas_listing` | `overseas_listing_decision` (`ov_lst_decsn`), `overseas_listing_completed` (`ov_lst`), `overseas_delisting_decision` (`ov_dlst_decsn`), `overseas_delisting` (`ov_dlst`) |
 
 Per-kind behavior is data-driven from a generated registry: a headline template (for a convertible bond: face
 value, coupon and yield, conversion price and share count as a percentage of shares outstanding, conversion window,
@@ -254,7 +255,8 @@ reporting, and amendments. Detailed mode returns every column with its catalog l
 
 Call strategy: when `categories` is omitted the tool first runs `search_filings` for major-issue and offering
 categories in the window and queries only the kinds whose titles appear, falling back to a concurrent fan-out with
-caching. Rows are grouped by filing number so amended filings do not look like new events.
+caching. Rows are grouped by filing number so amended filings do not look like new events; a debt registration
+that offers several tranches becomes one event per tranche.
 
 ### `get_ownership`
 
@@ -348,8 +350,9 @@ get_corporate_action_calendar(companies, horizon="90d", include_past: str | None
   -> items[{date, company, action, source_kind, filing_number, details}], as_of
 ```
 
-Upstream: the same registry as `get_corporate_events` (date fields per kind) plus the debt ladder. This is the
-highest-value component per call for discretionary traders; the registry makes the date extraction deterministic.
+Upstream: the same registry as `get_corporate_events` (date fields per kind) plus maturities from the latest
+periodic reports' debt tables, selected by the calendar-only kind `debt_maturity`. This is the highest-value
+component per call for discretionary traders; the registry makes the date extraction deterministic.
 
 ### Escape hatch: `list_services` and `call_service` (off by default)
 

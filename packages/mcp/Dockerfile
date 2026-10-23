@@ -32,6 +32,7 @@ COPY packages/sdk/src/ packages/sdk/src/
 COPY packages/mcp/src/ packages/mcp/src/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --package opendart-mcp --no-default-groups --no-editable
+RUN mkdir -p /opt/cache-dir
 
 FROM dhi.io/python:3.14.8-alpine3.24@sha256:8cf4b504e7329eedec49f8aed49db76f52b65325c79f40467261ba8f4e1c897d AS runtime
 
@@ -60,10 +61,22 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONSAFEPATH=1 \
     OPENDART_MCP_HTTP__HOST=0.0.0.0 \
     OPENDART_MCP_HTTP__PORT=8000
+# Compose allows one CPU and 64 processes: size Python's default thread pool and the
+# in-memory task store's Tokio runtime to one CPU, not to the host's core count. Skip the
+# startup banner and its PyPI update check. By default the company directory cache lives on
+# the writable /tmp tmpfs and restarts download it again; Compose mounts a named volume at
+# /var/cache/opendart-mcp and points the cache there so it survives restarts.
+ENV PYTHON_CPU_COUNT=1 \
+    TOKIO_WORKER_THREADS=1 \
+    FASTMCP_SHOW_SERVER_BANNER=false \
+    FASTMCP_CHECK_FOR_UPDATES=off \
+    OPENDART_MCP_DIRECTORY__CACHE_DIR=/tmp/opendart-mcp
 WORKDIR /app
 
-# Root ownership prevents the service account from modifying installed code.
+# Root ownership prevents the service account from modifying installed code. The empty,
+# service-owned cache directory gives a new named volume mounted there that ownership.
 COPY --from=builder --chown=0:0 /opt/venv /opt/venv
+COPY --from=builder --chown=10001:10001 /opt/cache-dir /var/cache/opendart-mcp
 
 # Numeric IDs work without user-management commands in the shell-free runtime.
 USER 10001:10001
