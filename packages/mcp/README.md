@@ -119,8 +119,9 @@ one shared gateway.
 
 [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) records the architecture and decisions,
 [COMPONENT_DESIGN.md](docs/COMPONENT_DESIGN.md) specifies each component, and [FILING_DOCUMENTS.md](docs/FILING_DOCUMENTS.md)
-covers filing documents. Edit the [draw.io source](docs/architecture.drawio), then export it as SVG to update
-[the README diagram](docs/architecture.svg). Keep the source and SVG together.
+covers filing documents, which [opendart-analysis](../analysis/README.md) parses and caches. Edit the
+[draw.io source](docs/architecture.drawio), then export it as SVG to update [the README diagram](docs/architecture.svg).
+Keep the source and SVG together.
 
 ## Run locally
 

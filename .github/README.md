@@ -6,12 +6,15 @@ Pull requests and pushes to `main` start one workflow, [CI](workflows/ci.yml). I
 compares the change with its base, applies the filters in [ci-paths.toml](ci-paths.toml), and
 calls only the check workflows whose inputs changed. The required **CI checks** job passes when
 every selected check passes. Draft pull requests skip the image, distribution, and conformance
-checks until they are marked ready. Run `just ci plan` to preview the selection for local changes.
+checks until they are marked ready. Analysis changes also select the MCP, image, and distribution
+checks, because MCP and its image install analysis; SDK changes do not select analysis checks. The
+analysis job installs neither the SDK nor MCP, and the MCP job, which installs all three packages,
+runs the import-boundary check. Run `just ci plan` to preview the selection for local changes.
 
 | Trigger | Workflow | Runs |
 | --- | --- | --- |
-| Pull request | [CI](workflows/ci.yml) | File, style, and secret checks always; audit, release, SDK, MCP, image, and reference checks when their inputs change |
-| Push to `main` | [CI](workflows/ci.yml) | SDK, MCP, and reference checks for Codecov and Pages; publishes the image and tests live API contracts when their inputs change |
+| Pull request | [CI](workflows/ci.yml) | File, style, and secret checks always; audit, release, SDK, analysis, MCP, image, and reference checks when their inputs change |
+| Push to `main` | [CI](workflows/ci.yml) | SDK, analysis, MCP, and reference checks for Codecov and Pages; publishes the image and tests live API contracts when their inputs change |
 | Tag `vX.Y.Z` | [Release MCP image](workflows/release-image.yml) | Verifies, rescans, and tags the commit's published image |
 | Monday 08:23 UTC | [Scheduled audits](workflows/scheduled-audits.yml) | Zizmor, pip-audit, and documentation links |
 | Daily 05:23 UTC | [Scheduled image scan](workflows/scheduled-image-scan.yml) | Verifies and scans the published `main` image |

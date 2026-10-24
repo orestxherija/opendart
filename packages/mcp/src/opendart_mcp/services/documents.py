@@ -13,14 +13,7 @@ from typing import TYPE_CHECKING, Final
 import anyio.to_thread
 
 from opendart import FileUnavailableError, NoDataError, OpenDARTError, ResponseTooLargeError
-from opendart_mcp.core.errors import (
-    InvalidArgumentError,
-    StillRunningError,
-    UpstreamError,
-)
-from opendart_mcp.core.gateway import translate
-from opendart_mcp.core.progress import no_progress
-from opendart_mcp.documents import (
+from opendart_analysis.documents import (
     DEFAULT_MAX_CHARS,
     ArchiveTooLargeError,
     DocumentError,
@@ -30,6 +23,13 @@ from opendart_mcp.documents import (
     StoreClosedError,
     UnknownDocumentError,
 )
+from opendart_mcp.core.errors import (
+    InvalidArgumentError,
+    StillRunningError,
+    UpstreamError,
+)
+from opendart_mcp.core.gateway import translate
+from opendart_mcp.core.progress import no_progress
 from opendart_mcp.domain.identifiers import dart_viewer_url, filing_date, is_filing_number
 from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.models.documents import (
@@ -45,10 +45,10 @@ from opendart_mcp.models.documents import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from opendart_analysis.documents import DocumentInfo, LabelMode, ParsedFiling, SectionInfo
     from opendart_mcp.core.errors import ServerError
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.documents import DocumentInfo, LabelMode, ParsedFiling, SectionInfo
     from opendart_mcp.models.documents import FilingMode
 
     type _View = tuple[FilingOutline | FilingPage | FilingHits, str, list[str]]

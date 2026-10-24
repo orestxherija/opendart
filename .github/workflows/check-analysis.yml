@@ -1,0 +1,53 @@
+name: Check analysis
+
+on:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        description: Codecov upload token
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    name: Python 3.14
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          # Without the SDK, MCP, or FastMCP installed, an accidental runtime import fails the tests.
+          sync: --package opendart-workspace --package opendart-analysis
+      - name: Lint
+        run: just analysis lint
+      - name: Check types
+        run: just analysis typecheck
+      - name: Run tests
+        run: just analysis test
+      - name: Upload test report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: analysis-test-report
+          path: .cache/pytest/analysis-report.html
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload coverage
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          disable_search: true
+          fail_ci_if_error: true
+          files: .cache/coverage/analysis.xml
+          flags: analysis
+          name: analysis-python-3.14
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Build distributions
+        run: just analysis build

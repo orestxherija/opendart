@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from opendart_mcp.documents.preliminary import (
+from opendart_analysis.documents.preliminary import (
     PreliminaryChange,
     PreliminaryEarnings,
     PreliminaryPeriod,

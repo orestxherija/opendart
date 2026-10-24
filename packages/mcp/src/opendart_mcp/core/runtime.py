@@ -17,12 +17,12 @@ from pydantic import ValidationError
 from pydantic_settings import SettingsError
 
 from opendart import OpenDART, OpenDARTSettings, get_settings
+from opendart_analysis.documents.store import DocumentStore
 from opendart_mcp.core.cache import TTLCache
 from opendart_mcp.core.gateway import Gateway
 from opendart_mcp.core.metrics import count_upstream
 from opendart_mcp.core.redaction import protect_secrets
 from opendart_mcp.core.state import AppState
-from opendart_mcp.documents.store import DocumentStore
 from opendart_mcp.domain.dates import KST
 from opendart_mcp.services.companies import Companies
 from opendart_mcp.services.directory import DirectoryService

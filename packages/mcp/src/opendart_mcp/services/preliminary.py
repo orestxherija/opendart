@@ -21,9 +21,9 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.documents import extract_preliminary_earnings
 from opendart_mcp.core.progress import no_progress
 from opendart_mcp.core.ttl import FILINGS
-from opendart_mcp.documents import extract_preliminary_earnings
 from opendart_mcp.domain.dates import yyyymmdd
 from opendart_mcp.domain.filings import clean_title
 from opendart_mcp.domain.identifiers import filing_date, is_filing_number
@@ -37,9 +37,9 @@ from opendart_mcp.services.documents import (
 )
 
 if TYPE_CHECKING:
+    from opendart_analysis.documents import PreliminaryEarnings
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.documents import PreliminaryEarnings
     from opendart_mcp.services.companies import Company
 
 LOOKBACK: Final = timedelta(days=120)

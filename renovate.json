@@ -61,9 +61,10 @@
       "enabled": false
     },
     {
-      "description": "opendart-sdk is a workspace member, not a PyPI package; releases update MCP's range with the SDK version.",
+      "description": "opendart-sdk and opendart-analysis are workspace members, not PyPI packages; releases update MCP's ranges with the coordinated version.",
       "matchPackageNames": [
-        "opendart-sdk"
+        "opendart-sdk",
+        "opendart-analysis"
       ],
       "enabled": false
     },

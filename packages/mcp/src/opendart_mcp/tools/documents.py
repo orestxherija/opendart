@@ -9,12 +9,12 @@ from fastmcp.dependencies import CurrentContext, Depends
 from fastmcp.tools import tool
 from pydantic import Field
 
+from opendart_analysis.documents import DEFAULT_MAX_CHARS, MAX_CHARS_CAP, LabelMode
 from opendart_mcp.app.annotations import READ_ONLY, TASK_OPTIONAL
 from opendart_mcp.app.progress import Reporter
 from opendart_mcp.app.state import get_state
 from opendart_mcp.app.views import markdown_view
 from opendart_mcp.core.state import AppState
-from opendart_mcp.documents import DEFAULT_MAX_CHARS, MAX_CHARS_CAP, LabelMode
 from opendart_mcp.models.documents import FilingMode, ReadFilingResult
 from opendart_mcp.render.documents import render_read_filing
 from opendart_mcp.services.documents import FilingRequest, open_filing, wait_seconds

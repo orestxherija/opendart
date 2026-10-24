@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FILTERS = ROOT / ".github" / "ci-paths.toml"
 EVENTS = ("pull_request", "push", "workflow_dispatch")
 # Reusable-workflow jobs in ci.yml; the gate lets exactly the unselected ones skip.
-JOBS = ("quality", "release", "sdk", "mcp", "image", "reference")
+JOBS = ("quality", "release", "sdk", "analysis", "mcp", "image", "reference")
 # Manual-run inputs in ci.yml and their defaults.
 INPUTS = {
     "quality": True,
@@ -32,6 +32,7 @@ INPUTS = {
     "release": True,
     "distributions": True,
     "sdk": True,
+    "analysis": True,
     "mcp": True,
     "image": True,
     "reference": True,
@@ -125,6 +126,7 @@ def select(event: Event, changed: list[str] | None, filters: Filters) -> dict[st
             "release": chosen["release"] or chosen["distributions"],
             "distributions": chosen["distributions"],
             "sdk": chosen["sdk"],
+            "analysis": chosen["analysis"],
             "mcp": chosen["mcp"],
             "conformance": chosen["mcp"],
             "image": chosen["image"],
@@ -150,6 +152,7 @@ def select(event: Event, changed: list[str] | None, filters: Filters) -> dict[st
             "release": pull_request and (hit["release"] or distributions),
             "distributions": distributions,
             "sdk": hit["sdk"],
+            "analysis": hit["analysis"],
             "mcp": hit["mcp"],
             "conformance": hit["mcp"] and not event.draft,
             "image": image,

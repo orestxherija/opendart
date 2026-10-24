@@ -7,8 +7,8 @@ from types import SimpleNamespace
 import pytest
 
 from opendart import ResponseTooLargeError, UnavailableError
+from opendart_analysis.documents import DocumentError, DownloadPendingError, StoreClosedError
 from opendart_mcp.core.errors import InvalidArgumentError, StillRunningError, UpstreamError
-from opendart_mcp.documents import DocumentError, DownloadPendingError, StoreClosedError
 from opendart_mcp.services.documents import (
     BACKGROUND_WAIT_S,
     FOREGROUND_WAIT_S,

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from datetime import date
 
-    from opendart_mcp.documents.preliminary import PreliminaryEarnings, PreliminaryRow
+    from opendart_analysis.documents.preliminary import PreliminaryEarnings, PreliminaryRow
     from opendart_mcp.domain.types import ConcretePeriod
     from opendart_mcp.models.preliminary import PreliminaryResult
 

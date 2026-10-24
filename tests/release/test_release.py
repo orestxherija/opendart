@@ -23,6 +23,7 @@ def release_tree(tmp_path: Path) -> Path:
         "pyproject.toml",
         "cz.toml",
         "packages/sdk/pyproject.toml",
+        "packages/analysis/pyproject.toml",
         "packages/mcp/pyproject.toml",
     ):
         destination = tmp_path / relative
@@ -37,11 +38,17 @@ def release_tree(tmp_path: Path) -> Path:
             )
             if relative == "packages/mcp/pyproject.toml":
                 content = re.sub(r'"opendart-sdk[^"]*"', '"opendart-sdk>=0.2.0,<0.3"', content)
+                content = re.sub(
+                    r'"opendart-analysis[^"]*"', '"opendart-analysis>=0.2.0,<0.3"', content
+                )
             destination.write_text(content)
     return tmp_path
 
 
-def make_artifacts(root: Path, *, omit: str = "", wrong_metadata: str = "") -> Path:
+def make_artifacts(
+    root: Path, *, omit: str = "", wrong_metadata: str = "", only: str | None = None
+) -> Path:
+    """Write all six artifacts; `omit` drops one member, `only` limits metadata drift."""
     dist = root / "dist"
     dist.mkdir(exist_ok=True)
     for package, project in projects(root).items():
@@ -59,7 +66,7 @@ def make_artifacts(root: Path, *, omit: str = "", wrong_metadata: str = "") -> P
         for suffix in ("-py3-none-any.whl", ".tar.gz"):
             content = (
                 metadata.replace(b"Version: 0.2.0", b"Version: 9.0.0")
-                if wrong_metadata == suffix
+                if wrong_metadata == suffix and only in {None, package}
                 else metadata
             )
             if suffix.endswith(".whl"):
@@ -67,7 +74,9 @@ def make_artifacts(root: Path, *, omit: str = "", wrong_metadata: str = "") -> P
                     archive.writestr(f"{stem}.dist-info/METADATA", content)
                     archive.writestr(
                         f"{stem}.dist-info/entry_points.txt",
-                        "[console_scripts]\nopendart-mcp = opendart_mcp.server:main\n",
+                        "[console_scripts]\n"
+                        if omit == "entry_points.txt"
+                        else "[console_scripts]\nopendart-mcp = opendart_mcp.server:main\n",
                     )
                     for asset in ASSETS[package] - {omit}:
                         archive.writestr(asset, "")
@@ -94,7 +103,13 @@ def test_release_tag_comes_from_distributions_not_virtual_root(release_tree):
 
 
 @pytest.mark.parametrize(
-    "file", ["cz.toml", "packages/sdk/pyproject.toml", "packages/mcp/pyproject.toml"]
+    "file",
+    [
+        "cz.toml",
+        "packages/sdk/pyproject.toml",
+        "packages/analysis/pyproject.toml",
+        "packages/mcp/pyproject.toml",
+    ],
 )
 def test_drift_in_any_release_version_is_rejected(release_tree, file):
     path = release_tree / file
@@ -103,23 +118,73 @@ def test_drift_in_any_release_version_is_rejected(release_tree, file):
         check_sources(release_tree)
 
 
+def add_dependency(root: Path, package: str, dependency: str) -> None:
+    path = root / "packages" / package / "pyproject.toml"
+    content = path.read_text()
+    assert "dependencies = [" in content
+    path.write_text(content.replace("dependencies = [", f'dependencies = ["{dependency}", ', 1))
+
+
+@pytest.mark.parametrize(("name", "label"), [("sdk", "SDK"), ("analysis", "analysis")])
 @pytest.mark.parametrize(
     "dependency",
     [
-        "opendart-sdk",
-        "opendart-sdk>=0.2.0",
-        "opendart-sdk<0.3",
-        "opendart-sdk>=0.3,<0.4",
-        "opendart-sdk>=0.1,<0.3",
-        "opendart-sdk>=0.2,<1",
-        "opendart-sdk>=0.2,<0.3; python_version<'3'",
-        "opendart-sdk @ https://example.invalid/sdk.whl",
+        "{}",
+        "{}>=0.2.0",
+        "{}<0.3",
+        "{}>=0.3,<0.4",
+        "{}>=0.1,<0.3",
+        "{}>=0.2,<1",
+        "{}>=0.2,<0.3; python_version<'3'",
+        "{}[extra]>=0.2,<0.3",
+        "{} @ https://example.invalid/package.whl",
     ],
 )
-def test_unbounded_or_incompatible_sdk_dependencies_are_rejected(release_tree, dependency):
+def test_unbounded_or_incompatible_mcp_dependencies_are_rejected(
+    release_tree, name, label, dependency
+):
     path = release_tree / "packages/mcp/pyproject.toml"
-    path.write_text(path.read_text().replace("opendart-sdk>=0.2.0,<0.3", dependency))
-    with pytest.raises(ValueError, match="compatible SDK"):
+    distribution = f"opendart-{name}"
+    content = path.read_text()
+    assert f"{distribution}>=0.2.0,<0.3" in content
+    path.write_text(content.replace(f"{distribution}>=0.2.0,<0.3", dependency.format(distribution)))
+    with pytest.raises(ValueError, match=f"MCP must require the compatible {label} release"):
+        check_sources(release_tree)
+
+
+@pytest.mark.parametrize("name", ["sdk", "analysis"])
+def test_mcp_must_declare_each_internal_dependency(release_tree, name):
+    path = release_tree / "packages/mcp/pyproject.toml"
+    content = path.read_text()
+    requirement = f'  "opendart-{name}>=0.2.0,<0.3",\n'
+    assert requirement in content
+    path.write_text(content.replace(requirement, ""))
+    with pytest.raises(ValueError, match="MCP must require the compatible"):
+        check_sources(release_tree)
+
+
+def test_duplicate_internal_requirements_are_rejected(release_tree):
+    add_dependency(release_tree, "mcp", "opendart-analysis>=0.2.0,<0.3")
+    with pytest.raises(ValueError, match="compatible analysis"):
+        check_sources(release_tree)
+
+
+@pytest.mark.parametrize(
+    ("package", "dependency", "message"),
+    [
+        ("analysis", "opendart-sdk", "analysis must not require opendart-sdk"),
+        ("analysis", "opendart_mcp", "analysis must not require opendart-mcp"),
+        ("sdk", "opendart-analysis", "SDK must not require opendart-analysis"),
+        ("sdk", "opendart-mcp", "SDK must not require opendart-mcp"),
+        ("mcp", "opendart-mcp", "MCP must not require opendart-mcp"),
+    ],
+)
+def test_undeclared_internal_dependency_edges_are_rejected(
+    release_tree, package, dependency, message
+):
+    # Even a compatible range is forbidden: only MCP's two edges are part of the release graph.
+    add_dependency(release_tree, package, f"{dependency}>=0.2.0,<0.3")
+    with pytest.raises(ValueError, match=message):
         check_sources(release_tree)
 
 
@@ -132,8 +197,28 @@ def test_commitizen_cannot_version_the_virtual_root(release_tree):
         check_sources(release_tree)
 
 
-def test_artifact_set_matches_both_manifests_and_includes_required_assets(release_tree):
+def test_commitizen_must_version_the_analysis_distribution(release_tree):
+    path = release_tree / "cz.toml"
+    content = path.read_text()
+    entry = '"packages/analysis/pyproject.toml:version",'
+    assert entry in content
+    path.write_text(content.replace(entry, ""))
+    with pytest.raises(ValueError, match="all three distributions"):
+        check_sources(release_tree)
+
+
+def test_artifact_set_matches_all_manifests_and_includes_required_assets(release_tree):
     check_artifacts(make_artifacts(release_tree), "0.2.0", root=release_tree)
+
+
+@pytest.mark.parametrize(
+    "artifact", ["opendart_analysis-0.2.0-py3-none-any.whl", "opendart_analysis-0.2.0.tar.gz"]
+)
+def test_missing_analysis_artifact_is_rejected(release_tree, artifact):
+    dist = make_artifacts(release_tree)
+    (dist / artifact).unlink()
+    with pytest.raises(ValueError, match=re.escape(f"missing=['{artifact}'], unexpected=[]")):
+        check_artifacts(dist, "0.2.0", root=release_tree)
 
 
 @pytest.mark.parametrize(
@@ -146,23 +231,37 @@ def test_stale_and_unrelated_artifacts_are_rejected(release_tree, extra):
         check_artifacts(dist, "0.2.0", root=release_tree)
 
 
+@pytest.mark.parametrize("only", [None, "analysis"])
 @pytest.mark.parametrize("suffix", ["-py3-none-any.whl", ".tar.gz"])
-def test_wheel_and_sdist_metadata_drift_is_rejected(release_tree, suffix):
+def test_wheel_and_sdist_metadata_drift_is_rejected(release_tree, suffix, only):
+    dist = make_artifacts(release_tree, wrong_metadata=suffix, only=only)
     with pytest.raises(ValueError, match="incorrect metadata"):
-        check_artifacts(
-            make_artifacts(release_tree, wrong_metadata=suffix), "0.2.0", root=release_tree
-        )
+        check_artifacts(dist, "0.2.0", root=release_tree)
 
 
 @pytest.mark.parametrize(
-    "asset", ["opendart/py.typed", "opendart_mcp/server.py", "src/opendart/py.typed", "README.md"]
+    "asset",
+    [
+        "opendart/py.typed",
+        "opendart_analysis/py.typed",
+        "opendart_mcp/server.py",
+        "src/opendart/py.typed",
+        "src/opendart_analysis/__init__.py",
+        "README.md",
+    ],
 )
 def test_missing_wheel_or_sdist_assets_are_rejected(release_tree, asset):
     with pytest.raises(ValueError, match="missing package source or data"):
         check_artifacts(make_artifacts(release_tree, omit=asset), "0.2.0", root=release_tree)
 
 
-def test_commitizen_bumps_both_distributions_without_touching_root_or_git(release_tree):
+def test_missing_mcp_console_entry_point_is_rejected(release_tree):
+    dist = make_artifacts(release_tree, omit="entry_points.txt")
+    with pytest.raises(ValueError, match="missing MCP console entry point"):
+        check_artifacts(dist, "0.2.0", root=release_tree)
+
+
+def test_commitizen_bumps_all_distributions_without_touching_root_or_git(release_tree):
     git = shutil.which("git")
     assert git is not None
     subprocess.run([git, "init", "--quiet", str(release_tree)], check=True)  # noqa: S603 - test-owned repository
@@ -186,7 +285,7 @@ def test_commitizen_bumps_both_distributions_without_touching_root_or_git(releas
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert (release_tree / "pyproject.toml").read_bytes() == before
-    for package in ("sdk", "mcp"):
+    for package in ("sdk", "analysis", "mcp"):
         project = tomllib.loads(
             (release_tree / "packages" / package / "pyproject.toml").read_text()
         )

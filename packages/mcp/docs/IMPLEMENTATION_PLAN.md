@@ -32,7 +32,7 @@ Imports point down the table only. The pure layers never import FastMCP.
 | Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, lifespan |
 | Services | `services/` | Business logic per component, callable from tests without MCP |
 | Infrastructure | `core/` | Gateway, cache, errors, state, runtime |
-| Pure layers | `domain/`, `documents/`, `registry/`, `events/` | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
+| Pure layers | `domain/`, `registry/`, `events/`; `opendart_analysis.documents` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
 | Output | `models/`, `render/` | Pydantic output models and Markdown renderers |
 
 Every handwritten file stays under 500 lines (loq). Tool modules hold the decorated function and its docstring only;
@@ -109,7 +109,7 @@ deadline-based candidates; `first_available(candidates, fetch)` probes candidate
 | --- | --- | --- | --- |
 | `find_company`, `get_company_profile` | `tools/company.py` | `services/companies.py`, `services/profile.py` | Foundation |
 | `search_filings` | `tools/filings.py` | `services/filings.py` | A |
-| `read_filing` (task) | `tools/documents.py` | `services/documents.py` over `documents/` | A |
+| `read_filing` (task) | `tools/documents.py` | `services/documents.py` over `opendart_analysis.documents` | A |
 | `get_financials` | `tools/financials.py` | `services/financials.py` (`preliminary` from stream A) | B |
 | `compare_companies` | `tools/compare.py` | `services/compare.py` | B |
 | `get_corporate_events` (task) | `tools/events.py` | `services/events.py`, `events/` | C |

@@ -1,0 +1,31 @@
+# Package boundaries; run with `just boundaries` after a workspace sync, since Import Linter
+# reads the installed packages. Annotation-only imports count: exclude_type_checking_imports
+# stays off, so a TYPE_CHECKING import across a boundary also fails.
+[tool.importlinter]
+root_packages = ["opendart", "opendart_analysis", "opendart_mcp"]
+# Graph third-party packages too, so the contracts can forbid MCP frameworks by name.
+include_external_packages = true
+
+# Analysis receives bytes, records, and callbacks, never an SDK client, and has no MCP runtime.
+[[tool.importlinter.contracts]]
+id = "analysis-independent"
+name = "Analysis imports neither the SDK, MCP, nor server frameworks"
+type = "forbidden"
+source_modules = ["opendart_analysis"]
+forbidden_modules = ["opendart", "opendart_mcp", "fastmcp", "mcp", "mcp_types", "opentelemetry"]
+
+# The SDK is the raw API contract; interpretation and MCP build on it, not inside it.
+[[tool.importlinter.contracts]]
+id = "sdk-independent"
+name = "The SDK imports neither analysis, MCP, nor server frameworks"
+type = "forbidden"
+source_modules = ["opendart"]
+forbidden_modules = ["opendart_analysis", "opendart_mcp", "fastmcp", "mcp"]
+
+# Parsing, search, and rendering stay pure; only the package exports reach the runtime store.
+[[tool.importlinter.contracts]]
+id = "documents-pure"
+name = "Pure document modules do not reach the runtime store"
+type = "forbidden"
+source_modules = ["opendart_analysis.documents.*"]
+forbidden_modules = ["opendart_analysis.documents.store"]

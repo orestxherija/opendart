@@ -33,7 +33,7 @@ tmp_path_retention_count = "3"
 filterwarnings = []
 
 cache_dir = ".cache/pytest"
-testpaths = ["packages/sdk/tests", "packages/mcp/tests", "tests"]
+testpaths = ["packages/sdk/tests", "packages/analysis/tests", "packages/mcp/tests", "tests"]
 # CI selection tests import the selector by module name.
 pythonpath = [".", ".github/scripts"]
 consider_namespace_packages = true

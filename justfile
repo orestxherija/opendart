@@ -1,4 +1,5 @@
 mod sdk 'packages/sdk/justfile'
+mod analysis 'packages/analysis/justfile'
 mod mcp 'packages/mcp/justfile'
 mod reference 'scripts/api_reference/justfile'
 mod ci '.github/justfile'
@@ -16,8 +17,10 @@ sync:
 # Check repository quality and every component's offline suite.
 check:
     just quality
+    just boundaries
     just release-check
     just sdk check
+    just analysis check
     just mcp check
     just reference check
     just ci test
@@ -29,6 +32,10 @@ quality:
     .venv/bin/ruff format --check
     .venv/bin/prek run markdownlint-cli2 yamllint taplo-format shellcheck shfmt actionlint typos loq --all-files --stage pre-commit
     .venv/bin/prek run taplo-lint --all-files --stage pre-push
+
+# Check that analysis and the SDK never import each other or MCP; needs the synced workspace.
+boundaries:
+    uv run --no-sync lint-imports --config importlinter.toml --no-cache
 
 # Audit workflows with Zizmor and locked Python dependencies against current advisories.
 audit:
@@ -43,9 +50,10 @@ secrets:
 links:
     .venv/bin/prek run lychee --all-files --stage pre-push --verbose
 
-# Build both Python packages.
+# Build every Python package.
 build:
     just sdk build
+    just analysis build
     just mcp build
 
 # Check release tooling, coordinated package versions, and release-checker regression tests.

@@ -1,7 +1,7 @@
 [project]
 name = "opendart-workspace"
 version = "0.1.0"
-description = "Workspace for the OpenDART Python SDK and MCP server"
+description = "Workspace for the OpenDART Python SDK, analysis library, and MCP server"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = []
@@ -22,10 +22,11 @@ build-constraint-dependencies = [
 ]
 
 [tool.uv.workspace]
-members = ["packages/sdk", "packages/mcp"]
+members = ["packages/sdk", "packages/analysis", "packages/mcp"]
 
 [tool.uv.sources]
 opendart-sdk = { workspace = true }
+opendart-analysis = { workspace = true }
 
 [dependency-groups]
 # Just runs the task recipes that CI and local development share.
@@ -55,6 +56,8 @@ test = [
 ]
 quality = [
   "actionlint-py==1.7.12.25",
+  # Enforces package boundaries: analysis and the SDK never import each other or MCP.
+  "import-linter>=2.15,<3",
   "loq>=0.1,<0.2",
   "pip-audit==2.10.1",
   "ruff>=0.17.1,<0.18",
@@ -79,7 +82,11 @@ dev = [
 [tool.coverage.run]
 branch = true
 relative_files = true
-source = ["packages/sdk/src/opendart", "packages/mcp/src/opendart_mcp"]
+source = [
+  "packages/sdk/src/opendart",
+  "packages/analysis/src/opendart_analysis",
+  "packages/mcp/src/opendart_mcp",
+]
 
 [tool.coverage.report]
 show_missing = true

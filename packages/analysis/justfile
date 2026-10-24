@@ -1,0 +1,30 @@
+# Use the shared workspace configuration, including when invoked as a module.
+set working-directory := '../..'
+
+# List available commands.
+default:
+    @just --justfile '{{ source_file() }}' --list
+
+# Check lint and formatting.
+lint:
+    uv run --no-sync ruff check packages/analysis
+    uv run --no-sync ruff format --check packages/analysis
+
+# Format Python files.
+format:
+    uv run --no-sync ruff format packages/analysis
+
+# Check types.
+typecheck:
+    uv run --no-sync pyrefly check --config pyrefly.toml packages/analysis/src
+
+# Run analysis tests.
+test:
+    uv run --no-sync prek run pytest-analysis --all-files --stage pre-push
+
+# Check the analysis package.
+check: lint typecheck test
+
+# Build the Python package.
+build:
+    uv build --package opendart-analysis

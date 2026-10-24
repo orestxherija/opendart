@@ -42,6 +42,7 @@ paths = [
     ".github/workflows/check-release.yml",
     "cz.toml",
     "packages/sdk/pyproject.toml",
+    "packages/analysis/pyproject.toml",
     "packages/mcp/pyproject.toml",
     "scripts/check_release.py",
     "scripts/smoke_distributions.py",
@@ -56,6 +57,7 @@ paths = [
     ".github/workflows/check-release.yml",
     "cz.toml",
     "packages/sdk/**",
+    "packages/analysis/**",
     "packages/mcp/**",
     "!packages/*/tests/**",
     "!packages/*/docs/**",
@@ -85,7 +87,21 @@ paths = [
     "scripts/api_reference/snapshot.py",
 ]
 
-# A registry test parses COMPONENT_DESIGN.md; MCP runs on the installed SDK.
+# Analysis never uses the SDK, so SDK changes do not select it.
+[analysis]
+include = ["shared", "python"]
+paths = [
+    "prek.toml",
+    "pyrefly.toml",
+    "codecov.yml",
+    "importlinter.toml",
+    ".github/workflows/check-analysis.yml",
+    "packages/analysis/**",
+    "!packages/analysis/docs/**",
+]
+
+# A registry test parses COMPONENT_DESIGN.md; MCP runs on the installed SDK and analysis
+# packages, and its job runs the import-boundary check.
 [mcp]
 include = ["shared", "python"]
 paths = [
@@ -108,6 +124,10 @@ paths = [
     "packages/sdk/src/**",
     "packages/sdk/pyproject.toml",
     "packages/sdk/README.md",
+    "packages/analysis/src/**",
+    "packages/analysis/pyproject.toml",
+    "packages/analysis/README.md",
+    "importlinter.toml",
 ]
 
 # The image's build inputs mirror the .dockerignore allowlist, without READMEs.
@@ -128,6 +148,8 @@ paths = [
     "packages/mcp/components.lock.json",
     "packages/sdk/pyproject.toml",
     "packages/sdk/src/**",
+    "packages/analysis/pyproject.toml",
+    "packages/analysis/src/**",
     "scripts/check_mcp.py",
     "scripts/check_mcp_runtime.py",
 ]

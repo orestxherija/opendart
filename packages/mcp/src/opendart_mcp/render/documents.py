@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from opendart_mcp.render.markdown import footer, join, number, section, table
 
 if TYPE_CHECKING:
-    from opendart_mcp.documents import Amendment
+    from opendart_analysis.documents import Amendment
     from opendart_mcp.models.documents import (
         FilingHits,
         FilingInfo,

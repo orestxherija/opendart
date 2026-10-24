@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from opendart_mcp.documents.preliminary import PreliminaryEarnings
+from opendart_analysis.documents.preliminary import PreliminaryEarnings
 from opendart_mcp.models.common import OutputModel, SourceFiling
 
 

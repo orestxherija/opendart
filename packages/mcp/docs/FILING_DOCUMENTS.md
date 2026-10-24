@@ -273,3 +273,6 @@ Synthetic fixtures reproduce:
 
 Golden tests cover outlines, rendering, paging boundaries, aliases, and search. An opt-in live test reads one recent
 filing of each family, like the contract suite.
+
+The parser and document store now live in `opendart_analysis.documents` ([package guide](../../analysis/README.md)),
+with these fixtures in `packages/analysis/tests/documents/`; MCP keeps the `read_filing` adapter and its tests.

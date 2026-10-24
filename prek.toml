@@ -504,17 +504,32 @@ log_file = ".prek-loq.log"
 [[repos.hooks]]
 id = "pyrefly"
 name = "Pyrefly type checking"
-description = "Type-checks both Python package source trees with strict Pyrefly settings."
+description = "Type-checks every Python package source tree with strict Pyrefly settings."
 entry = "uv run --locked --no-progress --no-sync pyrefly check --config pyrefly.toml"
 language = "system"
 # A whole-project check takes about a second, so it runs with each commit.
-files = { glob = ["packages/{sdk,mcp}/{src/**,pyproject.toml}", "{pyrefly,pyproject,prek}.toml", "uv.lock"] }
+files = { glob = ["packages/{sdk,analysis,mcp}/{src/**,pyproject.toml}", "{pyrefly,pyproject,prek}.toml", "uv.lock"] }
 pass_filenames = false
 groups = ["python", "typecheck", "fast", "ci"]
 stages = ["pre-commit", "pre-merge-commit"]
 require_serial = true
 priority = "typecheck"
 log_file = ".prek-pyrefly.log"
+
+[[repos.hooks]]
+id = "import-boundaries"
+name = "Import Linter package boundaries"
+description = "Checks that analysis and the SDK never import each other, MCP, or server frameworks."
+entry = "uv run --locked --no-progress --no-sync lint-imports --config importlinter.toml --no-cache"
+language = "system"
+# Building the import graph takes about a tenth of a second, so it runs with each commit.
+files = { glob = ["packages/*/src/**", "{importlinter,prek}.toml", "uv.lock"] }
+pass_filenames = false
+groups = ["python", "lint", "fast", "ci"]
+stages = ["pre-commit", "pre-merge-commit"]
+require_serial = true
+priority = "analyze"
+log_file = ".prek-import-boundaries.log"
 
 [[repos.hooks]]
 id = "mcp-components"
@@ -525,6 +540,8 @@ language = "system"
 # Building the server's manifest offline takes about a second, so it runs with each commit.
 files = { glob = [
     "packages/mcp/{src/**,pyproject.toml,components.lock.json}",
+    # Output schemas embed analysis models.
+    "packages/analysis/{src/**,pyproject.toml}",
     "scripts/check_mcp_components.py",
     "{prek.toml,uv.lock}",
 ] }
@@ -577,6 +594,24 @@ priority = "test"
 log_file = ".prek-pytest-sdk.log"
 
 [[repos.hooks]]
+id = "pytest-analysis"
+name = "Pytest (analysis)"
+description = "Runs offline analysis tests and writes isolated coverage and HTML reports."
+entry = "uv run --locked --no-progress --no-sync pytest packages/analysis/tests --cov-config=packages/analysis/.coveragerc.toml --html=.cache/pytest/analysis-report.html -o cache_dir=.cache/pytest/analysis"
+language = "system"
+# Analysis never uses the SDK, so SDK changes do not rerun these tests.
+files = { glob = [
+    "packages/analysis/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
+    "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
+] }
+pass_filenames = false
+groups = ["python", "test", "slow", "ci"]
+stages = ["pre-push"]
+require_serial = true
+priority = "test"
+log_file = ".prek-pytest-analysis.log"
+
+[[repos.hooks]]
 id = "pytest-mcp"
 name = "Pytest (MCP)"
 description = "Runs offline MCP tests and writes isolated coverage and HTML reports."
@@ -584,8 +619,8 @@ entry = "uv run --locked --no-progress --no-sync pytest packages/mcp/tests --cov
 language = "system"
 files = { glob = [
     "packages/mcp/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
-    # MCP runs on the installed SDK.
-    "packages/sdk/{src/**,pyproject.toml}",
+    # MCP runs on the installed SDK and analysis packages.
+    "packages/{sdk,analysis}/{src/**,pyproject.toml}",
     # Registry tests run the generator on its inputs and parse the component design;
     # manifest tests run the component lock script.
     "packages/mcp/docs/COMPONENT_DESIGN.md",
@@ -607,10 +642,11 @@ description = "Runs the official MCP conformance suite in both protocol eras aga
 entry = "uv run --locked --no-progress --no-sync python scripts/check_mcp_conformance.py"
 language = "system"
 # Starting a server and running the pinned suite takes a few seconds once npx has cached
-# it, so it runs before pushes that change the server, its SDK, the baseline, or the runner.
+# it, so it runs before pushes that change the server, its SDK or analysis packages, the
+# baseline, or the runner.
 files = { glob = [
     "packages/mcp/{src/**,pyproject.toml,conformance-baseline.yaml}",
-    "packages/sdk/{src/**,pyproject.toml}",
+    "packages/{sdk,analysis}/{src/**,pyproject.toml}",
     "scripts/check_mcp_conformance.py",
     "{prek.toml,uv.lock}",
 ] }

@@ -25,11 +25,15 @@ style = [
     # ["disabled", "fg:#858585 italic"],
 ]
 
-# The workspace root is virtual. Both distributions share this release version;
-# never bump the root's unrelated project.version.
+# The workspace root is virtual. The SDK, analysis, and MCP distributions share
+# this release version; never bump the root's unrelated project.version.
 version_provider = "commitizen"
 version = "0.1.0"
-version_files = ["packages/sdk/pyproject.toml:version", "packages/mcp/pyproject.toml:version"]
+version_files = [
+    "packages/sdk/pyproject.toml:version",
+    "packages/analysis/pyproject.toml:version",
+    "packages/mcp/pyproject.toml:version",
+]
 version_scheme = "pep440"
 
 # TAGS

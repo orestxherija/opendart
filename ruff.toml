@@ -11,7 +11,7 @@ fix = false
 fix-only = false
 unsafe-fixes = false
 preview = false
-src = [".", "packages/sdk/src", "packages/mcp/src"]
+src = [".", "packages/sdk/src", "packages/analysis/src", "packages/mcp/src"]
 extend-exclude = [".agents", ".codex"]
 include = ["*.py", "*.pyi", "*.pyw", "*.ipynb", "*.md", "**/pyproject.toml", "**/ruff.toml", "**/.ruff.toml"]
 
@@ -300,7 +300,7 @@ default-section = "third-party"
 force-sort-within-sections = false
 lines-between-types = 0
 detect-same-package = true
-known-first-party = ["opendart", "opendart_mcp", "tests"]
+known-first-party = ["opendart", "opendart_analysis", "opendart_mcp", "tests"]
 order-by-type = true
 required-imports = ["from __future__ import annotations"]
 relative-imports-order = "closest-to-furthest"
