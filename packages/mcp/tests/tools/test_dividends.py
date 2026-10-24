@@ -231,3 +231,19 @@ async def test_out_of_range_years_are_rejected(client):
         "get_dividends", {"company": "005930", "years": 11}, raise_on_error=False
     )
     assert result.is_error
+
+
+@pytest.mark.anyio
+async def test_concise_rows_keep_labels_only_for_unrecognized_rows(client, upstream):
+    samsung(upstream)
+    upstream.records(
+        "/alotMatter.json",
+        line("Cash dividend per share (KRW)", "보통주", ("500", "-", "-")),
+        line("Interim dividend record date", "-", ("20250630", "-", "-")),
+    )
+    result = await client.call_tool("get_dividends", {"company": "005930"})
+    rows = result.structured_content["rows"]
+    assert [(row["measure"], row.get("label")) for row in rows] == [
+        ("cash_dps", None),
+        ("other", "Interim dividend record date"),
+    ]

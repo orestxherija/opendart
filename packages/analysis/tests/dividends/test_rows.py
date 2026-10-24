@@ -6,8 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from opendart_analysis.dividends import basis, measure, merge, share_class, unit, value
 from opendart_analysis.domain.periods import PeriodRef
-from opendart_mcp.services.dividends import basis, measure, merge, share_class, unit, value
 
 
 @pytest.mark.parametrize(
@@ -94,7 +94,7 @@ def test_values_convert_to_the_row_unit():
 
 def record(label, stock, current, prior, older):
     return SimpleNamespace(
-        rcept_no="20260310002820",
+        filing_number="20260310002820",
         se=label,
         stock_knd=stock,
         thstrm=current,
@@ -120,10 +120,31 @@ def test_merging_reports_prefers_newer_values_and_keeps_requested_years():
     common, preferred, mystery = rows
     assert (common.measure, common.share_class, common.unit) == ("cash_dps", "common", "KRW/share")
     assert common.values == {2025: 1668, 2024: 1446, 2023: 1444, 2022: 1416}
+    assert list(common.values) == [2025, 2024, 2023, 2022]
+    assert common.label == "Cash dividend per share (KRW)"
     assert preferred.values == {2025: 1669, 2024: 1447, 2023: 1445}
-    assert mystery.measure == "other"
-    output = mystery.output(detailed=False)
-    assert output.label == "Mystery row"
-    assert list(output.values_by_year) == ["2025", "2024", "2023"]
-    assert common.output(detailed=False).label is None
-    assert common.output(detailed=True).label == "Cash dividend per share (KRW)"
+    assert (mystery.measure, mystery.label) == ("other", "Mystery row")
+    assert list(mystery.values) == [2025, 2024, 2023]
+
+
+def test_rows_follow_the_measure_order_and_keep_empty_rows():
+    report = (
+        PeriodRef(2025, "FY"),
+        [
+            record("Par value per share (KRW)", "-", "100", "100", "100"),
+            record("Mystery row", "-", "1", "-", "-"),
+            record("Total share dividends (KRW million)", "-", "-", "-", "-"),
+            record("Cash dividend per share (KRW)", "보통주", "1,668", "-", "-"),
+            record("Other mystery", "-", "2", "-", "-"),
+        ],
+    )
+    rows = merge([report], range(2025, 2026))
+    assert [(row.measure, row.label) for row in rows] == [
+        ("cash_dps", "Cash dividend per share (KRW)"),
+        ("stock_dividends", "Total share dividends (KRW million)"),
+        ("par_value", "Par value per share (KRW)"),
+        ("other", "Mystery row"),
+        ("other", "Other mystery"),
+    ]
+    assert rows[1].values == {}
+    assert (rows[1].unit, rows[2].values) == ("KRW", {2025: 100})
