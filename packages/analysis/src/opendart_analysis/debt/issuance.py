@@ -1,4 +1,4 @@
-"""Parse the issuance record of debt securities, and list upcoming maturities from it.
+"""Parse the issuance record of debt securities, and list maturities from it.
 
 ``det_scrits_isu_acmslt`` lists debt securities issued in the period, sometimes by
 subsidiaries, with English security types and methods ("Corporate Bonds", "Public
@@ -11,26 +11,28 @@ from __future__ import annotations
 
 import datetime as dt
 import re
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Literal
 
+from opendart_analysis.debt.ladders import offering
 from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
-from opendart_mcp.models.debt import DebtMaturity, Issuance
-from opendart_mcp.services.debt_tables import offering
-from opendart_mcp.services.extracts import fold, is_total, text
+from opendart_analysis.extracts.fields import fold, is_total, text
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Sequence
 
-    from opendart_mcp.models.debt import Redeemed
-    from opendart_mcp.services.debt_tables import Offering
+    from opendart_analysis.debt.ladders import Offering
 
 ISSUANCE_SERVICE: Final = "det_scrits_isu_acmslt"
 """Service listing debt securities issued in the period."""
 
-_METHODS: Final[dict[Offering, Literal["public", "private"]]] = {
-    "public": "public",
-    "private": "private",
-}
+Redeemed = Literal["yes", "no", "partly"]
+"""Redemption status of an issue as filed."""
+
+Method = Literal["public", "private"]
+"""Issuance method."""
+
+_METHODS: Final[dict[Offering, Method]] = {"public": "public", "private": "private"}
 _REDEMPTIONS: Final[tuple[tuple[Redeemed, tuple[str, ...]], ...]] = (
     ("partly", ("일부", "partial", "partly")),
     ("no", ("미상환", "unredeemed", "notredeemed", "outstanding")),
@@ -50,14 +52,81 @@ _CORPORATE_MARKERS: Final = re.compile(
 )
 
 
-def _method(value: str | None) -> Literal["public", "private"] | None:
+@dataclass(frozen=True, slots=True)
+class Issue:
+    """One debt security in the issuance record.
+
+    Attributes:
+        issued (dt.date | None): Issue date.
+        security (str | None): Security type as filed, such as "Corporate Bonds".
+        method (Method | None): Public offering or private placement.
+        amount (int | None): Face value in won.
+        coupon (float | None): Interest rate in percent.
+        rating (str | None): Ratings, joined with "; " when several agencies rate the issue.
+        rating_agency (str | None): Agencies, in the same order, Korean names translated.
+        maturity (dt.date | None): Maturity date.
+        redeemed (Redeemed | None): Redemption status as of the period end.
+        issuer (str | None): Issuing company as filed.
+        own (bool): Whether the issuer is the reporting company itself, by name.
+        underwriter (str | None): Underwriters as filed.
+        filing_number (str | None): Periodic report that lists the issue.
+    """
+
+    issued: dt.date | None
+    security: str | None
+    method: Method | None
+    amount: int | None
+    coupon: float | None
+    rating: str | None
+    rating_agency: str | None
+    maturity: dt.date | None
+    redeemed: Redeemed | None
+    issuer: str | None
+    own: bool
+    underwriter: str | None
+    filing_number: str | None
+
+    @property
+    def other_issuer(self) -> str | None:
+        """Name the issuer when another entity, such as a subsidiary, issued the security.
+
+        Returns:
+            str | None: The issuer as filed, or None when it is the company or not stated.
+        """
+        return None if self.own else self.issuer
+
+
+@dataclass(frozen=True, slots=True)
+class Maturity:
+    """An issue that falls due, from the issuance record.
+
+    Attributes:
+        date (dt.date): Maturity date.
+        instrument (str): Security type as filed, or "Debt security".
+        face_value (int | None): Original face value in won; partly redeemed issues owe less.
+        filing_number (str | None): Periodic report that lists the issue.
+        coupon (float | None): Interest rate in percent.
+        redeemed (Redeemed | None): ``no`` or ``partly`` as of the period end, or None.
+        issuer (str | None): Set when another entity, such as a subsidiary, issued it.
+    """
+
+    date: dt.date
+    instrument: str
+    face_value: int | None
+    filing_number: str | None
+    coupon: float | None
+    redeemed: Redeemed | None
+    issuer: str | None
+
+
+def _method(value: str | None) -> Method | None:
     """Classify an issuance method.
 
     Args:
         value (str | None): ``isu_mth_nm``, such as "Public offering" or 사모.
 
     Returns:
-        Literal["public", "private"] | None: Method, or None when not stated.
+        Method | None: Method, or None when not stated.
     """
     kind = offering(value)
     return None if kind is None else _METHODS.get(kind)
@@ -121,36 +190,32 @@ def company_key(name: str | None) -> str:
     return fold(_CORPORATE_MARKERS.sub("", (name or "").casefold())).strip(".,")
 
 
-def _issuer(value: str | None, names: frozenset[str], *, detailed: bool) -> str | None:
-    """Name the issuer when it is not the company itself.
+def company_names(names: Iterable[str | None]) -> frozenset[str]:
+    """Collect comparable keys of the company's names, to spot issues by other entities.
 
     Args:
-        value (str | None): ``isu_cmpny``.
-        names (frozenset[str]): Company keys of the reporting company.
-        detailed (bool): Whether to name the issuer even when it is the company.
+        names (Iterable[str | None]): The company's names, such as its Korean and English
+            names.
 
     Returns:
-        str | None: Issuer as filed, or None.
+        frozenset[str]: Non-empty name keys.
     """
-    cleaned = clean_text(value)
-    if cleaned is None or (not detailed and company_key(cleaned) in names):
-        return None
-    return cleaned
+    return frozenset(key for key in map(company_key, names) if key)
 
 
-def issue(row: object, names: frozenset[str], *, detailed: bool) -> Issuance:
+def issue(row: object, own: frozenset[str]) -> Issue:
     """Normalize one issuance-record row.
 
     Args:
-        row (object): ``det_scrits_isu_acmslt`` record.
-        names (frozenset[str]): Company keys of the reporting company.
-        detailed (bool): Whether to add the underwriter and always name the issuer.
+        row (object): ``det_scrits_isu_acmslt`` record, read by SDK field name.
+        own (frozenset[str]): Name keys of the reporting company, from ``company_names``.
 
     Returns:
-        Issuance: Normalized issue.
+        Issue: Normalized issue.
     """
     grade, agency = rating(text(row, "evl_grad_instt"))
-    return Issuance(
+    issuer = clean_text(text(row, "isu_cmpny"))
+    return Issue(
         issued=parse_date(text(row, "isu_de")),
         security=clean_text(text(row, "scrits_knd_nm")),
         method=_method(text(row, "isu_mth_nm")),
@@ -160,8 +225,10 @@ def issue(row: object, names: frozenset[str], *, detailed: bool) -> Issuance:
         rating_agency=agency,
         maturity=parse_date(text(row, "mtd")),
         redeemed=redeemed(text(row, "repy_at")),
-        issuer=_issuer(text(row, "isu_cmpny"), names, detailed=detailed),
-        underwriter=clean_text(text(row, "mngt_cmpny")) if detailed else None,
+        issuer=issuer,
+        own=issuer is not None and company_key(issuer) in own,
+        underwriter=clean_text(text(row, "mngt_cmpny")),
+        filing_number=clean_text(text(row, "filing_number")),
     )
 
 
@@ -180,11 +247,11 @@ def is_issue(row: object) -> bool:
     return any(clean_text(text(row, name)) for name in fields)
 
 
-def _order(item: Issuance) -> tuple[dt.date, dt.date]:
+def _order(item: Issue) -> tuple[dt.date, dt.date]:
     """Sort issues by maturity, then issue date, unknown dates last.
 
     Args:
-        item (Issuance): Issue.
+        item (Issue): Issue.
 
     Returns:
         tuple[dt.date, dt.date]: Sort key.
@@ -192,30 +259,23 @@ def _order(item: Issuance) -> tuple[dt.date, dt.date]:
     return item.maturity or dt.date.max, item.issued or dt.date.max
 
 
-def issuance(
-    rows: Sequence[object], names: frozenset[str], *, detailed: bool
-) -> tuple[list[Issuance], int]:
-    """Normalize the issuance record; concise results keep issues not fully redeemed.
+def issuance(rows: Sequence[object], own: frozenset[str]) -> tuple[Issue, ...]:
+    """Normalize the issuance record, redeemed issues included.
 
     Args:
         rows (Sequence[object]): ``det_scrits_isu_acmslt`` records.
-        names (frozenset[str]): Company keys of the reporting company.
-        detailed (bool): Whether to keep redeemed issues and every field.
+        own (frozenset[str]): Name keys of the reporting company, from ``company_names``.
 
     Returns:
-        tuple[list[Issuance], int]: Issues by maturity, and how many redeemed ones were left
-            out.
+        tuple[Issue, ...]: Issues by maturity, then issue date, unknown dates last; ties keep
+            the record's order.
     """
-    issues = sorted((issue(r, names, detailed=detailed) for r in rows if is_issue(r)), key=_order)
-    if detailed:
-        return issues, 0
-    kept = [item for item in issues if item.redeemed != "yes"]
-    return kept, len(issues) - len(kept)
+    return tuple(sorted((issue(row, own) for row in rows if is_issue(row)), key=_order))
 
 
 def maturities(
-    rows: Sequence[object], names: frozenset[str], *, start: dt.date, until: dt.date
-) -> list[DebtMaturity]:
+    rows: Sequence[object], own: frozenset[str], *, start: dt.date, until: dt.date
+) -> tuple[Maturity, ...]:
     """List issues that mature between two dates and are not fully redeemed.
 
     Partly redeemed issues keep their original face value, marked by their redemption
@@ -223,30 +283,31 @@ def maturities(
 
     Args:
         rows (Sequence[object]): ``det_scrits_isu_acmslt`` records, possibly from several
-            reports; repeated issues are listed once, the first report's row winning.
-        names (frozenset[str]): Company keys of the reporting company.
+            reports; an issue repeated with the same issue date, security type, face value,
+            and maturity is listed once, the first report's row winning.
+        own (frozenset[str]): Name keys of the reporting company, from ``company_names``.
         start (dt.date): First maturity date to include.
         until (dt.date): Last maturity date to include.
 
     Returns:
-        list[DebtMaturity]: Maturities, earliest first.
+        tuple[Maturity, ...]: Maturities by date, then security type.
     """
-    found: dict[tuple[object, ...], DebtMaturity] = {}
+    found: dict[tuple[object, ...], Maturity] = {}
     for row in filter(is_issue, rows):
-        item = issue(row, names, detailed=False)
+        item = issue(row, own)
         due = item.maturity
         if due is None or not start <= due <= until or item.redeemed == "yes":
             continue
         found.setdefault(
             (item.issued, item.security, item.amount, due),
-            DebtMaturity(
+            Maturity(
                 date=due,
                 instrument=item.security or "Debt security",
                 face_value=item.amount,
-                filing_number=clean_text(text(row, "filing_number")),
+                filing_number=item.filing_number,
                 coupon=item.coupon,
                 redeemed=item.redeemed,
-                issuer=item.issuer,
+                issuer=item.other_issuer,
             ),
         )
-    return sorted(found.values(), key=lambda m: (m.date, m.instrument))
+    return tuple(sorted(found.values(), key=lambda m: (m.date, m.instrument)))

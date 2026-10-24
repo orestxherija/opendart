@@ -7,18 +7,22 @@ from types import SimpleNamespace
 
 import pytest
 
-from opendart_mcp.services.debt_issuance import (
+from opendart_analysis.debt import (
+    LADDERS,
+    build_ladder,
     company_key,
+    company_names,
+    derive,
     is_issue,
     issuance,
     maturities,
+    offering,
     rating,
     redeemed,
 )
-from opendart_mcp.services.debt_tables import LADDERS, build_ladder, derive, offering
 
 BONDS, SHORT_TERM, PAPER, HYBRID, CONTINGENT = LADDERS
-OWN = frozenset({company_key("한빛화학"), company_key("HANBIT CHEMICAL CO., LTD.")})
+OWN = company_names(["한빛화학", "HANBIT CHEMICAL CO., LTD.", None])
 
 
 def row(**fields):
@@ -75,7 +79,7 @@ def test_ladder_maps_corporate_bond_columns_onto_common_buckets():
             sm="1,263,572,000,000",
         ),
     ]
-    entry = build_ladder(BONDS, rows, detailed=False)
+    entry = build_ladder(BONDS, rows)
     assert entry is not None
     assert entry.instrument == "corporate_bonds"
     assert [(b.maturity_bucket, b.amount) for b in entry.buckets] == [
@@ -88,7 +92,7 @@ def test_ladder_maps_corporate_bond_columns_onto_common_buckets():
         955_000_000_000,
         258_572_000_000,
     )
-    assert entry.filed is None
+    assert [column.name for column in entry.filed][:2] == ["yy1_below", "yy1_excess_yy2_below"]
     assert entry.issuance_limit is None
 
 
@@ -104,7 +108,7 @@ def test_short_term_bonds_roll_day_buckets_into_a_year_and_keep_limits():
         isu_lmt="100,000,000,000",
         remndr_lmt="65,000,000,000",
     )
-    entry = build_ladder(SHORT_TERM, [total], detailed=False)
+    entry = build_ladder(SHORT_TERM, [total])
     assert entry is not None
     assert [(b.maturity_bucket, b.amount) for b in entry.buckets] == [("<=1y", 35_000_000_000)]
     assert (entry.issuance_limit, entry.remaining_limit) == (100_000_000_000, 65_000_000_000)
@@ -115,19 +119,19 @@ def test_public_and_private_rows_add_up_when_the_total_row_is_missing():
         balance("공모", yy1_below="100", yy5_excess_yy10_below="50", sm="150"),
         balance("사모", yy1_below="10", sm="10"),
     ]
-    entry = build_ladder(BONDS, rows, detailed=False)
+    entry = build_ladder(BONDS, rows)
     assert entry is not None
     assert [(b.maturity_bucket, b.amount) for b in entry.buckets] == [("<=1y", 110), ("5-10y", 50)]
     assert (entry.total, entry.public, entry.private) == (160, 150, 10)
 
 
 def test_a_lone_unlabeled_row_is_the_total_and_dash_tables_are_omitted():
-    lone = build_ladder(BONDS, [row(remndr_exprtn2="-", yy1_below="7")], detailed=False)
+    lone = build_ladder(BONDS, [row(remndr_exprtn2="-", yy1_below="7")])
     assert lone is not None
     assert (lone.total, lone.public) == (7, None)
     dashes = [balance(kind, yy1_below="-", sm="-") for kind in ("Public offering", "Total")]
-    assert build_ladder(BONDS, dashes, detailed=False) is None
-    assert build_ladder(BONDS, [], detailed=False) is None
+    assert build_ladder(BONDS, dashes) is None
+    assert build_ladder(BONDS, []) is None
 
 
 def test_irregular_buckets_of_hybrids_and_commercial_paper_are_kept():
@@ -138,13 +142,10 @@ def test_irregular_buckets_of_hybrids_and_commercial_paper_are_kept():
                 "Total", yy1_excess_yy5_below="30", yy20_excess_yy30_below="20", yy30_excess="10"
             )
         ],
-        detailed=False,
     )
-    paper = build_ladder(
-        PAPER, [balance("Total", de10_below="5", yy3_excess="3", sm="8")], detailed=False
-    )
+    paper = build_ladder(PAPER, [balance("Total", de10_below="5", yy3_excess="3", sm="8")])
     contingent = build_ladder(
-        CONTINGENT, [balance("Total", yy10_excess_yy20_below="4", yy30_excess="6")], detailed=False
+        CONTINGENT, [balance("Total", yy10_excess_yy20_below="4", yy30_excess="6")]
     )
     assert hybrid is not None
     assert paper is not None
@@ -155,14 +156,13 @@ def test_irregular_buckets_of_hybrids_and_commercial_paper_are_kept():
     assert [(b.maturity_bucket, b.amount) for b in contingent.buckets] == [(">10y", 10)]
 
 
-def test_detailed_ladders_list_every_column_with_catalog_labels():
+def test_ladders_list_every_column_as_filed_with_catalog_labels():
     rows = [
         balance("Public offering", yy1_below="100", sm="100"),
         balance("Total", yy1_below="100", sm="100"),
     ]
-    entry = build_ladder(BONDS, rows, detailed=True)
+    entry = build_ladder(BONDS, rows)
     assert entry is not None
-    assert entry.filed is not None
     assert [bucket.label for bucket in entry.filed][:3] == [
         "1 year or less",
         "1 to 2 years",
@@ -173,10 +173,8 @@ def test_detailed_ladders_list_every_column_with_catalog_labels():
 
 
 def test_derived_figures_add_instruments_and_the_share_due_within_a_year():
-    bonds = build_ladder(
-        BONDS, [balance("Total", yy1_below="25", yy1_excess_yy2_below="50")], detailed=False
-    )
-    paper = build_ladder(PAPER, [balance("Total", de10_below="25")], detailed=False)
+    bonds = build_ladder(BONDS, [balance("Total", yy1_below="25", yy1_excess_yy2_below="50")])
+    paper = build_ladder(PAPER, [balance("Total", de10_below="25")])
     assert bonds is not None
     assert paper is not None
     derived = derive([bonds, paper])
@@ -241,7 +239,7 @@ def test_company_keys_ignore_corporate_suffixes():
     assert company_key(None) == ""
 
 
-def test_concise_issuance_keeps_open_issues_by_maturity_without_own_name():
+def test_issuance_sorts_by_maturity_and_tells_own_issues_from_subsidiaries():
     rows = [
         bond(mtd="2028.02.21", isu_de="2025.03.01"),
         bond(repy_at="상환", mtd="2025.06.30"),
@@ -255,29 +253,30 @@ def test_concise_issuance_keeps_open_issues_by_maturity_without_own_name():
         bond(repy_at="일부상환", mtd="2027.01.05", isu_cmpny="한빛화학㈜"),
         TOTAL_ROW,
     ]
-    issues, omitted = issuance(rows, OWN, detailed=False)
-    assert omitted == 1
-    assert [item.maturity for item in issues] == [
-        dt.date(2027, 1, 5),
-        dt.date(2028, 2, 21),
-        dt.date(2055, 4, 1),
+    issues = issuance(rows, OWN)
+    assert [(item.maturity, item.redeemed) for item in issues] == [
+        (dt.date(2025, 6, 30), "yes"),
+        (dt.date(2027, 1, 5), "partly"),
+        (dt.date(2028, 2, 21), "no"),
+        (dt.date(2055, 4, 1), "no"),
     ]
-    first, _, hybrid = issues
-    assert (first.redeemed, first.issuer, first.underwriter) == ("partly", None, None)
+    _, first, _, hybrid = issues
+    assert (first.issuer, first.own, first.other_issuer) == ("한빛화학㈜", True, None)
+    assert first.underwriter == "가나증권, 다라증권"
+    assert first.filing_number == "20260325001401"
     assert (first.amount, first.coupon, first.method) == (150_000_000_000, 3.36, "public")
     assert (first.rating, first.rating_agency) == ("AA-", "Korea Ratings, NICE Investors Service")
-    assert (hybrid.issuer, hybrid.method, hybrid.rating) == ("Hanbit Q Holdings", "private", None)
-
-
-def test_detailed_issuance_keeps_redeemed_issues_and_underwriters():
-    issues, omitted = issuance([bond(repy_at="상환"), TOTAL_ROW], OWN, detailed=True)
-    assert omitted == 0
-    (item,) = issues
-    assert (item.redeemed, item.issuer, item.underwriter) == (
-        "yes",
-        "한빛화학",
-        "가나증권, 다라증권",
+    assert (hybrid.other_issuer, hybrid.own, hybrid.method, hybrid.rating) == (
+        "Hanbit Q Holdings",
+        False,
+        "private",
+        None,
     )
+
+
+def test_issues_without_an_issuer_are_not_the_company_s_own():
+    (item,) = issuance([bond(isu_cmpny="-"), TOTAL_ROW], OWN)
+    assert (item.issuer, item.own, item.other_issuer) == (None, False, None)
 
 
 def test_total_and_blank_rows_are_not_issues():
@@ -307,3 +306,12 @@ def test_maturities_fall_in_the_window_once_and_skip_redeemed_issues():
     ]
     assert schedule[1].filing_number == "20260325001401"
     assert schedule[1].coupon == 3.36
+    assert all(m.issuer is None for m in schedule)
+
+
+def test_maturities_name_other_issuers():
+    window = {"start": dt.date(2026, 1, 1), "until": dt.date(2030, 1, 1)}
+    (item,) = maturities([bond(isu_cmpny="Hanbit Q Holdings")], OWN, **window)
+    assert item.issuer == "Hanbit Q Holdings"
+    (unnamed,) = maturities([bond(scrits_knd_nm="-")], OWN, **window)
+    assert unnamed.instrument == "Debt security"
