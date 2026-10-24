@@ -145,6 +145,8 @@ async def test_least_recently_used_filings_are_evicted():
         assert (await store.get("A", wait_s=0)) is first
         with pytest.raises(DownloadPendingError):
             await store.get("B", wait_s=0)
+        # B reloads in the background; let it finish so BIG is the most recent entry.
+        await store.get("B", wait_s=5)
         await store.get("BIG", wait_s=5)
         await settle()
         assert (store.stats().entries, store.stats().rendered_chars) == (1, 500)

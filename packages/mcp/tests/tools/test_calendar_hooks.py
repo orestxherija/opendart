@@ -59,6 +59,7 @@ async def test_a_maturity_provider_merges_items_within_the_window(
         transport=upstream.transport,
         clock=lambda: now,
     ) as state:
+        await state.directory.wait(5)
         result = await action_calendar(state, ["00126380"], request=request, maturities=maturities)
         without = await action_calendar(
             state, ["00126380"], request=CalendarRequest(kinds=("merger",)), maturities=maturities
@@ -87,6 +88,7 @@ async def test_debt_maturities_without_a_provider_are_noted(
         transport=upstream.transport,
         clock=lambda: now,
     ) as state:
+        await state.directory.wait(5)
         result = await action_calendar(
             state, ["00126380"], request=CalendarRequest(kinds=("debt_maturity",))
         )
