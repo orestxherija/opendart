@@ -42,6 +42,10 @@ forbidden_modules = [
     "anyio",
     "opendart_analysis.upstream",
     "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
 ]
 
 # The data-access convention and failure categories are leaves every capability can import.
@@ -55,6 +59,76 @@ forbidden_modules = [
     "opendart_analysis.directory",
     "opendart_analysis.domain",
     "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
     "anyio",
     "pydantic",
+]
+
+# Periodic-report extracts read records through caller-supplied data access only.
+[[tool.importlinter.contracts]]
+id = "extracts-leaf"
+name = "Extracts depend only on the domain, reports, catalog, and conventions"
+type = "forbidden"
+source_modules = ["opendart_analysis.extracts"]
+forbidden_modules = ["opendart_analysis.documents", "opendart_analysis.directory", "pydantic"]
+
+# Event semantics interpret records; fetching and the filing index sit above them.
+[[tool.importlinter.contracts]]
+id = "events-semantics-pure"
+name = "Event semantics reach neither fetching, the filing index, nor data access"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.events.catalog",
+    "opendart_analysis.events.dates",
+    "opendart_analysis.events.flags",
+    "opendart_analysis.events.kinds_capital",
+    "opendart_analysis.events.kinds_deals",
+    "opendart_analysis.events.kinds_other",
+    "opendart_analysis.events.records",
+    "opendart_analysis.events.templates",
+    "opendart_analysis.events.titles",
+    "opendart_analysis.events.values",
+]
+forbidden_modules = [
+    "opendart_analysis.events.fetch",
+    "opendart_analysis.events.index",
+    "opendart_analysis.filings",
+    "opendart_analysis.upstream",
+    "opendart_analysis.documents.store",
+    "anyio",
+]
+
+# Filing discovery is the lower layer: events read the filing index, never the reverse.
+[[tool.importlinter.contracts]]
+id = "filings-before-events"
+name = "Filing discovery does not import event workflows"
+type = "forbidden"
+source_modules = ["opendart_analysis.filings"]
+forbidden_modules = ["opendart_analysis.events"]
+
+# Financial calculations are pure: workflows, data access, and concurrency sit above them.
+[[tool.importlinter.contracts]]
+id = "financials-calculations-pure"
+name = "Financial calculations reach neither financial workflows, period resolution, nor AnyIO"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.financials.accounts",
+    "opendart_analysis.financials.derived",
+    "opendart_analysis.financials.quarters",
+    "opendart_analysis.financials.specs",
+    "opendart_analysis.financials.statements",
+]
+forbidden_modules = [
+    "opendart_analysis.financials.chain",
+    "opendart_analysis.financials.history",
+    "opendart_analysis.financials.indicators",
+    "opendart_analysis.financials.investments",
+    "opendart_analysis.financials.peers",
+    "opendart_analysis.financials.preliminary",
+    "opendart_analysis.reports",
+    "opendart_analysis.documents.store",
+    "anyio",
 ]

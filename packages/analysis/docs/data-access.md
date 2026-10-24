@@ -12,6 +12,8 @@ current date in Korea, which defines OpenDART's filing dates (`opendart_analysis
 | `SearchFilings` | `async (query: FilingQuery, /, *, volatility: Volatility) -> Sequence[FilingRecord] \| None` |
 | `FilingQuery` | `corp_code`, `start`, `end` (filing dates, inclusive), `group` (`DisclosureGroup`), `final_only`, `limit` (1-100). |
 | `FilingRecord` | Protocol with `report_title` and `filing_number`, both `str \| None`. |
+| `FetchService` | `async (service: str, /, *, volatility: Volatility, **params: str \| None) -> object \| None`, keyed by the catalog's SDK method names; see [extracts](extracts.md). |
+| `ReadFilingPage` | One page of the filing index, in `opendart_analysis.filings`; see [filing discovery](filings.md). |
 | `Volatility` | `low`, `medium`, or `high`. |
 | `DisclosureGroup`, `MAX_FILING_PAGE` | OpenDART disclosure types `A` to `J` (`A` is periodic reports), and 100. |
 

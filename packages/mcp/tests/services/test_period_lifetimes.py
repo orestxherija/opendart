@@ -8,16 +8,21 @@ from types import SimpleNamespace
 import pytest
 
 from opendart_analysis.domain.periods import PeriodRef
+from opendart_analysis.financials import company_indicators, fetch_holdings, peer_indicators
+from opendart_analysis.financials.indicators import peer_volatility
 from opendart_mcp.core.cache import TTLCache
 from opendart_mcp.core.gateway import Gateway
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.core.ttl import DAY, FILINGS
+from opendart_mcp.core.ttl import DAY, FILINGS, lifetime
+from opendart_mcp.core.upstream_financials import (
+    indicators_fetch,
+    investments_fetch,
+    peer_indicators_fetch,
+)
 from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.services.companies import Company
 from opendart_mcp.services.compare import CompareRequest, compare_companies
 from opendart_mcp.services.financials import FinancialsRequest
-from opendart_mcp.services.investments import fetch_holdings
-from opendart_mcp.services.ratios import company_indicators, peer_indicators, peer_ttl
 from opendart_mcp.services.statement_views import statements_view
 from packages.mcp.tests.tools.financials_data import (
     HYNIX,
@@ -104,22 +109,36 @@ async def test_recent_indicators_and_holdings_are_read_again(state, upstream, cl
     upstream.route("/fnlttSinglIndx.json", indicators(upstream))
     upstream.route("/fnlttCmpnyIndx.json", indicators(upstream, corps=(SAMSUNG, HYNIX)))
     upstream.records("/otrCprInvstmntSttus.json", *investment_rows(3))
+    single = indicators_fetch(state.require_gateway)
+    investments = investments_fetch(state.require_gateway)
+    peers = peer_indicators_fetch(state.require_gateway)
     for _ in range(2):
-        assert await company_indicators(state, SAMSUNG_CO, ref) is not None
-        assert await fetch_holdings(state, SAMSUNG_CO, ref) is not None
-        assert await peer_indicators(state, [SAMSUNG_CO, HYNIX_CO], ref, categories=("M210000",))
+        assert await company_indicators(SAMSUNG_CO, ref, fetch_indicators=single, today=TODAY)
+        assert await fetch_holdings(SAMSUNG_CO, ref, fetch_investments=investments, today=TODAY)
+        assert await peer_indicators(
+            [SAMSUNG_CO, HYNIX_CO],
+            ref,
+            categories=("M210000",),
+            fetch_peer_indicators=peers,
+            today=TODAY,
+        )
         clock.now += FILINGS + 1
     assert upstream.count("/fnlttSinglIndx.json") == 4 * reads
     assert upstream.count("/otrCprInvstmntSttus.json") == reads
     assert upstream.count("/fnlttCmpnyIndx.json") == reads
 
 
-def test_peer_answers_live_as_briefly_as_their_most_recent_member(state):
+def test_peer_answers_live_as_briefly_as_their_most_recent_member():
     # A September year end puts Q3 2026 at June 30, past its deadline; December's is recent.
     september = company("00266961", "NAVER Corporation", fye_month=9)
-    assert peer_ttl(state, [september], RECENT) == DAY
-    assert peer_ttl(state, [september, SAMSUNG_CO], RECENT) == FILINGS
-    assert peer_ttl(state, [september, SAMSUNG_CO], SETTLED) == DAY
+
+    def ttl(companies, ref):
+        return lifetime(peer_volatility(companies, ref, today=TODAY))
+
+    assert ttl([september], RECENT) == DAY
+    assert ttl([september, SAMSUNG_CO], RECENT) == FILINGS
+    assert ttl([september, SAMSUNG_CO], SETTLED) == DAY
+    assert ttl([], RECENT) == DAY
 
 
 @pytest.mark.anyio

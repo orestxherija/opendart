@@ -1,8 +1,10 @@
 """Lay out compare_companies' peer table: columns, one row per company, and notes.
 
-Amount columns come from the major accounts (year to date for quarterly income lines),
-derived columns are computed in code, and indicator columns are OpenDART's published values.
-When both sets are shown, a derived column that duplicates a published indicator is dropped.
+``opendart_analysis.financials.compare_peers`` chooses the period and reads each company's
+values: amount columns from the major accounts (year to date for quarterly income lines),
+derived columns computed in code, and indicator columns as OpenDART publishes them. Here the
+concise or detailed columns are chosen, and when both sets are shown, a derived column that
+duplicates a published indicator is dropped.
 """
 
 from __future__ import annotations
@@ -10,25 +12,44 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Literal
 
-from opendart_mcp.models.compare import PeerRow
-from opendart_mcp.services import derived, ratios
-from opendart_mcp.services.accounts import METRICS
-from opendart_mcp.services.statements import build_report, shift, summary_item
+from opendart_analysis.financials import derived
+from opendart_analysis.financials.accounts import METRICS
+from opendart_analysis.financials.indicators import (
+    PERCENT_NOTE,
+    key as indicator_key,
+    label as indicator_label,
+    rank as indicator_rank,
+)
+from opendart_analysis.financials.peers import DECEMBER
+from opendart_analysis.financials.statements import shift
+from opendart_mcp.models.compare import MissingCompany, PeerRow
+from opendart_mcp.services.tables import sources
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
-    from opendart.models.financial_statements import FnlttMultiAcntResponseListItem
     from opendart_analysis.domain.periods import PeriodRef
     from opendart_analysis.domain.types import Basis
+    from opendart_analysis.financials import IndicatorValue, PeerComparison, PeerValues
     from opendart_mcp.models.common import SourceFiling
-    from opendart_mcp.models.compare import ColumnUnit, MissingCompany
+    from opendart_mcp.models.compare import ColumnUnit
     from opendart_mcp.models.financials import Number, StatementBasis
     from opendart_mcp.services.companies import Company
-    from opendart_mcp.services.compare import CompareRequest, Probe
-    from opendart_mcp.services.ratios import IndicatorValue
+    from opendart_mcp.services.compare import CompareRequest
 
-DECEMBER: Final = 12
+PEER_INDICATORS: Final[tuple[str, ...]] = (
+    "M211300",
+    "M211200",
+    "M211550",
+    "M212000",
+    "M221100",
+    "M221200",
+    "M231000",
+    "M231400",
+    "M231800",
+    "M241000",
+)
+"""Indicator codes a concise peer table shows."""
 _ACCOUNTS: Final = (
     "revenue",
     "operating_income",
@@ -47,7 +68,6 @@ _DERIVED_LABELS: Final = {
     "debt_to_equity": "Debt-to-equity (derived)",
     "current_ratio": "Current ratio (derived)",
 }
-_SCOPES: Final = {"consolidated": "CFS", "separate": "OFS"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -90,79 +110,37 @@ def columns(request: CompareRequest, indicators: Sequence[IndicatorValue]) -> li
     if request.metrics == "key_accounts":
         return columns
     names = {value.code: value.name for value in reversed(indicators)}
-    order = sorted(names, key=lambda code: ratios.rank(code, list(names).index(code)))
-    codes = order if detailed else [code for code in ratios.PEER_INDICATORS if code in names]
+    order = sorted(names, key=lambda code: indicator_rank(code, list(names).index(code)))
+    codes = order if detailed else [code for code in PEER_INDICATORS if code in names]
     found = [
-        Column(ratios.key(code), ratios.label(code, names[code]), "pct", "indicator", code)
+        Column(indicator_key(code), indicator_label(code, names[code]), "pct", "indicator", code)
         for code in codes
     ]
     taken = {column.key for column in found}
     return [column for column in columns if column.key not in taken] + found
 
 
-def _choose(
-    rows: Sequence[FnlttMultiAcntResponseListItem], basis: Basis
-) -> tuple[StatementBasis, list[FnlttMultiAcntResponseListItem]] | None:
-    """Pick one company's rows for the requested basis.
-
-    Args:
-        rows (Sequence[FnlttMultiAcntResponseListItem]): The company's rows, both bases.
-        basis (Basis): Requested basis; auto prefers consolidated.
-
-    Returns:
-        tuple[StatementBasis, list[FnlttMultiAcntResponseListItem]] | None: Basis used and
-            rows, or None when the basis is not filed.
-    """
-    order: tuple[StatementBasis, ...] = (
-        ("consolidated", "separate") if basis == "auto" else (basis,)
-    )
-    for used in order:
-        chosen = [row for row in rows if (row.statement_scope or "").upper() == _SCOPES[used]]
-        if chosen:
-            return used, chosen
-    return None
-
-
-def _account_values(
-    rows: Sequence[FnlttMultiAcntResponseListItem], ref: PeriodRef
-) -> dict[str, Number | None]:
-    """Read key accounts (year to date for quarterly income) and derived metrics.
-
-    Args:
-        rows (Sequence[FnlttMultiAcntResponseListItem]): One company's rows on one basis.
-        ref (PeriodRef): Period.
-
-    Returns:
-        dict[str, Number | None]: Values by column key.
-    """
-    report = build_report(
-        [summary_item(row) for row in rows], ref, rank=lambda _, position: position
-    )
-    pairs = derived.metric_values(report.lines, ref, shift(ref, 1))
-    return {**{key: pair[0] for key, pair in pairs.items()}, **derived.compute(pairs)}
-
-
-def _missing_reason(rows: Sequence[object], ref: PeriodRef, basis: Basis) -> str:
+def _missing_reason(*, filed: bool, ref: PeriodRef, basis: Basis) -> str:
     """Explain why a company has no account values.
 
     Args:
-        rows (Sequence[object]): The company's rows on any basis.
+        filed (bool): Whether the company filed major accounts on any basis.
         ref (PeriodRef): Period.
         basis (Basis): Requested basis.
 
     Returns:
         str: Reason for the missing list.
     """
-    if rows:
+    if filed:
         return f'No {basis} statements for {ref.label}; pass basis="auto".'
     return f"No {ref.label} data in OpenDART (not filed yet, or not covered)."
 
 
 def row(
     company: Company,
-    probe: Probe,
-    indicators: Mapping[str, float | None],
+    peer: PeerValues,
     *,
+    ref: PeriodRef,
     columns: Sequence[Column],
     request: CompareRequest,
 ) -> PeerRow | str:
@@ -170,32 +148,31 @@ def row(
 
     Args:
         company (Company): Company.
-        probe (Probe): Chosen period and major-account rows.
-        indicators (Mapping[str, float | None]): The company's indicator values by code.
+        peer (PeerValues): The company's values for the compared period.
+        ref (PeriodRef): Compared period.
         columns (Sequence[Column]): Table columns.
         request (CompareRequest): Request.
 
     Returns:
         PeerRow | str: Row, or the reason the company is missing.
     """
-    values: dict[str, Number | None] = {}
+    values: Mapping[str, Number | None] = {}
     used: StatementBasis | None = None
     if request.metrics != "ratios":
-        rows = probe.rows.get(company.corp_code, [])
-        chosen = _choose(rows, request.basis)
-        if chosen is None:
-            return _missing_reason(rows, probe.ref, request.basis)
-        used, picked = chosen
-        values = _account_values(picked, probe.ref)
-    elif not any(value is not None for value in indicators.values()):
-        return f"No {probe.ref.label} indicators in OpenDART."
+        if peer.accounts is None:
+            return _missing_reason(filed=peer.filed, ref=ref, basis=request.basis)
+        used, values = peer.basis, peer.accounts
+    elif not any(value is not None for value in peer.indicators.values()):
+        return f"No {ref.label} indicators in OpenDART."
     cells = [
-        indicators.get(column.code) if column.source == "indicator" else values.get(column.key)
+        peer.indicators.get(column.code) if column.source == "indicator" else values.get(column.key)
         for column in columns
     ]
     detailed = request.response_format == "detailed"
-    ref = company.ref if detailed else company.ref.model_copy(update={"korean_name": None})
-    return PeerRow(company=ref, values=cells, basis_used=used if request.basis == "auto" else None)
+    shown = company.ref if detailed else company.ref.model_copy(update={"korean_name": None})
+    return PeerRow(
+        company=shown, values=cells, basis_used=used if request.basis == "auto" else None
+    )
 
 
 @dataclass(slots=True)
@@ -218,24 +195,28 @@ class Built:
 
 
 def notes(
-    companies: Sequence[Company], built: Built, probe: Probe, *, request: CompareRequest
+    companies: Sequence[Company],
+    built: Built,
+    comparison: PeerComparison,
+    *,
+    request: CompareRequest,
 ) -> list[str]:
     """Explain the period chosen, derived formulas, units, and fiscal-year differences.
 
     Args:
         companies (Sequence[Company]): Resolved companies.
         built (Built): Table built so far.
-        probe (Probe): Chosen period.
+        comparison (PeerComparison): Compared period and its coverage.
         request (CompareRequest): Request.
 
     Returns:
         list[str]: Notes.
     """
-    ref = probe.ref
+    ref = comparison.ref
     notes: list[str] = []
-    if ref != probe.newest or probe.coverage < len(companies):
+    if ref != comparison.newest or comparison.coverage < len(companies):
         notes.append(
-            f"{ref.label} is the newest period with data for the most companies ({probe.coverage} of {len(companies)})."
+            f"{ref.label} is the newest period with data for the most companies ({comparison.coverage} of {len(companies)})."
         )
     keys = [column.key for column in built.columns if column.source == "derived"]
     formula = derived.note(keys, period=ref.label, comparison=shift(ref, 1).label)
@@ -243,7 +224,7 @@ def notes(
     if ref.period != "FY" and request.metrics != "ratios":
         notes.append("Quarterly income amounts are year to date.")
     if any(column.source == "indicator" for column in built.columns):
-        notes.append(ratios.PERCENT_NOTE)
+        notes.append(PERCENT_NOTE)
     offset = [c.ref.name for c in companies if c.fye_month != DECEMBER]
     if offset:
         notes.append(
@@ -253,3 +234,30 @@ def notes(
     if separate:
         notes.append(f"Separate statements used for: {", ".join(separate)}.")
     return notes
+
+
+def build(
+    companies: Sequence[Company], comparison: PeerComparison, *, request: CompareRequest
+) -> Built:
+    """Lay out the peer table for compared companies.
+
+    Args:
+        companies (Sequence[Company]): Companies, aligned with ``comparison.peers``.
+        comparison (PeerComparison): Values per company for the compared period.
+        request (CompareRequest): Request.
+
+    Returns:
+        Built: Columns, rows, missing companies, notes, and filings.
+    """
+    chosen = columns(request, comparison.indicators)
+    built = Built(chosen, [], [], list(comparison.notes), [])
+    for company, peer in zip(companies, comparison.peers, strict=True):
+        made = row(company, peer, ref=comparison.ref, columns=chosen, request=request)
+        if isinstance(made, str):
+            built.missing.append(MissingCompany(company=company.ref.name, reason=made))
+            continue
+        built.rows.append(made)
+        cited = [*(f.filing_number for f in built.filings), *peer.filings[:1]]
+        built.filings = sources(cited, None)
+    built.notes += notes(companies, built, comparison, request=request)
+    return built

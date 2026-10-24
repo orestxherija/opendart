@@ -32,7 +32,7 @@ Imports point down the table only. The pure layers never import FastMCP.
 | Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, lifespan |
 | Services | `services/` | Business logic per component, callable from tests without MCP |
 | Infrastructure | `core/` | Gateway, cache, errors, state, runtime |
-| Pure layers | `events/`; `opendart_analysis.catalog`, `opendart_analysis.domain`, `opendart_analysis.documents` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
+| Pure layers | `opendart_analysis.catalog`, `opendart_analysis.domain`, `opendart_analysis.documents`, `opendart_analysis.events`, `opendart_analysis.filings`, `opendart_analysis.extracts`, `opendart_analysis.financials` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
 | Output | `models/`, `render/` | Pydantic output models and Markdown renderers |
 
 Every handwritten file stays under 500 lines (loq). Tool modules hold the decorated function and its docstring only;
@@ -67,6 +67,7 @@ the service, model, and renderer live in their layers.
 - Workflows in `opendart-analysis` receive typed data-access callables instead of the gateway. `core.upstream` binds
   each one to `gateway.call` with unchanged arguments, and `core.ttl.lifetime` maps the call's `Volatility` hint
   (`low`, `medium`, `high`) to `DAY`, `HOUR`, or `FILINGS`.
+- Capability bindings follow the same pattern in `core.upstream_financials` and `core.upstream_filings`.
 
 ### Errors
 
@@ -115,11 +116,11 @@ deadline-based candidates; `first_available(resolved, fetch)` probes a `Resolved
 | Component | Module | Service | Stream |
 | --- | --- | --- | --- |
 | `find_company`, `get_company_profile` | `tools/company.py` | `services/companies.py` (messages in `services/company_messages.py`) over `opendart_analysis.domain`, `services/profile.py` | Foundation |
-| `search_filings` | `tools/filings.py` | `services/filings.py` | A |
+| `search_filings` | `tools/filings.py` | `services/filings.py` over `opendart_analysis.filings` | A |
 | `read_filing` (task) | `tools/documents.py` | `services/documents.py` over `opendart_analysis.documents` | A |
-| `get_financials` | `tools/financials.py` | `services/financials.py` (`preliminary` from stream A) | B |
-| `compare_companies` | `tools/compare.py` | `services/compare.py` | B |
-| `get_corporate_events` (task) | `tools/events.py` | `services/events.py`, `events/` | C |
+| `get_financials` | `tools/financials.py` | `services/financials.py`, `statement_views.py` over `opendart_analysis.financials` (`preliminary` from stream A) | B |
+| `compare_companies` | `tools/compare.py` | `services/compare.py`, `peer_table.py` over `opendart_analysis.financials.compare_peers` | B |
+| `get_corporate_events` (task) | `tools/events.py` | `services/events.py` over `opendart_analysis.events` | C |
 | `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py` | C |
 | `get_ownership`, `get_capital_structure` | `tools/ownership.py`, `tools/capital.py` | `services/ownership.py`, `services/capital.py` | D1 |
 | `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services | D2 |

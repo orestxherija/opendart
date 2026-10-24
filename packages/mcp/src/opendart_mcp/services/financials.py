@@ -12,30 +12,32 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Final, Protocol
 
 from opendart_analysis.domain.periods import FIRST_INDICATOR_YEAR
-from opendart_mcp.core.errors import InvalidArgumentError
+from opendart_analysis.errors import AnalysisError
+from opendart_analysis.financials.chain import fallback_note
+from opendart_analysis.financials.indicators import KEY_INDICATORS, PERCENT_NOTE, indicator_history
+from opendart_analysis.financials.investments import latest_holdings
+from opendart_analysis.financials.statements import filled_periods
+from opendart_mcp.core.errors import InvalidArgumentError, from_analysis
 from opendart_mcp.core.progress import no_progress
+from opendart_mcp.core.upstream_financials import indicators_fetch, investments_fetch
 from opendart_mcp.models.financials import FinancialsResult
-from opendart_mcp.services.investments import fetch_holdings, holdings_table
-from opendart_mcp.services.periods import first_available, resolve_period
+from opendart_mcp.services.investments import holdings_table
+from opendart_mcp.services.periods import resolve_period
 from opendart_mcp.services.preliminary import latest_preliminary
 from opendart_mcp.services.preliminary_table import preliminary_table
-from opendart_mcp.services.ratios import KEY_INDICATORS, PERCENT_NOTE, company_indicators
 from opendart_mcp.services.statement_views import statements_view
-from opendart_mcp.services.statements import column, filled_periods, merge, select, to_rows
-from opendart_mcp.services.tables import Span, Table, chain, fallback_note, no_data, sources
+from opendart_mcp.services.statements import column, select, to_rows
+from opendart_mcp.services.tables import Table, no_data, sources
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Mapping
 
-    from opendart_analysis.domain.periods import PeriodRef
     from opendart_analysis.domain.types import Basis, Period, Unit
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
     from opendart_mcp.models.common import ResponseFormat
     from opendart_mcp.models.financials import FinancialView
     from opendart_mcp.services.companies import Company
-    from opendart_mcp.services.investments import Holdings
-    from opendart_mcp.services.statements import Report
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,25 +116,20 @@ async def _ratios(
     resolved = await resolve_period(
         state, company, period=request.period, fiscal_year=request.fiscal_year
     )
-
-    async def fetch(ref: PeriodRef, basis: Basis) -> Report | None:
-        """Fetch indicator data for one period; indicators have no basis selector.
-
-        Args:
-            ref (PeriodRef): Period to fetch.
-            basis (Basis): Requested basis, ignored by the indicators endpoint.
-
-        Returns:
-            Report | None: Indicator report, or None when no data is available.
-        """
-        del basis  # OpenDART's indicators have no basis parameter.
-        return await company_indicators(state, company, ref)
-
-    span = Span(years=request.years, step=1, earliest=FIRST_INDICATOR_YEAR)
-    found = await chain(resolved, fetch, basis=request.basis, span=span, progress=progress)
+    try:
+        found = await indicator_history(
+            company,
+            resolved,
+            years=request.years,
+            fetch_indicators=indicators_fetch(state.require_gateway),
+            today=state.today(),
+            progress=progress,
+        )
+    except AnalysisError as error:
+        raise from_analysis(error) from error
     if found is None:
         return Table(notes=[no_data(resolved, "financial indicators")])
-    merged = merge(found.reports)
+    merged = found.report
     lines, shown = select(
         merged.lines,
         accounts=request.accounts,
@@ -172,23 +169,16 @@ async def _investments(
     resolved = await resolve_period(
         state, company, period=request.period, fiscal_year=request.fiscal_year
     )
-
-    async def fetch(ref: PeriodRef) -> Holdings | None:
-        """Fetch equity-investment holdings for one period.
-
-        Args:
-            ref (PeriodRef): Period to fetch.
-
-        Returns:
-            Holdings | None: Holdings data, or None when no data is available.
-        """
-        await progress(f"Fetching {ref.label}")
-        return await fetch_holdings(state, company, ref)
-
-    found = await first_available(resolved, fetch)
-    if found is None:
+    holdings = await latest_holdings(
+        company,
+        resolved,
+        fetch_investments=investments_fetch(state.require_gateway),
+        today=state.today(),
+        progress=progress,
+    )
+    if holdings is None:
         return Table(notes=[no_data(resolved, "equity investment table")])
-    ref, holdings = found
+    ref = holdings.ref
     periods, rows, investments, shown = holdings_table(
         holdings, detailed=request.detailed, fye_month=company.fye_month
     )

@@ -47,6 +47,14 @@ Applications that download filings with the SDK install both distributions, `ope
   exceptions, and the direct-SDK recipe.
 - [Periodic reports](docs/reports.md): find a company's latest periodic report and resolve requested periods.
 - [Service catalog](docs/catalog.md): metadata for all 85 OpenDART services and the corporate-event vocabulary.
+- [Financial statements](docs/financials.md): statements over periods with restatement merging and derived metrics,
+  published indicators, equity investments, preliminary earnings, and peer comparison.
+- [Periodic-report extracts](docs/extracts.md): fetch one periodic-report service for a company and period, read its
+  all-string fields, and list source filings.
+- [Corporate events](docs/events.md): read a company's material events from major-issue and registration reports,
+  interpreted into headlines, key terms, dated actions, and flags.
+- [Filing discovery](docs/filings.md): search the filing index by company, market, category, and title, merged newest
+  first within page budgets.
 
 ## Maintainer notes
 
