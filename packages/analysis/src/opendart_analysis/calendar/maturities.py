@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from opendart_analysis.debt import Maturity, MaturitySchedule
     from opendart_analysis.domain.dates import DateWindow
     from opendart_analysis.reports import FiscalCompany, PeriodRef, ResolvedPeriod
-    from opendart_analysis.upstream import FetchService, SearchFilings
+    from opendart_analysis.upstream import CallLimit, FetchService, SearchFilings
 
 
 @dataclass(frozen=True, slots=True)
@@ -163,19 +163,34 @@ async def debt_maturities(
 
 
 def read_debt_maturities(
-    *, search_filings: SearchFilings, fetch_service: FetchService, today: date
+    *,
+    search_filings: SearchFilings,
+    fetch_service: FetchService,
+    today: date,
+    limit: CallLimit | None = None,
 ) -> Callable[[CalendarSubject, DateWindow], Awaitable[DebtMaturities]]:
     """Bind ``debt_maturities`` to data access, resolving each company's latest period.
 
+    The reader's calls are not bounded by the calendar's limit unless they share it: pass
+    the ``CallLimit`` given to ``corporate_action_calendar``, or bound the callables
+    yourself.
+
     Args:
-        search_filings (SearchFilings): Filing search for ``resolve_period``.
-        fetch_service (FetchService): Service calls for the debt tables.
+        search_filings (SearchFilings): Filing search for ``resolve_period``; a leaf
+            callable, wrapped in ``limit`` when given.
+        fetch_service (FetchService): Service calls for the debt tables; a leaf callable,
+            wrapped in ``limit`` when given.
         today (date): Today in KST.
+        limit (CallLimit | None): Bound shared with other callables, such as the
+            calendar's; None leaves the bound to the callables. Defaults to None.
 
     Returns:
         Callable[[CalendarSubject, DateWindow], Awaitable[DebtMaturities]]: A maturity
             reader for ``corporate_action_calendar``.
     """
+    if limit is not None:
+        search_filings = limit.bound(search_filings)
+        fetch_service = limit.bound(fetch_service)
 
     async def read(subject: CalendarSubject, window: DateWindow) -> DebtMaturities:
         """Read one company's debt maturities.

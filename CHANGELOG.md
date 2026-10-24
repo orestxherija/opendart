@@ -34,6 +34,11 @@
     maturity ladders and issuance, dividend histories, company profiles, and audit, board, pay, and workforce facts
     with red flags.
   - `opendart_analysis.calendar`: corporate-action dates and debt maturities for one company or a watchlist.
+- Library concurrency limits in analysis: `upstream.CallLimit` bounds calls in flight across the callables it wraps;
+  the calendar shares one limit across all its event and filing-index calls (`limit`, 5 by default), which
+  `read_debt_maturities(limit=...)` can join; and `DocumentStore(max_parallel_fetches=...)` bounds downloads.
+- Argument and lifecycle validation in analysis: `ReadPolicy` rejects a `concurrency` or `max_index_pages` below 1,
+  and `DirectoryLoader.wait()` raises `RuntimeError` instead of waiting forever when no `run()` is in progress.
 - Guides for each analysis capability, an analysis contracts page (units, missing data, provenance, ambiguity, task
   ownership, configuration, exceptions, and versioning), an analysis architecture diagram, and installation choices
   in the root README.

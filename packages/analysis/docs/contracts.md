@@ -12,7 +12,7 @@ Analysis returns values in their natural units and never scales them for display
 | Value | Unit | Where |
 | --- | --- | --- |
 | Money totals | Integer won as filed, or the report's own currency where a filing states one. Values filed in thousands or millions of won are converted to won. | `financials`, `debt`, `capital`, `dividends`, `governance`, `calendar` |
-| Per-share amounts | Won per share, often fractional (`int \| float`); never scaled. | `financials` (`accounts.is_per_share`), `dividends` (`KRW/share`) |
+| Per-share amounts | Won per share, often fractional (`int \| float`); never scaled. | `financials` (statement lines with `kind="per_share"`), `dividends` (`KRW/share`) |
 | Percentages | Percentage points as filed (`12.5` means 12.5 percent). Derived growth, margins, and leverage are percentages rounded to two decimals. | `financials.derived`, `ownership`, `dividends` (`%`) |
 | Ratios and multiples | Dimensionless, as filed, such as merger or split ratios. | `catalog` field kind `ratio` |
 | Share and people counts | Integers. | `capital`, `ownership`, `governance` |
@@ -84,10 +84,12 @@ Only two components own work that outlives a call, and both start it only when u
 | `documents.DocumentStore` | One shared download-and-parse task per filing, worker threads for parsing, and a rendered-text cache. | On the first `get` of a filing. | `aclose()` or `async with`. |
 | `directory.DirectoryLoader` | One loading and refresh task, worker threads for parsing and cache files, and the cache file at `LoaderConfig.cache_path`. | `start()` or `async with`. | `aclose()` or `async with`. |
 
-Everything else is a function call. Workflows may read data concurrently within a call, and they bound that fan-out
-with explicit limits, but they keep no state, cache, or background work between calls. Pure parsing, such as
-`documents.parse_filing` and `directory.parse_directory`, is synchronous and can be slow on large archives, so
-asynchronous applications run it in a worker thread.
+Everything else is a function call. Workflows may call data access concurrently within a call, and each one documents
+the bound on that fan-out: a request size, such as `financials.MAX_PEERS`; a per-read limit, such as
+`events.ReadPolicy.concurrency`; or one limit shared by every call, such as the calendar's `limit`
+(`upstream.CallLimit`, five calls by default). They keep no state, cache, or background work between calls. Pure
+parsing, such as `documents.parse_filing` and `directory.parse_directory`, is synchronous and can be slow on large
+archives, so asynchronous applications run it in a worker thread.
 
 Asynchronous workflows run on asyncio. The store and the loader use `asyncio` tasks and timeouts directly, and
 several workflows use `asyncio.gather`, so they do not run under Trio. A caller-supplied client, such as an SDK
@@ -99,11 +101,11 @@ Analysis reads no environment variables, configuration files, or global settings
 is an explicit argument, and every policy has a documented default:
 
 - data access as typed callables, and the current date as `today` (`reports.today_kst()` computes it);
-- acquisition bounds, such as `max_calls` and `title_scan_calls` of `filings.find_filings`, `max_companies` of the
-  calendar, and `events.ReadPolicy` (concurrency, index pages, and which failures to tolerate); request sizes are
-  validated against published ceilings such as `financials.MAX_REPORTS` and `MAX_PEERS`;
-- runtime settings of the two long-lived components: `DocumentStore` limits and timeouts, and `directory.LoaderConfig`
-  (cache path, refresh age, download deadline, and retry delays);
+- acquisition bounds, such as `max_calls` and `title_scan_calls` of `filings.find_filings`, `max_companies` and
+  `limit` of the calendar, and `events.ReadPolicy` (concurrency, index pages, and which failures to tolerate); request
+  sizes are validated against published ceilings such as `financials.MAX_REPORTS` and `MAX_PEERS`;
+- runtime settings of the two long-lived components: `DocumentStore` limits (cache size, parallel parses and
+  downloads) and timeouts, and `directory.LoaderConfig` (cache path, refresh age, download deadline, and retry delays);
 - optional progress callbacks (`upstream.Progress`), async callables that receive short messages;
   workflows default to `upstream.no_progress`, which discards them.
 
@@ -124,15 +126,19 @@ configure only the SDK client the caller creates.
 | `calendar.CalendarRequestError` | A calendar request is invalid: `CalendarWindowError`, `UnknownKindsError`, `UndatedKindsError`, or `TooManyCompaniesError`. |
 | `documents.DocumentError` | Archive, parsing, navigation, or store failures, such as `ArchiveTooLargeError`, `MalformedArchiveError`, `SectionNotFoundError`, `DownloadPendingError`, and `StoreClosedError`. Derives from `Exception`, not `AnalysisError`. |
 | `directory.DirectoryError` | The corporation-code archive is malformed, oversized, or unsafe to parse. Derives from `Exception`. |
-| `ValueError` | An argument is invalid in itself, such as a filing window that ends before it starts, a `FilingQuery` limit outside 1 to 100, or a non-positive `LoaderConfig` age. |
+| `ValueError` | An argument is invalid in itself, such as a filing window that ends before it starts, a `FilingQuery` limit outside 1 to 100, a non-positive `LoaderConfig` age, a limit below 1 in `ReadPolicy`, `CallLimit`, the calendar's `limit`, or `DocumentStore`'s `max_parallel_fetches`, or an unknown event group or kind in `catalog.expand`. |
+| `KeyError` | A catalog lookup names no service: `catalog.service`, `field_spec`, `field_label`, and `field_kind`; the message of `service` suggests close names. |
+| `RuntimeError` | A `DirectoryLoader` is used out of order: `start()` or `run()` after `aclose()`, a second concurrent `run()`, or `wait()` while nothing has loaded and no `run()` is in progress: the loader was never started, or its `run()` stopped before the first attempt settled. |
 
 Messages are complete sentences without credentials or upstream response text, and they never name a tool or tell
 anyone to restart a server. Callers decide what to do from the exception's type and attributes.
 
 Exceptions raised by caller-supplied data access reach the caller unchanged: analysis never wraps, retries, or
-suppresses them. The one exception is a partial-result policy the caller chooses: `events.ReadPolicy.tolerate`, which
+suppresses them, with two exceptions. A partial-result policy the caller chooses, `events.ReadPolicy.tolerate`, which
 by default accepts only `DataSourceError`, decides which failures mark an event kind (or a calendar company) as failed
-instead of failing the whole read; every other failure propagates.
+instead of failing the whole read; every other failure propagates. And `DirectoryLoader` never re-raises a failure of
+its fetch callback: it records it as a `directory.LoadFailure` in `failure`, retries on its schedule, and `wait()`
+reports it as `DirectoryNotReadyError` with that `failure`.
 
 ## Versioning
 
@@ -144,3 +150,8 @@ versions of `opendart-analysis` and `opendart-sdk`.
 Public names are the exports of each capability package (`__all__`) and the conventions in `upstream` and `errors`.
 Modules under `domain`, and modules a package does not export, are internal and may change. Before 1.0, a minor
 release may change public names; the [changelog](../../../CHANGELOG.md) records them.
+
+Annotations are for static type checkers. Modules use postponed annotations (`from __future__ import annotations`) and
+import names used only in annotations under `TYPE_CHECKING`, so resolving the annotations of the analysis dataclasses
+at runtime, with `typing.get_type_hints` or a Pydantic `TypeAdapter`, is not supported; convert results to your own
+models instead. The Pydantic models in `documents`, such as `DocumentInfo`, are the exception and validate as usual.

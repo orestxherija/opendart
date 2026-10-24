@@ -340,6 +340,38 @@ async def test_the_directory_stays_readable_after_close(tmp_path):
     assert await loader.wait(0) is directory
 
 
+async def test_waiting_on_a_loader_never_started_fails_at_once(tmp_path):
+    fetch = fetcher()
+    loader = DirectoryLoader(fetch, config(tmp_path))
+    with pytest.raises(RuntimeError, match="not running; call start"):
+        await asyncio.wait_for(loader.wait(), 1)
+    with pytest.raises(RuntimeError, match="not running"):
+        await asyncio.wait_for(loader.wait(5), 1)
+    assert (fetch.calls, loader.status) == ([], "loading")
+
+
+async def test_a_run_task_created_just_before_waiting_counts_as_started(tmp_path):
+    loader = DirectoryLoader(fetcher(), config(tmp_path))
+    runner = asyncio.create_task(loader.run())
+    try:
+        assert len(await asyncio.wait_for(loader.wait(), 2)) == len(ROWS)
+    finally:
+        runner.cancel()
+        await asyncio.gather(runner, return_exceptions=True)
+
+
+async def test_waiters_fail_when_a_caller_owned_run_stops_before_loading(tmp_path):
+    gate = asyncio.Event()
+    loader = DirectoryLoader(gated(gate), config(tmp_path, progress_every_s=0.01))
+    runner = asyncio.create_task(loader.run())
+    waiter = asyncio.create_task(loader.wait())
+    await asyncio.sleep(0.02)
+    runner.cancel()
+    await asyncio.gather(runner, return_exceptions=True)
+    with pytest.raises(RuntimeError, match="not running"):
+        await asyncio.wait_for(waiter, 1)
+
+
 async def test_run_cannot_be_started_twice(tmp_path):
     loader = DirectoryLoader(fetcher(), config(tmp_path))
     async with loader:

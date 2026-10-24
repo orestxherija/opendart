@@ -30,6 +30,8 @@ DEFAULT_HORIZON: Final = "90d"
 """Horizon of a calendar that names none."""
 MAX_COMPANIES: Final = 20
 """Default bound on the distinct companies one calendar reads."""
+MAX_CONCURRENCY: Final = 5
+"""Default bound on the event-service and filing-index calls one calendar has in flight."""
 
 
 class CalendarRequestError(AnalysisError):

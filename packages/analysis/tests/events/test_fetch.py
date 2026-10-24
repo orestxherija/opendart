@@ -218,3 +218,21 @@ def test_windows_are_clipped_to_the_event_report_range():
     assert covered_window(wide, today=today) == DateWindow(dt.date(2015, 1, 1), today)
     old = DateWindow(dt.date(2010, 1, 1), dt.date(2014, 12, 31))
     assert covered_window(old, today=today) is None
+
+
+@pytest.mark.parametrize(
+    "limits",
+    [{"concurrency": 0}, {"concurrency": -1}, {"max_index_pages": 0}],
+    ids=["no-concurrency", "negative-concurrency", "no-index-pages"],
+)
+def test_a_policy_rejects_limits_that_never_finish(limits):
+    with pytest.raises(ValueError, match="at least 1"):
+        ReadPolicy(**limits)
+
+
+def test_a_policy_accepts_unbounded_and_single_call_reads():
+    assert ReadPolicy(concurrency=None).concurrency is None
+    assert (
+        ReadPolicy(concurrency=1, max_index_pages=1).concurrency,
+        ReadPolicy().max_index_pages,
+    ) == (1, 3)

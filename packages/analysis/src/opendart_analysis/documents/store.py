@@ -51,7 +51,7 @@ class DocumentStore:
         max_rendered_chars (int): Cache budget in rendered characters.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913 - every runtime limit is an explicit keyword argument
         self,
         fetch: Fetch,
         *,
@@ -60,6 +60,7 @@ class DocumentStore:
         progress_every_s: float = 5.0,
         max_parallel_parses: int = 2,
         fetch_timeout_s: float | None = 120.0,
+        max_parallel_fetches: int | None = None,
     ) -> None:
         """Configure the store; no work starts until :meth:`get` is called.
 
@@ -74,14 +75,26 @@ class DocumentStore:
                 Defaults to 2.
             fetch_timeout_s (float | None): Overall deadline for one download, so a stalled
                 transfer fails (and is retried by the next caller) instead of staying in
-                flight. None disables it. Defaults to 120.
+                flight; it starts when the download does. None disables it. Defaults to 120.
+            max_parallel_fetches (int | None): Downloads in flight at once; more filings
+                wait for a slot. None leaves downloads unbounded, as ``fetch`` allows.
+                Defaults to None.
+
+        Raises:
+            ValueError: ``max_parallel_fetches`` is below 1.
         """
+        if max_parallel_fetches is not None and max_parallel_fetches < 1:
+            msg = f"max_parallel_fetches must be at least 1 or None; got {max_parallel_fetches}."
+            raise ValueError(msg)
         self.max_rendered_chars = max_rendered_chars
         self._fetch = fetch
         self._parse = parse
         self._every = progress_every_s
         self._parallel = max_parallel_parses
         self._fetch_timeout = fetch_timeout_s
+        self._fetches = (
+            None if max_parallel_fetches is None else asyncio.Semaphore(max_parallel_fetches)
+        )
         self._limiter: anyio.CapacityLimiter | None = None
         self._cache: OrderedDict[str, ParsedFiling] = OrderedDict()
         self._tasks: dict[str, asyncio.Task[ParsedFiling]] = {}
@@ -195,13 +208,28 @@ class DocumentStore:
         Raises:
             TimeoutError: The download exceeded ``fetch_timeout_s``.
         """
-        async with asyncio.timeout(self._fetch_timeout):
-            archive = await self._fetch(filing_number)
+        if self._fetches is None:
+            archive = await self._download(filing_number)
+        else:
+            async with self._fetches:
+                archive = await self._download(filing_number)
         if self._limiter is None:
             self._limiter = anyio.CapacityLimiter(self._parallel)
         return await anyio.to_thread.run_sync(
             self._parse, filing_number, archive, limiter=self._limiter
         )
+
+    async def _download(self, filing_number: str) -> bytes:
+        """Download one archive within ``fetch_timeout_s``.
+
+        Args:
+            filing_number (str): 14-digit filing number.
+
+        Returns:
+            bytes: Archive bytes.
+        """
+        async with asyncio.timeout(self._fetch_timeout):
+            return await self._fetch(filing_number)
 
     def _settle(self, filing_number: str, task: asyncio.Task[ParsedFiling]) -> None:
         """Cache a finished task's result, or count its failure.

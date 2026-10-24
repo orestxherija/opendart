@@ -7,9 +7,10 @@ folds amendments into the original decision's row (latest filing number, amended
 applies the window to the original filing date, so a record's filing number is its latest
 version's. Records come back newest filing first.
 
-Services are read concurrently, at most ``concurrency`` at a time when given. A service whose
-call fails with an exception the caller's ``tolerate`` accepts is reported in ``failed``
-instead of failing the read; any other exception propagates unchanged.
+Services are read concurrently, at most ``policy.concurrency`` at a time when given; the bound
+applies to one call. A service whose call fails with an exception the caller's ``tolerate``
+accepts is reported in ``failed`` instead of failing the read; any other exception propagates
+unchanged.
 """
 
 from __future__ import annotations
@@ -244,18 +245,34 @@ class ReadPolicy:
     Attributes:
         tolerate (Callable[[BaseException], bool]): Whether a service failure marks its kind
             failed instead of failing the read; by default only ``DataSourceError``.
-        concurrency (int | None): Most service calls in flight at once; None leaves the
-            bound to the source.
-        max_index_pages (int): Most filing-index pages read per disclosure group.
+        concurrency (int | None): Most event-service calls one ``fetch_events`` call has in
+            flight at once, at least 1; None leaves them unbounded (at most one per kind).
+            Each call has its own bound, so a workflow that runs several reads, such as the
+            calendar, bounds its total with its own limit.
+        max_index_pages (int): Most filing-index pages read per disclosure group, at least 1.
     """
 
     tolerate: Callable[[BaseException], bool] = tolerate_data_source_errors
     concurrency: int | None = None
     max_index_pages: int = MAX_PAGES
 
+    def __post_init__(self) -> None:
+        """Reject limits that would read nothing or never finish.
+
+        Raises:
+            ValueError: ``concurrency`` or ``max_index_pages`` is below 1.
+        """
+        if self.concurrency is not None and self.concurrency < 1:
+            message = f"concurrency must be at least 1 or None; got {self.concurrency}."
+            raise ValueError(message)
+        if self.max_index_pages < 1:
+            message = f"max_index_pages must be at least 1; got {self.max_index_pages}."
+            raise ValueError(message)
+
 
 DEFAULT_POLICY: Final = ReadPolicy()
-"""Tolerate ``DataSourceError``, leave concurrency to the source, and read 3 index pages."""
+"""Tolerate ``DataSourceError``, leave each read's service calls unbounded, and read 3 index
+pages."""
 
 
 async def fetch_events(

@@ -17,6 +17,7 @@ current date in Korea, which defines OpenDART's filing dates (`opendart_analysis
 | `Volatility` | `low`, `medium`, or `high`. |
 | `DisclosureGroup`, `MAX_FILING_PAGE` | OpenDART disclosure types `A` to `J` (`A` is periodic reports), and 100. |
 | `Progress`, `no_progress` | `async (message: str) -> None`, the optional `progress` callback of long workflows, and one that discards messages. |
+| `CallLimit` | `CallLimit(max_in_flight)`; `bound(call)` wraps a leaf callable so that every callable it bounds shares at most `max_in_flight` calls in flight. |
 
 The contract for every callable:
 
@@ -31,7 +32,16 @@ The contract for every callable:
   filing search is `high`, and a period's statement data is `high` until two weeks after its filing deadline, then `low`.
   The source decides whether and how long to cache; analysis keeps no cache and knows no lifetimes.
 - **Failures.** Exceptions raised by a callable reach the caller unchanged. Analysis never catches, wraps, or retries
-  them, so it adds no second retry layer to the source's own policy.
+  them, so it adds no second retry layer to the source's own policy. The exceptions are a partial-result policy the
+  caller chooses (`events.ReadPolicy.tolerate`) and the [directory loader](directory.md#loader), which records failed
+  downloads and retries on its schedule; see [contracts](contracts.md#exceptions).
+- **Concurrency.** A workflow may invoke a callable several times at once, and invoke several callables at once, so
+  callables must be safe to call concurrently. Each workflow documents the bound that applies: a request size, such
+  as `financials.MAX_PEERS`, a per-call limit, such as `events.ReadPolicy.concurrency`, or a limit shared across
+  calls, such as the calendar's `limit`. A source with its own rate limit can bound every call itself, or wrap its
+  leaf callables in one `CallLimit`. Wrap only callables that call the source directly: a wrapped callable that
+  calls another callable bound by the same limit would hold one slot while waiting for a second, and enough of
+  them deadlock.
 
 | `Volatility` | Meaning | MCP server's cache lifetime |
 | --- | --- | --- |

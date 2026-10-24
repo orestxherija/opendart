@@ -6,6 +6,10 @@ registration statement repeats from its decision are merged, and debt maturities
 event maturities of the same bond (``merge_maturities``). Companies are read concurrently;
 a company whose read fails with an exception the policy tolerates is reported with that
 error and no items, and any other failure propagates once every company has finished.
+
+Every event-service and filing-index call of the calendar shares one ``CallLimit``, so the
+companies' reads together keep at most ``limit`` calls in flight. The maturity reader's own
+calls are bounded by the reader, such as ``read_debt_maturities(limit=...)``.
 """
 
 from __future__ import annotations
@@ -17,9 +21,13 @@ from typing import TYPE_CHECKING, Protocol
 from opendart_analysis.calendar.items import event_items, merge_maturities, sort_key
 from opendart_analysis.calendar.lookback import Reads
 from opendart_analysis.calendar.reads import read_events
-from opendart_analysis.calendar.request import MAX_COMPANIES, TooManyCompaniesError
+from opendart_analysis.calendar.request import (
+    MAX_COMPANIES,
+    MAX_CONCURRENCY,
+    TooManyCompaniesError,
+)
 from opendart_analysis.events import DEFAULT_POLICY
-from opendart_analysis.upstream import no_progress
+from opendart_analysis.upstream import CallLimit, no_progress
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
@@ -223,6 +231,7 @@ async def corporate_action_calendar[M: MaturityAnswer](  # noqa: PLR0913 - expli
     read_filing_page: ReadFilingPage,
     policy: ReadPolicy = DEFAULT_POLICY,
     max_companies: int = MAX_COMPANIES,
+    limit: CallLimit | int | None = MAX_CONCURRENCY,
     today: date,
     progress: Progress = no_progress,
 ) -> CorporateActionCalendar[M]:
@@ -237,12 +246,18 @@ async def corporate_action_calendar[M: MaturityAnswer](  # noqa: PLR0913 - expli
             empty reads no event reports.
         maturities (ReadMaturities[M] | None): Debt maturity reader, such as
             ``read_debt_maturities(...)``; None reads none.
-        fetch_service (FetchService): Calls event services.
+        fetch_service (FetchService): Calls event services; a leaf callable, which the
+            calendar wraps in ``limit``.
         read_filing_page (ReadFilingPage): Reads each company's filing index when ``kinds``
-            is None.
+            is None; a leaf callable, which the calendar wraps in ``limit``.
         policy (ReadPolicy): Failures that mark an event kind failed, and a company failed
-            when they escape its reads; concurrency; and index page limit.
+            when they escape its reads; per-read concurrency; and index page limit.
         max_companies (int): Most distinct companies.
+        limit (CallLimit | int | None): Bound on the event-service and filing-index calls in
+            flight across every company: a ``CallLimit`` to share with other callables,
+            such as the maturity reader's; an int for a new limit of that many calls (at
+            least 1); or None to leave the bound to the source. Defaults to
+            ``MAX_CONCURRENCY`` (5).
         today (date): Today in KST; filings are read up to it.
         progress (Progress): Receives "7/20 Samsung Electronics" as each company finishes.
 
@@ -251,8 +266,13 @@ async def corporate_action_calendar[M: MaturityAnswer](  # noqa: PLR0913 - expli
 
     Raises:
         TooManyCompaniesError: More distinct companies than ``max_companies``.
+        ValueError: ``limit`` is an int below 1.
     """
     unique = _distinct(subjects, max_companies)
+    shared = CallLimit(limit) if isinstance(limit, int) else limit
+    if shared is not None:
+        fetch_service = shared.bound(fetch_service)
+        read_filing_page = shared.bound(read_filing_page)
     reads = Reads.before(window.start, today=today, kinds=kinds)
     reader = _Reader(window, reads, maturities, fetch_service, read_filing_page, policy)
     companies = await reader.companies(unique, progress)

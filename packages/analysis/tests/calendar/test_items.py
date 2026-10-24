@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
+import typing
+from collections.abc import Mapping
 from dataclasses import replace
 
 from opendart_analysis.calendar import (
@@ -10,6 +12,7 @@ from opendart_analysis.calendar import (
     REGISTERED,
     CalendarItem,
     event_items,
+    items,
     merge_maturities,
     sort_key,
 )
@@ -206,3 +209,9 @@ def test_items_sort_by_date_company_action_and_filing():
         debt,
     ]
     assert "debt_maturity" not in ACTION_ORDER
+
+
+def test_item_annotations_name_the_date_type_not_the_field():
+    namespace = {**vars(items), "dt": dt, "Mapping": Mapping}
+    hints = typing.get_type_hints(CalendarItem, globalns=namespace)
+    assert hints["date"] is dt.date

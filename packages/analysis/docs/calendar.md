@@ -9,7 +9,7 @@ meetings, appraisal-rights windows, trading suspensions, effective dates, and bo
 the [filing discovery](filings.md) `ReadFilingPage` and the `FetchService` from the [extracts guide](extracts.md);
 `read_debt_maturities` adds `SearchFilings` from the [data-access recipe](data-access.md) to resolve each company's
 latest periodic report. With `or_none`, `sdk_filing_search`, `sdk_filing_pages`, and `sdk_fetch_service` from those
-guides, the next 90 days for two companies:
+guides, the next 90 days for two companies, with one `CallLimit` bounding every upstream call of both:
 
 ```python
 import asyncio
@@ -17,6 +17,7 @@ from getpass import getpass
 from pydantic import SecretStr
 from opendart import OpenDART, OpenDARTSettings
 from opendart_analysis.calendar import (
+    MAX_CONCURRENCY,
     CalendarSubject,
     calendar_kinds,
     calendar_window,
@@ -24,6 +25,7 @@ from opendart_analysis.calendar import (
     read_debt_maturities,
 )
 from opendart_analysis.reports import today_kst
+from opendart_analysis.upstream import CallLimit
 
 
 async def main():
@@ -35,10 +37,14 @@ async def main():
     today = today_kst()
     window = calendar_window("90d", include_past=None, today=today)
     selection = calendar_kinds(None)  # Every kind with dates, and debt maturities.
+    limit = CallLimit(MAX_CONCURRENCY)  # At most 5 OpenDART calls in flight.
     async with OpenDART(settings) as client:
         fetch = sdk_fetch_service(client)
         maturities = read_debt_maturities(
-            search_filings=sdk_filing_search(client), fetch_service=fetch, today=today
+            search_filings=sdk_filing_search(client),
+            fetch_service=fetch,
+            today=today,
+            limit=limit,
         )
         calendar = await corporate_action_calendar(
             companies,
@@ -47,6 +53,7 @@ async def main():
             maturities=maturities if selection.debt else None,
             fetch_service=fetch,
             read_filing_page=sdk_filing_pages(client),
+            limit=limit,
             today=today,
         )
     names = {company.corp_code: company.name for company in companies}
@@ -67,11 +74,11 @@ asyncio.run(main())
 | --- | --- |
 | `calendar_window(horizon="90d", include_past=None, *, today)` | The calendar's dates: today, or `include_past` (an ISO date or `30d`), to `horizon` (an ISO date or `90d`, `6m`, `1y`). |
 | `calendar_kinds(names)`, `KindSelection`, `DEBT_KIND` | Event groups or kinds, plus `debt_maturity`, to read; kinds without calendar dates are listed in `dropped`. |
-| `corporate_action_calendar(subjects, *, window, kinds=None, maturities=None, fetch_service, read_filing_page, policy=DEFAULT_POLICY, max_companies=20, today, progress=no_progress)` | A `CorporateActionCalendar`: `window`, `reads`, per-company `companies`, and sorted `items`. |
+| `corporate_action_calendar(subjects, *, window, kinds=None, maturities=None, fetch_service, read_filing_page, policy=DEFAULT_POLICY, max_companies=20, limit=MAX_CONCURRENCY, today, progress=no_progress)` | A `CorporateActionCalendar`: `window`, `reads`, per-company `companies`, and sorted `items`. |
 | `CalendarSubject` | `corp_code`, `name`, `korean_name`, and `fye_month` of a company to cover. |
 | `CalendarItem` | `date`, `corp_code`, `action`, `source_kind`, `filing_number`, and `details`. |
 | `CompanyCalendar` | `subject`, `items`, event `batches` read (`events`), `failed` kinds, the maturity reader's answer (`maturities`), and a tolerated `error`. |
-| `read_debt_maturities(*, search_filings, fetch_service, today)`, `debt_maturities`, `DebtMaturities`, `BondsDue` | Debt maturities in the window from the latest periodic reports, and the corporate bonds due within a year. |
+| `read_debt_maturities(*, search_filings, fetch_service, today, limit=None)`, `debt_maturities`, `DebtMaturities`, `BondsDue` | Debt maturities in the window from the latest periodic reports, and the corporate bonds due within a year. |
 | `Reads`, `LOOKBACK_MONTHS`, `LONG_LOOKBACK_MONTHS`, `LONG_KINDS` | The filing windows read before the first date. |
 | `event_items`, `merge_maturities`, `sort_key`, `REGISTERED`, `ACTION_ORDER` | Items from event records already read, merged and ordered the same way. |
 
@@ -109,11 +116,19 @@ How the calendar is built:
   records list only recent issues, so the ladder is the complete view.
 - **Order.** Items sort by date, company name, action (`ACTION_ORDER`, debt maturities last), and filing number.
   Every item cites its filing; nothing is capped, so callers bound the output themselves.
-- **Partial results.** Companies are read concurrently, each company's events and debt at the same time. An event
-  service failure that `policy.tolerate` accepts lands in `failed`; a failure of the filing index or the maturity
-  reader that it accepts leaves that company without items, with the exception in `error`. Any other exception
-  propagates unchanged after every company has finished. `progress` receives "1/2 SK hynix Inc." as each company
-  finishes, and more than `max_companies` distinct companies raise `TooManyCompaniesError` before any call.
+- **Concurrency.** Companies are read concurrently, each company's events and debt at the same time, but every
+  event-service and filing-index call of the calendar shares one `opendart_analysis.upstream.CallLimit`: at most
+  `limit` calls are in flight across all companies, `MAX_CONCURRENCY` (5) by default. An int creates a limit for the
+  call; a `CallLimit` is shared with other callables; None leaves the bound to the source, as the MCP server does
+  because its gateway bounds every request. The calendar wraps only the leaf callables `fetch_service` and
+  `read_filing_page`, never the maturity reader, whose own calls the limit bounds only when they share it: pass the
+  same `CallLimit` to `read_debt_maturities(limit=...)`, as above, or bound the callables of another reader. Within
+  each read, `policy.concurrency` still applies.
+- **Partial results.** An event service failure that `policy.tolerate` accepts lands in `failed`; a failure of the
+  filing index or the maturity reader that it accepts leaves that company without items, with the exception in
+  `error`. Any other exception propagates unchanged after every company has finished. `progress` receives "1/2 SK
+  hynix Inc." as each company finishes, and more than `max_companies` distinct companies raise
+  `TooManyCompaniesError`, and an int `limit` below 1 raises `ValueError`, before any call.
 
 Event services use `medium` volatility and the filing index `high`, as in [corporate events](events.md); the debt
 reader's calls follow [debt securities](debt.md). Analysis never retries or caches.

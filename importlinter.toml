@@ -6,13 +6,23 @@ root_packages = ["opendart", "opendart_analysis", "opendart_mcp"]
 # Graph third-party packages too, so the contracts can forbid MCP frameworks by name.
 include_external_packages = true
 
-# Analysis receives bytes, records, and callbacks, never an SDK client, and has no MCP runtime.
+# Analysis receives bytes, records, and callbacks, never an SDK or HTTP client, and has no MCP runtime.
 [[tool.importlinter.contracts]]
 id = "analysis-independent"
-name = "Analysis imports neither the SDK, MCP, nor server frameworks"
+name = "Analysis imports neither the SDK, MCP, HTTP clients, nor server frameworks"
 type = "forbidden"
 source_modules = ["opendart_analysis"]
-forbidden_modules = ["opendart", "opendart_mcp", "fastmcp", "mcp", "mcp_types", "opentelemetry"]
+forbidden_modules = [
+    "opendart",
+    "opendart_mcp",
+    "fastmcp",
+    "mcp",
+    "mcp_types",
+    "opentelemetry",
+    "httpx",
+    "httpx2",
+    "starlette",
+]
 
 # The SDK is the raw API contract; interpretation and MCP build on it, not inside it.
 [[tool.importlinter.contracts]]

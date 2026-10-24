@@ -276,8 +276,13 @@ class DirectoryLoader:
             NotConfiguredError: No directory is loaded and there is no ``fetch``
                 (``dependency`` is ``fetch``).
             DirectoryNotReadyError: Still loading after the wait, or every attempt failed.
+            RuntimeError: No directory is loaded and the loader is not running: it was
+                never started, or its ``run`` stopped before the first attempt settled.
         """
         if self._directory is None and not self._settled and not self._closed:
+            if not self._running and self._task is None:
+                await asyncio.sleep(0)  # A run() task the caller just created starts first.
+            self._check_running()
             scope = asyncio.timeout(timeout_s)
             try:
                 async with scope:
@@ -305,6 +310,17 @@ class DirectoryLoader:
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
 
+    def _check_running(self) -> None:
+        """Fail a wait that nothing would end: no ``run`` in progress and nothing settled.
+
+        Raises:
+            RuntimeError: The first attempt has not settled and the loader is not running.
+        """
+        idle = not self._running and (self._task is None or self._task.done())
+        if idle and not (self._settled or self._closed):
+            msg = "The directory loader is not running; call start() or run() first"
+            raise RuntimeError(msg)
+
     async def _wait_settled(self, on_progress: Progress | None) -> None:
         """Wait for the first attempt to settle, reporting progress periodically.
 
@@ -315,6 +331,7 @@ class DirectoryLoader:
             with contextlib.suppress(TimeoutError):
                 async with asyncio.timeout(self.config.progress_every_s):
                     await self._wake.wait()
+            self._check_running()
             if on_progress is not None and not (self._settled or self._closed):
                 elapsed = int(self._age(self._started))
                 await on_progress(f"Loading the OpenDART company directory ({elapsed} s elapsed)")

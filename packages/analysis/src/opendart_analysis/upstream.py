@@ -14,15 +14,19 @@ SearchFilings``, and the caller binds it to any source: the OpenDART SDK, a cach
 - Failures: exceptions raised by a callable propagate unchanged; analysis never retries.
 - Progress: long workflows take an optional ``progress`` callback (``Progress``) that receives
   short messages; ``no_progress`` discards them.
+- Concurrency: workflows may call a callable several times at once, within the bounds they
+  document; ``CallLimit`` bounds calls in flight across every callable it wraps.
 """
 
 from __future__ import annotations
 
+import asyncio
+import weakref
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable, Sequence
+    from collections.abc import Awaitable, Callable, Coroutine, Sequence
     from datetime import date
 
 type Volatility = Literal["low", "medium", "high"]
@@ -144,3 +148,68 @@ class FetchService(Protocol):
             object | None: The response, or None when the source has no data.
         """
         ...
+
+
+class CallLimit:
+    """Bound how many data-access calls are in flight at once, across every callable it wraps.
+
+    ``bound`` wraps a leaf callable, one that calls the source itself, so that each call
+    first takes one of ``max_in_flight`` shared slots. Wrapping a callable this limit already
+    returned gives it back unchanged. Never wrap a callable that itself calls a callable bound
+    by the same limit: its call would hold one slot while waiting for another, and enough of
+    them deadlock. Use a limit from one asyncio event loop.
+
+    Attributes:
+        max_in_flight (int): Most calls in flight at once, at least 1.
+    """
+
+    __slots__ = ("_bound", "_slots", "max_in_flight")
+
+    def __init__(self, max_in_flight: int) -> None:
+        """Create a limit; no work starts.
+
+        Args:
+            max_in_flight (int): Most calls in flight at once.
+
+        Raises:
+            ValueError: ``max_in_flight`` is below 1.
+        """
+        if max_in_flight < 1:
+            message = f"max_in_flight must be at least 1; got {max_in_flight}."
+            raise ValueError(message)
+        self.max_in_flight = max_in_flight
+        self._slots = asyncio.Semaphore(max_in_flight)
+        self._bound: weakref.WeakSet[Callable[..., Coroutine[Any, Any, object]]] = weakref.WeakSet()
+
+    def bound[**P, T](
+        self, call: Callable[P, Coroutine[Any, Any, T]]
+    ) -> Callable[P, Coroutine[Any, Any, T]]:
+        """Wrap a leaf callable so that each call holds one slot while it runs.
+
+        Args:
+            call (Callable[P, Coroutine[Any, Any, T]]): Async callable, such as a
+                ``FetchService``.
+
+        Returns:
+            Callable[P, Coroutine[Any, Any, T]]: The bounded callable; ``call`` itself
+                when this limit already bounds it.
+        """
+        if call in self._bound:
+            return call
+        slots = self._slots
+
+        async def bounded(*args: P.args, **kwargs: P.kwargs) -> T:
+            """Call the wrapped callable within a slot.
+
+            Args:
+                *args (P.args): Positional arguments.
+                **kwargs (P.kwargs): Keyword arguments.
+
+            Returns:
+                T: The wrapped callable's result.
+            """
+            async with slots:
+                return await call(*args, **kwargs)
+
+        self._bound.add(bounded)
+        return bounded

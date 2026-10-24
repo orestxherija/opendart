@@ -157,6 +157,9 @@ Ownership and lifecycle rules:
   most `timeout_s` seconds and awaiting `on_progress` with a message every `progress_every_s` seconds. It raises
   `DirectoryNotReadyError` when no directory is loaded after the wait (`status` is `loading` or `failed`, with
   `elapsed_s` and `failure`), or `NotConfiguredError` (`dependency` is `fetch`) without a fetch callback or cache.
+  It raises `RuntimeError` at once, instead of waiting for a load that would never come, when nothing has loaded and
+  no `run()` is in progress: the loader was never started, or a `run()` the application owns stopped before the first
+  attempt settled (noticed within `progress_every_s`). A `run()` task created just before `wait()` counts as started.
 - Any exception raised by the fetch callback, including a timeout, is a load failure, never re-raised. `failure` keeps
   the last one as a `LoadFailure` with the `error` itself and a safe `reason`, until a load succeeds. `describe_error`,
   a callable passed to the loader, produces that reason, for example to translate SDK errors; by default it is the

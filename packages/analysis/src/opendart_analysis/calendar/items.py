@@ -29,8 +29,8 @@ from opendart_analysis.events.catalog import describe
 from opendart_analysis.events.dates import ACTIONS
 
 if TYPE_CHECKING:
+    import datetime as dt
     from collections.abc import Iterable, Mapping, Sequence
-    from datetime import date
 
     from opendart_analysis.domain.dates import DateWindow
     from opendart_analysis.events.catalog import EventView
@@ -75,7 +75,7 @@ _WINDOWS: Final[Mapping[str, str]] = MappingProxyType(
     }
 )
 """Actions compared as the rights-exercise window that a debt offering statement files."""
-type _Bond = tuple[date, Detail]
+type _Bond = tuple[dt.date, Detail]
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,7 +83,7 @@ class CalendarItem:
     """One dated corporate action.
 
     Attributes:
-        date (date): Date of the action.
+        date (dt.date): Date of the action.
         corp_code (str): DART corporation code of the company.
         action (str): Action code, such as record_date, conversion_start, or DEBT_ACTION.
         source_kind (str): Event kind the date comes from, or DEBT_SOURCE_KIND.
@@ -92,7 +92,7 @@ class CalendarItem:
             and related filings (``registration_filing``, ``offering_filing``), in order.
     """
 
-    date: date
+    date: dt.date
     corp_code: str
     action: str
     source_kind: str
@@ -100,7 +100,7 @@ class CalendarItem:
     details: Mapping[str, Detail] = field(default_factory=dict)
 
 
-def sort_key(item: CalendarItem, name: str) -> tuple[date, str, int, str]:
+def sort_key(item: CalendarItem, name: str) -> tuple[dt.date, str, int, str]:
     """Order items by date, company name, action, and filing.
 
     Args:
@@ -108,7 +108,7 @@ def sort_key(item: CalendarItem, name: str) -> tuple[date, str, int, str]:
         name (str): Name of the item's company.
 
     Returns:
-        tuple[date, str, int, str]: Sort key.
+        tuple[dt.date, str, int, str]: Sort key.
     """
     order = ACTION_ORDER.get(item.action, len(ACTION_ORDER))
     return item.date, name, order, item.filing_number
@@ -161,14 +161,14 @@ def _link(record: EventRecord) -> str | None:
     return number if number is not None and is_filing_number(number) else None
 
 
-def _key(item: CalendarItem) -> tuple[str, date]:
+def _key(item: CalendarItem) -> tuple[str, dt.date]:
     """Key an item by its date and action, conversion and exchange windows as exercise.
 
     Args:
         item (CalendarItem): Calendar item.
 
     Returns:
-        tuple[str, date]: Comparable action and date.
+        tuple[str, dt.date]: Comparable action and date.
     """
     return _WINDOWS.get(item.action, item.action), item.date
 
@@ -221,7 +221,7 @@ def _merge_registrations(
         list[CalendarItem]: Items without the repeats; a decision item repeated by exactly
             one candidate statement item cites it.
     """
-    decisions: dict[tuple[str, date], list[int]] = {}
+    decisions: dict[tuple[str, dt.date], list[int]] = {}
     for index, item in enumerate(items):
         if item.source_kind not in REGISTERED:
             decisions.setdefault(_key(item), []).append(index)
@@ -272,7 +272,7 @@ def _bond(item: CalendarItem) -> _Bond:
         item (CalendarItem): Maturity item.
 
     Returns:
-        tuple[date, Detail]: Date and face value; None when the value is unknown.
+        tuple[dt.date, Detail]: Date and face value; None when the value is unknown.
     """
     return item.date, item.details.get("face_value")
 

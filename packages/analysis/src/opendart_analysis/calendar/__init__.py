@@ -4,19 +4,22 @@
 lookback windows before the first calendar date (a year, three years for bond reports), turns
 their schedule dates into items, merges dates that a registration statement repeats from its
 decision, and adds debt maturities from a caller-supplied reader, such as
-``read_debt_maturities`` over the latest periodic reports:
+``read_debt_maturities`` over the latest periodic reports. One ``CallLimit`` shared by the
+calendar and the reader bounds every upstream call in flight:
 
     window = calendar_window("90d", today=today)
     selection = calendar_kinds(None)
+    limit = CallLimit(MAX_CONCURRENCY)
     calendar = await corporate_action_calendar(
         [CalendarSubject("00126380", "Samsung Electronics", korean_name="삼성전자")],
         window=window,
         kinds=selection.events,
         maturities=read_debt_maturities(
-            search_filings=search, fetch_service=fetch, today=today
+            search_filings=search, fetch_service=fetch, today=today, limit=limit
         ),
         fetch_service=fetch,
         read_filing_page=read_page,
+        limit=limit,
         today=today,
     )
 
@@ -69,6 +72,7 @@ from opendart_analysis.calendar.request import (
     DEBT_KIND,
     DEFAULT_HORIZON,
     MAX_COMPANIES,
+    MAX_CONCURRENCY,
     CalendarRequestError,
     CalendarSubject,
     CalendarWindowError,
@@ -92,6 +96,7 @@ __all__ = [
     "LONG_LOOKBACK_MONTHS",
     "LOOKBACK_MONTHS",
     "MAX_COMPANIES",
+    "MAX_CONCURRENCY",
     "RECENT_KINDS",
     "REGISTERED",
     "BondsDue",

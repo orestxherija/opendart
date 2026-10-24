@@ -67,7 +67,7 @@ asyncio.run(main())
 | --- | --- |
 | `fetch_events(query, *, fetch_service, read_filing_page, policy=DEFAULT_POLICY, progress=no_progress)` | An `EventBatch` of the company's event records, newest filing first. |
 | `EventQuery` | `corp_code`, `window`, `kinds` (None lets the filing index choose), `restrict`, and `name` for progress messages. |
-| `ReadPolicy` | `tolerate` (failures that mark a kind failed), `concurrency` (None leaves it to the source), and `max_index_pages` (3). |
+| `ReadPolicy` | `tolerate` (failures that mark a kind failed), `concurrency` (service calls in flight within one `fetch_events` call; None leaves them unbounded), and `max_index_pages` (3); both limits must be at least 1, or `ValueError`. |
 | `EventBatch` | `corp_code`, `window`, `strategy`, `queried`, `failed`, `records`, `index`, `with_data`, and `titles()`. |
 | `covered_window(window, *, today)`, `EARLIEST` | Clip a window to 2015-01-01 through today, or None when it misses that range. |
 | `search_index`, `EventIndex`, `IndexedFiling` | The company's major-issue and offering filings, the kinds they name, and `unstructured()` filings no service covers. |
@@ -86,9 +86,11 @@ How events are read:
   strategy `filing_index`. When a group has more pages, every kind of that group is read as well: strategy
   `all_kinds`. `restrict` limits the kinds the index may choose.
 - **Calls.** Every service is called with `corporation_code`, `filing_start_date`, and `filing_end_date` (`YYYYMMDD`)
-  and `medium` volatility, concurrently, at most `concurrency` at a time; index pages use `high` volatility.
-  `progress` receives "Searching ...'s major-issue and offering filings" before the index and "3/12 event reports
-  read (merger)" after each service.
+  and `medium` volatility, concurrently, at most `policy.concurrency` at a time within the call (one call per kind
+  without it); index pages use `high` volatility. The bound is per call: a caller that runs several reads at once
+  bounds their total itself, as the [calendar](calendar.md) does with one shared `CallLimit`. `progress` receives
+  "Searching ...'s major-issue and offering filings" before the index and "3/12 event reports read (merger)" after
+  each service.
 - **Partial results.** A service whose call raises an exception that `policy.tolerate` accepts is listed in `failed`
   and the others are kept; by default only `DataSourceError` is tolerated. Any other exception, such as an exhausted
   quota, propagates unchanged: the first one in the order of the kinds read, after every call has finished. Analysis

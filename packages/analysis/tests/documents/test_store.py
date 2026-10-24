@@ -251,3 +251,61 @@ async def test_closing_ends_an_unbounded_wait():
     await store.aclose()
     with pytest.raises(StoreClosedError, match="closed while"):
         await waiter
+
+
+async def test_parallel_fetches_are_bounded_when_asked():
+    upstream = Upstream()
+    store = DocumentStore(
+        upstream.fetch, max_rendered_chars=100, parse=stub_parse(), max_parallel_fetches=2
+    )
+    waiters = [asyncio.create_task(store.get(number)) for number in "ABCDE"]
+    await settle()
+    assert upstream.calls == ["A", "B"]
+    assert store.stats().in_flight == 5
+    upstream.gate.set()
+    assert [(await waiter).number for waiter in waiters] == list("ABCDE")
+    assert sorted(upstream.calls) == list("ABCDE")
+    await store.aclose()
+
+
+async def test_queued_fetches_do_not_spend_the_download_deadline():
+    upstream = Upstream()
+    upstream.gate.set()
+    first = asyncio.Event()
+
+    async def fetch(number: str) -> bytes:
+        if number == "A":
+            await first.wait()
+        return await upstream.fetch(number)
+
+    store = DocumentStore(
+        fetch,
+        max_rendered_chars=100,
+        parse=stub_parse(),
+        max_parallel_fetches=1,
+        fetch_timeout_s=0.05,
+    )
+    slow = asyncio.create_task(store.get("A"))
+    queued = asyncio.create_task(store.get("B"))
+    await asyncio.sleep(0.03)
+    first.set()
+    assert (await slow).number == "A"
+    assert (await queued).number == "B"
+    await store.aclose()
+
+
+async def test_downloads_are_unbounded_by_default():
+    upstream = Upstream()
+    store = DocumentStore(upstream.fetch, max_rendered_chars=100, parse=stub_parse())
+    waiters = [asyncio.create_task(store.get(number)) for number in "ABCDE"]
+    await settle()
+    assert upstream.calls == list("ABCDE")
+    upstream.gate.set()
+    await asyncio.gather(*waiters)
+    await store.aclose()
+
+
+@pytest.mark.parametrize("bound", [0, -1])
+def test_parallel_fetches_need_at_least_one_slot(bound):
+    with pytest.raises(ValueError, match="at least 1"):
+        DocumentStore(Upstream().fetch, max_rendered_chars=100, max_parallel_fetches=bound)

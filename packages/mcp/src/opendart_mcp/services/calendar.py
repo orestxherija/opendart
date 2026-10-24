@@ -271,6 +271,9 @@ async def action_calendar(
         read_filing_page=filing_pages(state.require_gateway),
         policy=READ_POLICY,
         max_companies=MAX_COMPANIES,
+        # The gateway bounds every upstream request across tool calls; a second limit here
+        # would also hold slots for cache hits and change how calls share the gateway.
+        limit=None,
         today=today,
         progress=progress,
     )

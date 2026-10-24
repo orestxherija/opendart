@@ -105,8 +105,8 @@ without the SDK or MCP. `tests/directory/` exercises the directory guide's examp
 `tests/reports/` runs the data-access recipe with a duck-typed client and the reports workflow with synthetic records
 and a fixed date.
 
-Data access follows one pattern as workflows move here from MCP. Name each callback Protocol for its operation and give
-it a frozen query value, a keyword-only `volatility`, and a result of records or `None`; add only the record fields a
-calculation reads. MCP binds each Protocol in `opendart_mcp.core.upstream` with a return annotation naming the
+Every workflow takes data access in one pattern. When adding a workflow, name each callback Protocol for its operation
+and give it a frozen query value, a keyword-only `volatility`, and a result of records or `None`; add only the record
+fields a calculation reads. MCP binds each Protocol in `opendart_mcp.core.upstream` with a return annotation naming the
 analysis Protocol, which is what makes its type check prove that SDK records conform, and maps `Volatility` to its
 cache lifetimes. MCP adapters translate analysis exceptions into server errors, keeping messages that name tools in MCP.

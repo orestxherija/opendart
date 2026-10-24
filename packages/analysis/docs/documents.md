@@ -141,6 +141,9 @@ Ownership and lifecycle rules:
   cached. `on_progress`, an async callback, receives a message every `progress_every_s` seconds while a caller waits.
 - `fetch_timeout_s` (120 s by default; None disables it) bounds each download, so a stalled transfer fails and the
   next caller retries it. Failures reach every waiter and are not cached.
+- `max_parallel_fetches` bounds the downloads in flight at once; further filings wait for a slot, and that wait counts
+  toward a caller's `wait_s` but not toward `fetch_timeout_s`. None (the default) leaves downloads unbounded, for a
+  `fetch` that bounds them itself, as the MCP server's gateway does. A value below 1 raises `ValueError`.
 - At most `max_parallel_parses` worker threads (2 by default) parse at once, bounding memory. `parse` replaces
   `parse_filing`, for example to pass custom `ArchiveLimits`.
 - `stats()` returns a `DocumentStoreStats` with entries, rendered characters, hits, misses, work in flight, and

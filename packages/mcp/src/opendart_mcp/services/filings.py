@@ -14,7 +14,12 @@ from typing import TYPE_CHECKING, Final
 from opendart_analysis import filings
 from opendart_analysis.domain.categories import FILING_CATEGORIES
 from opendart_analysis.domain.dates import cap_to_three_months, resolve_window, within_three_months
-from opendart_analysis.filings import FilingSearchRequest, SearchBudgetError
+from opendart_analysis.filings import (
+    MAX_CALLS,
+    TITLE_SCAN_CALLS,
+    FilingSearchRequest,
+    SearchBudgetError,
+)
 from opendart_analysis.upstream import MAX_FILING_PAGE
 from opendart_mcp.core.errors import InvalidArgumentError
 from opendart_mcp.core.progress import no_progress
@@ -48,10 +53,6 @@ __all__ = [
 
 UPSTREAM_PAGE: Final = MAX_FILING_PAGE
 """Rows per upstream page, OpenDART's maximum."""
-MAX_CALLS: Final = 20
-"""Upstream calls one page of a multi-category search may take."""
-TITLE_SCAN_CALLS: Final = 5
-"""Upstream pages read to match title text (500 filings)."""
 DEFAULT_SINCE: Final = "90d"
 DEFAULT_LIMIT: Final = 50
 WINDOW_TOO_WIDE: Final = "OpenDART limits searches without a company to three months; narrow since/until or pass company."

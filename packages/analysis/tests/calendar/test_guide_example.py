@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 from opendart_analysis.calendar import (
+    MAX_CONCURRENCY,
     CalendarSubject,
     calendar_kinds,
     calendar_window,
@@ -24,6 +25,7 @@ from opendart_analysis.calendar import (
     read_debt_maturities,
 )
 from opendart_analysis.catalog import service
+from opendart_analysis.upstream import CallLimit
 from tests.support.events import HYNIX, SAMSUNG, buyback, convertible_bond, filing
 
 if TYPE_CHECKING:
@@ -118,9 +120,13 @@ async def calendar_report(client: Any, today: dt.date) -> list[str]:
     ]
     window = calendar_window("90d", include_past=None, today=today)
     selection = calendar_kinds(None)  # Every kind with dates, and debt maturities.
+    limit = CallLimit(MAX_CONCURRENCY)  # At most 5 OpenDART calls in flight.
     fetch = sdk_fetch_service(client)
     maturities = read_debt_maturities(
-        search_filings=sdk_filing_search(client), fetch_service=fetch, today=today
+        search_filings=sdk_filing_search(client),
+        fetch_service=fetch,
+        today=today,
+        limit=limit,
     )
     calendar = await corporate_action_calendar(
         companies,
@@ -129,6 +135,7 @@ async def calendar_report(client: Any, today: dt.date) -> list[str]:
         maturities=maturities if selection.debt else None,
         fetch_service=fetch,
         read_filing_page=sdk_filing_pages(client),
+        limit=limit,
         today=today,
     )
     names = {company.corp_code: company.name for company in companies}
