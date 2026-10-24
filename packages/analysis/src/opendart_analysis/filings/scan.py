@@ -30,12 +30,8 @@ if TYPE_CHECKING:
     from opendart_analysis.domain.categories import FilingCategory
     from opendart_analysis.domain.dates import DateWindow
     from opendart_analysis.domain.types import Market, MarketFilter
-    from opendart_analysis.filings.access import (
-        CorporationType,
-        ListedFiling,
-        Progress,
-        ReadFilingPage,
-    )
+    from opendart_analysis.filings.access import CorporationType, ListedFiling, ReadFilingPage
+    from opendart_analysis.upstream import Progress
 
     # Merge position: negated filing-day ordinal, position in the query, query order.
     type _Key = tuple[int, int, int]

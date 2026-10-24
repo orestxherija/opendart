@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from opendart import OpenDARTError
 from opendart_analysis.catalog import RESOURCES, SERVICES, SERVICE_NAMES, ServiceSpec
-from opendart_mcp.services.sdk_binding import sdk_method
+from opendart_mcp.core.sdk_binding import sdk_method
 
 SPECS = tuple(SERVICES.values())
 # A valid value for every required upstream parameter.

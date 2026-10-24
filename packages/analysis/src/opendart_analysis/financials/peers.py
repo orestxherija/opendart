@@ -14,13 +14,12 @@ request each, then the four indicator categories are read once when ratios are w
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Final, Literal, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol
 
-from opendart_analysis.domain.periods import FIRST_INDICATOR_YEAR, latest_candidates
+from opendart_analysis.domain.periods import DECEMBER, FIRST_INDICATOR_YEAR, latest_candidates
 from opendart_analysis.errors import NotConfiguredError
 from opendart_analysis.financials import derived
 from opendart_analysis.financials.access import PeerQuery, check_peer_count
-from opendart_analysis.financials.chain import no_progress
 from opendart_analysis.financials.indicators import (
     IndicatorsUnavailableError,
     peer_indicators,
@@ -29,6 +28,7 @@ from opendart_analysis.financials.indicators import (
 from opendart_analysis.financials.specs import SCOPES
 from opendart_analysis.financials.statements import build_report, shift, summary_item
 from opendart_analysis.reports import PROBE_ATTEMPTS, PeriodUnavailableError
+from opendart_analysis.upstream import no_progress
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping, Sequence
@@ -37,9 +37,9 @@ if TYPE_CHECKING:
     from opendart_analysis.domain.periods import PeriodRef
     from opendart_analysis.domain.types import Basis, Period
     from opendart_analysis.financials.access import FetchPeerAccounts, PeerAccountRecord
-    from opendart_analysis.financials.chain import Progress
     from opendart_analysis.financials.indicators import FetchPeerIndicators, IndicatorValue
     from opendart_analysis.financials.statements import Number, StatementBasis
+    from opendart_analysis.upstream import Progress
 
     type Rows = Mapping[str, list[PeerAccountRecord]]
     type Measure = Callable[[PeriodRef], Awaitable[_Probe]]
@@ -47,7 +47,6 @@ if TYPE_CHECKING:
 type PeerMetrics = Literal["key_accounts", "ratios", "both"]
 """Values to compare: major accounts with derived metrics, published indicators, or both."""
 
-DECEMBER: Final = 12
 """Fiscal year-end month that labels the compared period."""
 
 

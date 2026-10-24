@@ -14,11 +14,7 @@ from typing import TYPE_CHECKING, Final
 from opendart_analysis import filings
 from opendart_analysis.domain.categories import FILING_CATEGORIES
 from opendart_analysis.domain.dates import cap_to_three_months, resolve_window, within_three_months
-from opendart_analysis.filings import (
-    FilingSearchRequest,
-    SearchBudgetError,
-    disjoint_categories,
-)
+from opendart_analysis.filings import FilingSearchRequest, SearchBudgetError
 from opendart_analysis.upstream import MAX_FILING_PAGE
 from opendart_mcp.core.errors import InvalidArgumentError
 from opendart_mcp.core.progress import no_progress
@@ -47,7 +43,6 @@ __all__ = [
     "FilingSearch",
     "category_named",
     "company_filing_index",
-    "disjoint_categories",
     "find_filings",
 ]
 

@@ -32,6 +32,8 @@ if TYPE_CHECKING:
     from pathlib import Path
     from types import TracebackType
 
+    from opendart_analysis.upstream import Progress
+
 logger = logging.getLogger(__name__)
 
 type FetchArchive = Callable[[], Awaitable[bytes]]
@@ -39,9 +41,6 @@ type FetchArchive = Callable[[], Awaitable[bytes]]
 
 type DescribeError = Callable[[Exception], str]
 """Describe an exception raised by the fetch callback, safely, for status and errors."""
-
-type Progress = Callable[[str], Awaitable[None]]
-"""Report a progress message while a caller waits."""
 
 type LoaderStatus = Literal["loading", "ready", "failed", "disabled"]
 type ArchiveSource = Literal["disk", "download"]

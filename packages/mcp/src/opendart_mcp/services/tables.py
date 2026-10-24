@@ -16,13 +16,13 @@ from opendart_mcp.models.common import SourceFiling
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from opendart_analysis.reports import PeriodicReport, ResolvedPeriod
     from opendart_mcp.models.financials import (
         EquityInvestment,
         PeriodColumn,
         StatementBasis,
         StatementRow,
     )
-    from opendart_mcp.services.periods import PeriodicReport, ResolvedPeriod
 
 
 @dataclass(slots=True)

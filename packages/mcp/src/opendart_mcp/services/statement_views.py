@@ -30,11 +30,11 @@ if TYPE_CHECKING:
 
     from opendart_analysis.domain.periods import PeriodRef
     from opendart_analysis.financials import Report, StatementHistory
+    from opendart_analysis.reports import ResolvedPeriod
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
     from opendart_mcp.services.companies import Company
     from opendart_mcp.services.financials import FinancialsRequest
-    from opendart_mcp.services.periods import ResolvedPeriod
 
 _QUARTER_FLOWS: Final = "Quarterly income lines: values are three-month amounts and cumulative holds year-to-date amounts."
 _YEAR_TO_DATE: Final = "Quarterly cash flows and equity changes are year-to-date amounts."

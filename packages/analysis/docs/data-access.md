@@ -16,6 +16,7 @@ current date in Korea, which defines OpenDART's filing dates (`opendart_analysis
 | `ReadFilingPage` | One page of the filing index, in `opendart_analysis.filings`; see [filing discovery](filings.md). |
 | `Volatility` | `low`, `medium`, or `high`. |
 | `DisclosureGroup`, `MAX_FILING_PAGE` | OpenDART disclosure types `A` to `J` (`A` is periodic reports), and 100. |
+| `Progress`, `no_progress` | `async (message: str) -> None`, the optional `progress` callback of long workflows, and one that discards messages. |
 
 The contract for every callable:
 

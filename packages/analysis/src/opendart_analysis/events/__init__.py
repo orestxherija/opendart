@@ -20,6 +20,7 @@ Data access follows ``opendart_analysis.upstream``. Importing this package start
 
 from __future__ import annotations
 
+from opendart_analysis.domain.dates import DateWindow
 from opendart_analysis.events.catalog import (
     PRESENTATIONS,
     EventView,
@@ -69,6 +70,7 @@ __all__ = [
     "POSSIBLY_AMENDED",
     "PRESENTATIONS",
     "Action",
+    "DateWindow",
     "EventBatch",
     "EventIndex",
     "EventQuery",

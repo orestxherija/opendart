@@ -19,7 +19,7 @@ from opendart_analysis.calendar.lookback import Reads
 from opendart_analysis.calendar.reads import read_events
 from opendart_analysis.calendar.request import MAX_COMPANIES, TooManyCompaniesError
 from opendart_analysis.events import DEFAULT_POLICY
-from opendart_analysis.filings.access import no_progress
+from opendart_analysis.upstream import no_progress
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
@@ -31,8 +31,7 @@ if TYPE_CHECKING:
     from opendart_analysis.domain.dates import DateWindow
     from opendart_analysis.events import EventBatch, ReadPolicy
     from opendart_analysis.filings import ReadFilingPage
-    from opendart_analysis.filings.access import Progress
-    from opendart_analysis.upstream import FetchService
+    from opendart_analysis.upstream import FetchService, Progress
 
 
 class MaturityAnswer(Protocol):

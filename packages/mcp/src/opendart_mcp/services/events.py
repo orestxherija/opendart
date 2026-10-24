@@ -16,12 +16,11 @@ from typing import TYPE_CHECKING, Any, Final
 from opendart_analysis import events
 from opendart_analysis.catalog import expand
 from opendart_analysis.domain.dates import resolve_window
-from opendart_analysis.events import EARLIEST, EventBatch, EventQuery, ReadPolicy, covered_window
+from opendart_analysis.events import EventQuery, ReadPolicy, covered_window
 from opendart_mcp.core.errors import InvalidArgumentError, QuotaExhaustedError, UpstreamError
 from opendart_mcp.core.progress import no_progress, with_heartbeat
 from opendart_mcp.core.upstream import service_fetch
 from opendart_mcp.core.upstream_filings import filing_pages
-from opendart_mcp.services.event_index import MAX_PAGES
 from opendart_mcp.services.event_results import build_result
 
 if TYPE_CHECKING:
@@ -30,6 +29,7 @@ if TYPE_CHECKING:
 
     from opendart_analysis.catalog import EventKind
     from opendart_analysis.domain.dates import DateWindow
+    from opendart_analysis.events import EventBatch
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
     from opendart_mcp.models.events import CorporateEventsResult
@@ -39,10 +39,8 @@ if TYPE_CHECKING:
 __all__ = [
     "BACKGROUND_DEADLINE",
     "DEFAULT_SINCE",
-    "EARLIEST",
     "FOREGROUND_DEADLINE",
     "READ_POLICY",
-    "EventBatch",
     "bounded",
     "corporate_events",
     "event_window",
@@ -123,9 +121,10 @@ def _failed_kind(error: BaseException) -> bool:
     return isinstance(error, UpstreamError) and not isinstance(error, QuotaExhaustedError)
 
 
-READ_POLICY: Final = ReadPolicy(tolerate=_failed_kind, max_index_pages=MAX_PAGES)
+READ_POLICY: Final = ReadPolicy(tolerate=_failed_kind)
 """Upstream failures other than an exhausted quota become failed kinds (and failed companies in
-the calendar); the gateway bounds concurrency."""
+the calendar); the gateway bounds concurrency. The filing index is read up to the analysis
+default of three pages per group; beyond them every kind of the group is read instead."""
 
 
 async def fetch_events(

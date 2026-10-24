@@ -1,5 +1,6 @@
-"""The periodic-report extracts adapter: gateway arguments, cache lifetimes, provenance, and
-errors are those of the server before the logic moved to ``opendart_analysis.extracts``."""
+"""Periodic-report extracts through the gateway binding: the requests, cache lifetimes, and
+configuration error that services get when they pass ``service_fetch`` to
+``opendart_analysis.extracts``."""
 
 from __future__ import annotations
 
@@ -8,27 +9,26 @@ from types import SimpleNamespace
 
 import pytest
 
-from opendart_analysis.domain.periods import PeriodRef, PeriodicTitle
-from opendart_analysis.errors import MissingDataError
+from opendart_analysis.domain.periods import PeriodRef
+from opendart_analysis.extracts import fetch_records, fetch_response
 from opendart_mcp.core.cache import TTLCache
-from opendart_mcp.core.errors import (
-    API_KEY_MISSING,
-    ConfigurationError,
-    InvalidArgumentError,
-    UpstreamError,
-)
+from opendart_mcp.core.errors import API_KEY_MISSING, ConfigurationError
 from opendart_mcp.core.gateway import Gateway
+from opendart_mcp.core.sdk_binding import sdk_method
 from opendart_mcp.core.ttl import DAY, FILINGS
-from opendart_mcp.models.common import CompanyRef, SourceFiling
+from opendart_mcp.core.upstream import service_fetch
+from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.services.companies import Company
-from opendart_mcp.services.extracts import fetch_records, fetch_response, gather_all, sources
-from opendart_mcp.services.periods import PeriodicReport, periodic_ttl
-from opendart_mcp.services.sdk_binding import sdk_method
 from tests.support.events import filing, profile
 
 COMPANY = Company(ref=CompanyRef(name="Example", corp_code="00126380"), fye_month=12, profile=None)
 TODAY = dt.date(2026, 10, 22)
 TITLE = "Annual Report (2026.03)"
+
+
+def _call(ref: PeriodRef) -> dict[str, object]:
+    """Name the dividend service for the company and a period, as services do."""
+    return {"service": "alot_matter", "company": COMPANY, "ref": ref, "today": TODAY}
 
 
 class _Gateway:
@@ -51,11 +51,11 @@ class _Gateway:
 async def test_the_gateway_is_called_with_the_same_arguments_and_lifetime(sdk, ref, ttl):
     response = SimpleNamespace(list=[SimpleNamespace(rcept_no="20260814000123")])
     gateway = _Gateway(sdk, response)
-    state = SimpleNamespace(require_gateway=lambda: gateway, today=lambda: TODAY)
-    assert await fetch_response(state, "alot_matter", company=COMPANY, ref=ref) is response
-    assert await fetch_records(state, "alot_matter", company=COMPANY, ref=ref) == response.list
+    fetch = service_fetch(lambda: gateway)
+    assert await fetch_response(**_call(ref), fetch_service=fetch) is response
+    assert await fetch_records(**_call(ref), fetch_service=fetch) == response.list
     expected = (
-        periodic_ttl(state, COMPANY, ref),
+        ttl,
         sdk_method(sdk, "alot_matter"),
         {
             "corporation_code": "00126380",
@@ -63,17 +63,15 @@ async def test_the_gateway_is_called_with_the_same_arguments_and_lifetime(sdk, r
             "report_period": ref.report_code,
         },
     )
-    assert expected[0] == ttl
     assert gateway.calls == [expected, expected]
 
 
 @pytest.mark.anyio
 async def test_the_request_reaches_opendart_unchanged(sdk, upstream):
     gateway = Gateway(sdk, cache=TTLCache(max_weight=1000), concurrency=4, retry_delay=0)
-    state = SimpleNamespace(require_gateway=lambda: gateway, today=lambda: TODAY)
     upstream.route("/alotMatter.json", upstream.status("013"))
-    ref = PeriodRef(2026, "H1")
-    assert await fetch_records(state, "alot_matter", company=COMPANY, ref=ref) is None
+    fetch = service_fetch(lambda: gateway)
+    assert await fetch_records(**_call(PeriodRef(2026, "H1")), fetch_service=fetch) is None
     assert upstream.params("/alotMatter.json") == [
         {"corp_code": "00126380", "bsns_year": "2026", "reprt_code": "11012"}
     ]
@@ -84,39 +82,10 @@ async def test_a_keyless_server_reports_the_missing_key():
     def require_gateway():
         raise ConfigurationError(API_KEY_MISSING)
 
-    state = SimpleNamespace(require_gateway=require_gateway, today=lambda: TODAY)
+    fetch = service_fetch(require_gateway)
     with pytest.raises(ConfigurationError) as raised:
-        await fetch_records(state, "alot_matter", company=COMPANY, ref=PeriodRef(2025, "FY"))
+        await fetch_records(**_call(PeriodRef(2025, "FY")), fetch_service=fetch)
     assert str(raised.value) == API_KEY_MISSING
-
-
-def test_provenance_becomes_source_filings_titled_by_the_report():
-    ref = PeriodRef(2026, "FY", end_date=dt.date(2026, 3, 31))
-    parsed = PeriodicTitle("annual", 2026, 3, None)
-    report = PeriodicReport(ref, parsed, "20260625000111", TITLE, dt.date(2026, 6, 25))
-    numbers = [" 20260625000111", None, "bad", "20260701000222", "20260625000111"]
-    assert sources(numbers, report) == [
-        SourceFiling.of("20260625000111", TITLE),
-        SourceFiling.of("20260701000222"),
-    ]
-
-
-@pytest.mark.anyio
-async def test_gathered_failures_stay_server_errors_with_their_messages():
-    async def answer(value):
-        return value
-
-    async def fail(error):
-        raise error
-
-    assert await gather_all([answer(1), answer(2)]) == [1, 2]
-    upstream_error = UpstreamError("OpenDART is unavailable.")
-    with pytest.raises(UpstreamError) as raised:
-        await gather_all([answer(1), fail(upstream_error)])
-    assert raised.value is upstream_error
-    with pytest.raises(InvalidArgumentError, match=r"^No data\.$") as translated:
-        await gather_all([fail(MissingDataError("No data.")), answer(2)])
-    assert isinstance(translated.value.__cause__, MissingDataError)
 
 
 @pytest.mark.anyio
@@ -125,10 +94,10 @@ async def test_unsettled_periods_are_fetched_again_sooner(sdk, upstream, ref, ca
     clock = [0.0]
     cache = TTLCache(max_weight=1000, clock=lambda: clock[0])
     gateway = Gateway(sdk, cache=cache, concurrency=4, retry_delay=0)
-    state = SimpleNamespace(require_gateway=lambda: gateway, today=lambda: TODAY)
     upstream.records("/alotMatter.json", {"rcept_no": "20260814000123", "se": "x", "thstrm": "1"})
+    fetch = service_fetch(lambda: gateway)
     for _ in range(2):
-        assert await fetch_records(state, "alot_matter", company=COMPANY, ref=ref)
+        assert await fetch_records(**_call(ref), fetch_service=fetch)
         clock[0] += 16 * 60
     assert upstream.count("/alotMatter.json") == calls
 

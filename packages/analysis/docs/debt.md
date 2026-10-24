@@ -17,8 +17,7 @@ from datetime import timedelta
 from getpass import getpass
 from pydantic import SecretStr
 from opendart import OpenDART, OpenDARTSettings
-from opendart_analysis.debt import debt_profile, maturity_schedule
-from opendart_analysis.domain.dates import DateWindow
+from opendart_analysis.debt import DateWindow, debt_profile, maturity_schedule
 from opendart_analysis.reports import resolve_period, today_kst
 
 

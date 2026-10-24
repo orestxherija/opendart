@@ -15,6 +15,7 @@ from opendart_analysis.extracts import (
     term_ages,
     text,
 )
+from opendart_analysis.extracts.fields import sum_known
 
 
 def test_records_reads_a_named_container_and_tolerates_a_missing_one():
@@ -119,3 +120,9 @@ def test_filed_text_drops_placeholders(raw, expected):
 )
 def test_term_ages(labels, expected):
     assert term_ages(labels) == expected
+
+
+def test_sum_known_adds_known_values_and_is_none_when_none_is_known():
+    assert sum_known([1, None, 2]) == 3
+    assert sum_known([None, None]) is None
+    assert sum_known([]) is None

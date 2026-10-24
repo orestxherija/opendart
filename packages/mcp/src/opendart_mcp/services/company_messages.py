@@ -54,22 +54,3 @@ def not_found_message(query: str) -> str:
         return f"{identifier.value} is a filing number, not a company. Pass a company name, stock code, or corp code; read_filing takes filing numbers."
     label = "corp code" if identifier.kind == "corp_code" else "stock code"
     return f"No company in the DART directory has {label} {identifier.value}. Check the code, or call find_company with the company name."
-
-
-def directory_not_ready_message(
-    *, elapsed_seconds: float | None = None, error: str | None = None
-) -> str:
-    """Explain that names cannot be resolved because the directory is not loaded.
-
-    Args:
-        elapsed_seconds (float | None): Seconds spent loading so far, when known.
-        error (str | None): Last load failure, when loading failed.
-
-    Returns:
-        str: Error text with a retry hint and the corp-code workaround.
-    """
-    hint = "Meanwhile, pass an 8-digit DART corp code, which works without the directory."
-    if error:
-        return f"The company directory could not be loaded ({error}); the server retries in the background. {hint}"
-    waited = f" ({int(elapsed_seconds)} s so far)" if elapsed_seconds is not None else ""
-    return f"The company directory is still loading{waited}; OpenDART can take several minutes. Retry shortly. {hint}"

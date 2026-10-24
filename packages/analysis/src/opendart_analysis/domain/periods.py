@@ -77,7 +77,8 @@ _TITLE = re.compile(
 )
 _LEADING_MARKERS = re.compile(r"^(?:\[[^\]]*\]\s*)+")
 _MONTHS = range(1, 13)
-_DECEMBER = 12
+DECEMBER = 12
+"""The most common fiscal year-end month, assumed when a company states none."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -324,7 +325,7 @@ def _labels(
             label then the start-year label.
     """
     primary = PeriodRef(year_end, period, end_date=end)
-    if fye_month == _DECEMBER:
+    if fye_month == DECEMBER:
         return (primary,)
     return primary, PeriodRef(year_end - 1, period, end_date=end)
 

@@ -17,7 +17,7 @@ from typing import Literal
 IdentifierKind = Literal["corp_code", "stock_code", "filing_number"]
 """Kind of identifier recognized by parse_identifier."""
 
-FilingSource = Literal["fss", "krx_kospi", "krx_kosdaq", "krx_konex", "other"]
+FilingOrigin = Literal["fss", "krx_kospi", "krx_kosdaq", "krx_konex", "other"]
 """Origin of a filing, from the sequence part of its number."""
 
 DART_VIEWER_URL = "https://englishdart.fss.or.kr/dsbh001/main.do?rcpNo={filing_number}"
@@ -33,7 +33,7 @@ _STOCK_CODE = re.compile(
     """,
     re.VERBOSE,
 )
-_SOURCES: dict[str, FilingSource] = {
+_ORIGINS: dict[str, FilingOrigin] = {
     "00": "fss",
     "60": "krx_konex",
     "80": "krx_kospi",
@@ -140,17 +140,17 @@ def filing_date(filing_number: str) -> date | None:
         return None
 
 
-def filing_source(filing_number: str) -> FilingSource:
+def filing_origin(filing_number: str) -> FilingOrigin:
     """Classify where a filing was submitted, from its sequence prefix.
 
     Args:
         filing_number (str): 14-digit filing number.
 
     Returns:
-        FilingSource: ``fss`` (``00``), ``krx_konex`` (``60``), ``krx_kospi`` (``80``),
+        FilingOrigin: ``fss`` (``00``), ``krx_konex`` (``60``), ``krx_kospi`` (``80``),
             ``krx_kosdaq`` (``90``), or ``other`` for any other prefix or an invalid number.
     """
     number = filing_number.strip()
     if not is_filing_number(number):
         return "other"
-    return _SOURCES.get(number[8:10], "other")
+    return _ORIGINS.get(number[8:10], "other")

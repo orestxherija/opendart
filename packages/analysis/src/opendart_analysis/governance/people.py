@@ -14,11 +14,11 @@ import re
 from typing import TYPE_CHECKING, Final
 
 from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_decimal
-from opendart_analysis.extracts.fields import filed_text, fold, is_total, text
+from opendart_analysis.extracts.fields import filed_text, fold, is_total, sum_known, text
 from opendart_analysis.governance.values import BoardFacts, EmployeeGroup, Employees, Executive
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Sequence
 
     from opendart_analysis.governance.values import Role
 
@@ -235,19 +235,6 @@ def _group(record: object) -> EmployeeGroup:
     )
 
 
-def _sum(values: Iterable[int | None]) -> int | None:
-    """Add the known values.
-
-    Args:
-        values (Iterable[int | None]): Values.
-
-    Returns:
-        int | None: Sum, or None when none is known.
-    """
-    known = [value for value in values if value is not None]
-    return sum(known) if known else None
-
-
 def headline(groups: Sequence[EmployeeGroup]) -> list[EmployeeGroup]:
     """Choose the rows that add up to the whole workforce.
 
@@ -315,9 +302,9 @@ def employees(records: Sequence[object]) -> Employees | None:
         return None
     rows = headline(groups)
     return Employees(
-        total=_sum(row.total for row in rows),
-        fixed_term=_sum(row.fixed_term for row in rows),
-        total_salary=_sum(row.total_salary for row in rows),
+        total=sum_known(row.total for row in rows),
+        fixed_term=sum_known(row.fixed_term for row in rows),
+        total_salary=sum_known(row.total_salary for row in rows),
         average_salary=_average_salary(rows),
         average_tenure_years=_average_tenure(rows),
         groups=tuple(groups),

@@ -6,7 +6,6 @@ import pytest
 
 from opendart_analysis.domain.categories import (
     CATEGORY_INFO,
-    EVENT_INDEX_CATEGORIES,
     FILING_CATEGORIES,
     category_query,
 )
@@ -40,8 +39,3 @@ def test_unknown_categories_are_rejected():
         ValueError, match="Unknown filing category 'press_releases'; use one of: periodic_reports"
     ):
         category_query("press_releases")
-
-
-def test_event_index_categories():
-    assert EVENT_INDEX_CATEGORIES == ("major_issues", "offerings")
-    assert {category_query(name)[0] for name in EVENT_INDEX_CATEGORIES} == {"B", "C"}

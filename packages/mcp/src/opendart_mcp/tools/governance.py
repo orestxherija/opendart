@@ -9,6 +9,7 @@ from fastmcp.dependencies import CurrentContext, Depends
 from fastmcp.tools import tool
 from pydantic import Field
 
+from opendart_analysis.governance import DEFAULT_SECTIONS
 from opendart_mcp.app.annotations import READ_ONLY
 from opendart_mcp.app.params import CompanyArg, FiscalYearArg, PeriodArg, ResponseFormatArg
 from opendart_mcp.app.progress import Reporter
@@ -17,7 +18,7 @@ from opendart_mcp.app.views import markdown_view
 from opendart_mcp.core.state import AppState
 from opendart_mcp.models.governance import GovernanceResult, GovernanceSection
 from opendart_mcp.render.governance import render_governance
-from opendart_mcp.services.governance import DEFAULT_SECTIONS, GovernanceQuery, governance
+from opendart_mcp.services.governance import GovernanceQuery, governance
 
 
 @tool(

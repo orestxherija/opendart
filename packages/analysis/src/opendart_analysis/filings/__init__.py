@@ -14,14 +14,13 @@ Data access follows ``opendart_analysis.upstream``. Importing this package start
 from __future__ import annotations
 
 from opendart_analysis.domain.categories import CATEGORY_INFO, FILING_CATEGORIES, FilingCategory
+from opendart_analysis.domain.dates import DateWindow
 from opendart_analysis.filings.access import (
     CorporationType,
     FilingPage,
     FilingPageQuery,
     ListedFiling,
-    Progress,
     ReadFilingPage,
-    no_progress,
 )
 from opendart_analysis.filings.category import category_codes, disjoint_categories, infer_category
 from opendart_analysis.filings.scan import Filing, filing_from
@@ -34,6 +33,7 @@ from opendart_analysis.filings.search import (
     TitleScan,
     find_filings,
 )
+from opendart_analysis.upstream import Progress, no_progress
 
 __all__ = [
     "CATEGORY_INFO",
@@ -41,6 +41,7 @@ __all__ = [
     "MAX_CALLS",
     "TITLE_SCAN_CALLS",
     "CorporationType",
+    "DateWindow",
     "Filing",
     "FilingCategory",
     "FilingPage",

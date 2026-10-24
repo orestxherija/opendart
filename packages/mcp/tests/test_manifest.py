@@ -15,12 +15,12 @@ from opendart_mcp.manifest import (
     build_manifest,
     component_fingerprints,
     mark_optional,
-    parse_version,
     render_lock,
     wire_definition,
 )
 from opendart_mcp.server import create_server
 from opendart_mcp.settings import Settings, ToolSettings
+from opendart_mcp.versioning.changes import parse_version
 from opendart_mcp.versioning.model import approx_tokens, canonical, sha256
 
 ROOT = Path(__file__).resolve().parents[3]

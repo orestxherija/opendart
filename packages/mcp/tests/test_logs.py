@@ -9,6 +9,7 @@ import pytest
 from pydantic import SecretStr
 
 from opendart import OpenDARTSettings
+from opendart.redaction import RedactingFormatter, redact
 from opendart_mcp.app.logs import (
     FASTMCP_SERVER_LOGGER,
     QuietExpectedErrors,
@@ -16,7 +17,7 @@ from opendart_mcp.app.logs import (
     quiet_expected_errors,
 )
 from opendart_mcp.core.metrics import Metrics
-from opendart_mcp.core.redaction import RedactingFormatter, protect_secrets, redact
+from opendart_mcp.core.redaction import protect_secrets
 from opendart_mcp.core.runtime import open_state
 
 

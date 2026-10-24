@@ -13,8 +13,8 @@ from datetime import date
 from getpass import getpass
 from pydantic import SecretStr
 from opendart import OpenDART, OpenDARTSettings
-from opendart_analysis.domain.dates import DateWindow
 from opendart_analysis.filings import (
+    DateWindow,
     FilingPage,
     FilingPageQuery,
     FilingSearchRequest,

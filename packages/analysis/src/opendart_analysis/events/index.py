@@ -9,13 +9,13 @@ service covers are listed so a reader can open them.
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Literal
 
 from opendart_analysis.catalog import EVENT_KINDS
 from opendart_analysis.domain.filings import clean_title
 from opendart_analysis.events.titles import kind_for_title
+from opendart_analysis.extracts import gather_all
 from opendart_analysis.filings.access import FilingPageQuery
 
 if TYPE_CHECKING:
@@ -26,7 +26,8 @@ if TYPE_CHECKING:
 type IndexGroup = Literal["B", "C"]
 
 INDEX_GROUPS: Final[tuple[IndexGroup, ...]] = ("B", "C")
-"""Disclosure groups searched: major issues and offerings (domain EVENT_INDEX_CATEGORIES)."""
+"""Disclosure groups searched: major issues and offerings (the ``major_issues`` and ``offerings``
+filing categories)."""
 GROUP_RESOURCES: Final[dict[IndexGroup, str]] = {
     "B": "major_issues",
     "C": "securities_registration",
@@ -168,7 +169,7 @@ async def _group(
 
     first = await page(1)
     pages = (first.total_page or 1) if first else 1
-    rest = await asyncio.gather(*(page(number) for number in range(2, min(pages, max_pages) + 1)))
+    rest = await gather_all(page(number) for number in range(2, min(pages, max_pages) + 1))
     filings = [item for found in (first, *rest) for item in _filings(found, group)]
     return filings, pages <= max_pages
 
@@ -183,7 +184,8 @@ async def search_index(
     """Search a company's major-issue and offering filings in a window.
 
     Each group is read concurrently, one page first and then up to ``max_pages`` in total,
-    with ``high`` volatility.
+    with ``high`` volatility. Every read finishes before the search returns or raises its first
+    failure, so no read outlives the call.
 
     Args:
         corp_code (str): 8-digit DART corporation code.
@@ -194,11 +196,9 @@ async def search_index(
     Returns:
         EventIndex: Filings found and whether the index is complete.
     """
-    groups = await asyncio.gather(
-        *(
-            _group(corp_code, window, group=group, read_page=read_page, max_pages=max_pages)
-            for group in INDEX_GROUPS
-        )
+    groups = await gather_all(
+        _group(corp_code, window, group=group, read_page=read_page, max_pages=max_pages)
+        for group in INDEX_GROUPS
     )
     filings = tuple(filing for found, _ in groups for filing in found)
     unread = frozenset(

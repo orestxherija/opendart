@@ -1,4 +1,4 @@
-"""Read periodic-report records safely: strings, amounts, labels, total rows, and term labels.
+"""Read periodic-report records safely: strings, amounts, labels, totals, and term labels.
 
 Every field of a periodic-report record is a string: amounts with thousands separators, ``-``
 for nothing, labels in English or Korean, total rows mixed with data rows, and term labels such
@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Final
 from opendart_analysis.domain.normalize import clean_text, parse_amount
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Sequence
 
 _TOTAL_LABELS: Final = frozenset({"합계", "계", "총계", "소계", "total", "subtotal", "sum"})
 # "Not applicable" placeholders that filers write instead of leaving a cell blank.
@@ -114,6 +114,19 @@ def filed_text(value: str | None) -> str | None:
     if cleaned is None or fold(cleaned).rstrip(".") in _NOT_APPLICABLE:
         return None
     return cleaned
+
+
+def sum_known(values: Iterable[int | None]) -> int | None:
+    """Add the known values.
+
+    Args:
+        values (Iterable[int | None]): Values; None means unknown or not filed.
+
+    Returns:
+        int | None: The sum, or None when every value is unknown.
+    """
+    known = [value for value in values if value is not None]
+    return sum(known) if known else None
 
 
 def term_ages(labels: Sequence[str | None]) -> list[int]:

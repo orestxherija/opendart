@@ -31,15 +31,13 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from opendart_analysis.documents.filing import ParsedFiling
+    from opendart_analysis.upstream import Progress
 
 type Fetch = Callable[[str], Awaitable[bytes]]
 """Download a filing archive (ZIP bytes) by filing number."""
 
 type Parse = Callable[[str, bytes], ParsedFiling]
 """Parse a filing archive; runs in a worker thread."""
-
-type Progress = Callable[[str], Awaitable[None]]
-"""Report a progress message while a caller waits."""
 
 
 class DocumentStore:

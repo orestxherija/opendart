@@ -35,7 +35,7 @@ from opendart_analysis.financials.access import (
     StatementRecord,
     StatementScope,
 )
-from opendart_analysis.financials.chain import MAX_REPORTS, Progress
+from opendart_analysis.financials.chain import MAX_REPORTS
 from opendart_analysis.financials.history import (
     HistoryRequest,
     StatementHistory,
@@ -98,6 +98,7 @@ from opendart_analysis.financials.statements import (
     ValueKind,
 )
 from opendart_analysis.reports.query import ReportQuery
+from opendart_analysis.upstream import Progress
 
 __all__ = [
     "CATEGORIES",

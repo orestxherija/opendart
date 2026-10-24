@@ -12,8 +12,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from opendart_analysis.domain.dates import yyyymmdd
+from opendart_mcp.core.sdk_binding import sdk_method
 from opendart_mcp.core.ttl import lifetime
-from opendart_mcp.services.sdk_binding import sdk_method
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence

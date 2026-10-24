@@ -79,6 +79,7 @@ from opendart_analysis.calendar.request import (
     calendar_kinds,
     calendar_window,
 )
+from opendart_analysis.domain.dates import DateWindow
 
 __all__ = [
     "ACTION_ORDER",
@@ -100,6 +101,7 @@ __all__ = [
     "CalendarWindowError",
     "CompanyCalendar",
     "CorporateActionCalendar",
+    "DateWindow",
     "DebtMaturities",
     "Detail",
     "KindSelection",

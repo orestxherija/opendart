@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final, cast
 
 from opendart_analysis.domain.categories import CATEGORY_INFO, category_query
-from opendart_analysis.domain.identifiers import filing_source
+from opendart_analysis.domain.identifiers import filing_origin
 from opendart_analysis.domain.periods import parse_periodic_title
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ _PERIODIC: Final[dict[str, FilingCategory]] = {
     "semiannual": "semiannual_report",
     "quarterly": "quarterly_report",
 }
-_EXCHANGE_SOURCES: Final = frozenset({"krx_kospi", "krx_kosdaq", "krx_konex"})
+_EXCHANGE_ORIGINS: Final = frozenset({"krx_kospi", "krx_kosdaq", "krx_konex"})
 # Official English form names that identify a category unambiguously in FSS filing titles.
 _TITLE_CATEGORIES: Final[tuple[tuple[str, FilingCategory], ...]] = (
     ("significant holdings of stocks", "major_holding_report"),
@@ -52,7 +52,7 @@ def infer_category(title: str, filing_number: str) -> FilingCategory | None:
     periodic = parse_periodic_title(title)
     if periodic is not None:
         return _PERIODIC[periodic.kind]
-    if filing_source(filing_number) in _EXCHANGE_SOURCES:
+    if filing_origin(filing_number) in _EXCHANGE_ORIGINS:
         return "exchange_disclosures"
     lowered = title.casefold()
     return next((category for phrase, category in _TITLE_CATEGORIES if phrase in lowered), None)

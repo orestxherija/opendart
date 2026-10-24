@@ -15,10 +15,9 @@ from typing import TYPE_CHECKING, Final
 
 from opendart_analysis.domain.dates import within_three_months
 from opendart_analysis.errors import AnalysisError
-from opendart_analysis.filings.access import no_progress
 from opendart_analysis.filings.category import disjoint_categories
 from opendart_analysis.filings.scan import Source, read_merged, read_single
-from opendart_analysis.upstream import MAX_FILING_PAGE
+from opendart_analysis.upstream import MAX_FILING_PAGE, no_progress
 
 if TYPE_CHECKING:
     from datetime import date
@@ -26,8 +25,9 @@ if TYPE_CHECKING:
     from opendart_analysis.domain.categories import FilingCategory
     from opendart_analysis.domain.dates import DateWindow
     from opendart_analysis.domain.types import MarketFilter
-    from opendart_analysis.filings.access import Progress, ReadFilingPage
+    from opendart_analysis.filings.access import ReadFilingPage
     from opendart_analysis.filings.scan import Filing
+    from opendart_analysis.upstream import Progress
 
 MAX_CALLS: Final = 20
 """Default for the upstream calls one slice of a multi-category search may take."""

@@ -1,7 +1,7 @@
 """The company directory: records, lookups by code, and ranked name search.
 
-``parse_directory`` streams OpenDART's corporation-code ZIP into ``CorpRecord`` values and
-``Directory.build`` indexes them. The directory keeps its columns packed (about 20 MB for
+``domain.corpcode.parse_directory`` streams OpenDART's corporation-code ZIP into ``CorpRecord``
+values and ``Directory.build`` indexes them. The directory keeps its columns packed (about 20 MB for
 the full 120,000-company file, versus 30 MB for the parsed records) and rebuilds
 ``CorpRecord`` values on demand, so callers can drop the parsed records after building.
 """
@@ -15,12 +15,11 @@ from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING, Literal
 
-from opendart_analysis.domain.corpcode import MAX_EXPANDED_BYTES, MEMBER_NAME, parse_directory
 from opendart_analysis.domain.identifiers import is_corp_code, parse_identifier
 from opendart_analysis.domain.name_index import NameIndex
 from opendart_analysis.domain.names import has_hangul, normalize_name
 from opendart_analysis.domain.packed import PackedStrings
-from opendart_analysis.domain.records import CorpRecord, DirectoryError
+from opendart_analysis.domain.records import CorpRecord
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -30,15 +29,11 @@ if TYPE_CHECKING:
     from opendart_analysis.domain.name_index import Hits
 
 __all__ = [
-    "MAX_EXPANDED_BYTES",
-    "MEMBER_NAME",
     "TIER_ORDER",
     "CorpRecord",
     "Directory",
-    "DirectoryError",
     "Match",
     "MatchTier",
-    "parse_directory",
 ]
 
 MatchTier = Literal["code", "exact", "prefix", "token", "fuzzy"]

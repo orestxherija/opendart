@@ -19,12 +19,12 @@ from typing import TYPE_CHECKING, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from opendart_analysis.documents.tables import expand
-from opendart_analysis.documents.tree import Section, Table, collapse, compact
+from opendart_analysis.documents.tree import collapse, compact, walk_tables
 from opendart_analysis.documents.units import find_unit_statement, won_unit
 
 if TYPE_CHECKING:
     from opendart_analysis.documents.filing import ParsedFiling
-    from opendart_analysis.documents.tree import Block
+    from opendart_analysis.documents.tree import Table
 
 Metric = Literal[
     "revenue",
@@ -168,7 +168,7 @@ def extract_preliminary_earnings(parsed: ParsedFiling) -> PreliminaryEarnings | 
         return None
     if _TEMPLATE not in compact(tree.form_name_ko or ""):
         return None
-    grids = [_grid(table) for table in _tables(tree.items)]
+    grids = [_grid(table) for table in walk_tables(tree.items)]
     found = next((columns for grid in grids if (columns := _columns(grid)) is not None), None)
     if found is None:
         return None
@@ -210,24 +210,6 @@ class _Columns:
         """
         index = self.positions.get(role)
         return row[index] if row and index is not None and index < len(row) else ""
-
-
-def _tables(items: tuple[Block | Section, ...]) -> list[Table]:
-    """List tables among items and their subsections.
-
-    Args:
-        items (tuple[Block | Section, ...]): Items to search.
-
-    Returns:
-        list[Table]: Tables in document order.
-    """
-    found: list[Table] = []
-    for item in items:
-        if isinstance(item, Table):
-            found.append(item)
-        elif isinstance(item, Section):
-            found.extend(_tables(item.items))
-    return found
 
 
 def _grid(table: Table) -> list[list[str]]:

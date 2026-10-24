@@ -4,13 +4,12 @@ from __future__ import annotations
 
 from datetime import date
 
-import anyio
 import pytest
 
 from opendart_analysis.documents.preliminary import PreliminaryEarnings, PreliminaryPeriod
 from opendart_analysis.domain.periods import PeriodRef
 from opendart_analysis.financials import accounts, derived, statements
-from opendart_analysis.financials.chain import fallback_note, gather
+from opendart_analysis.financials.chain import fallback_note
 from opendart_analysis.financials.quarters import quarter, quarter_lines, quarters
 
 FY25 = PeriodRef(2025, "FY", end_date=date(2025, 12, 31))
@@ -165,26 +164,3 @@ def test_quarters_are_labeled_by_fiscal_year_end():
     assert (laid.lines, laid.derived, laid.formula) == ((), {}, None)
     undated = earnings.model_copy(update={"periods": []})
     assert quarter_lines(undated, fye_month=12) is None
-
-
-@pytest.mark.anyio
-async def test_gather_raises_the_first_failure_unwrapped_after_every_call_finishes():
-    finished = []
-
-    async def ok():
-        return 1
-
-    async def slow():
-        await anyio.sleep(0.01)
-        finished.append("slow")
-        return 2
-
-    async def broken():
-        message = "source down"
-        raise LookupError(message)
-
-    assert await gather([ok, slow]) == [1, 2]
-    assert await gather([]) == []
-    with pytest.raises(LookupError, match="source down"):
-        await gather([slow, broken, ok])
-    assert finished == ["slow", "slow"]

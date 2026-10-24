@@ -11,9 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Final
 
-import anyio
-
 from opendart_analysis.domain.periods import FIRST_FISCAL_YEAR, fiscal_years_back
+from opendart_analysis.extracts import gather_all
 from opendart_analysis.reports import first_available
 
 if TYPE_CHECKING:
@@ -23,26 +22,15 @@ if TYPE_CHECKING:
     from opendart_analysis.domain.types import Basis
     from opendart_analysis.financials.statements import Report
     from opendart_analysis.reports import ResolvedPeriod
+    from opendart_analysis.upstream import Progress
 
     type FetchReport = Callable[[PeriodRef, Basis], Awaitable[Report | None]]
-
-type Progress = Callable[[str], Awaitable[None]]
-"""Async callback that receives short progress messages, such as "2/3 Fetching FY2022"."""
 
 ANNUAL_STEP: Final = 3
 """Fiscal years between chained annual reports, each of which covers three years."""
 
 MAX_REPORTS: Final = 10
 """Most reports one request chains, the newest included."""
-
-
-async def no_progress(message: str) -> None:
-    """Discard a progress message.
-
-    Args:
-        message (str): Ignored.
-    """
-    del message
 
 
 def check_reports(years: int) -> None:
@@ -57,42 +45,6 @@ def check_reports(years: int) -> None:
     if not 1 <= years <= MAX_REPORTS:
         message = f"years must be between 1 and {MAX_REPORTS}; got {years}."
         raise ValueError(message)
-
-
-async def gather[T](calls: Sequence[Callable[[], Awaitable[T]]]) -> list[T]:
-    """Await calls concurrently and return their results in call order.
-
-    Every call runs to completion. A failure is raised as it was, never wrapped in an
-    exception group, once all calls have finished; when several fail, the first to fail wins.
-    Cancellation is not intercepted.
-
-    Args:
-        calls (Sequence[Callable[[], Awaitable[T]]]): Zero-argument coroutine functions.
-
-    Returns:
-        list[T]: One result per call, in order.
-    """
-    results: dict[int, T] = {}
-    errors: list[Exception] = []
-
-    async def run(index: int, call: Callable[[], Awaitable[T]]) -> None:
-        """Run one call and collect its failure for propagation afterward.
-
-        Args:
-            index (int): Position used to restore the input order.
-            call (Callable[[], Awaitable[T]]): Zero-argument coroutine function to await.
-        """
-        try:
-            results[index] = await call()
-        except Exception as error:  # noqa: BLE001 - re-raised unchanged after the group ends.
-            errors.append(error)
-
-    async with anyio.create_task_group() as group:
-        for index, call in enumerate(calls):
-            group.start_soon(run, index, call)
-    if errors:
-        raise errors[0]
-    return [results[index] for index in range(len(calls))]
 
 
 @dataclass(frozen=True, slots=True)
@@ -202,28 +154,21 @@ async def chain(
     earlier = [period for period in back if period.fiscal_year >= span.earliest]
     follow = newest.basis or basis
 
-    def bind(index: int, period: PeriodRef) -> Callable[[], Awaitable[Report | None]]:
-        """Bind one earlier period to its progress message and selected basis.
+    async def fetch_earlier(index: int, period: PeriodRef) -> Report | None:
+        """Fetch one earlier report with the selected basis and report its progress.
 
         Args:
             index (int): One-based column position in the chained table.
             period (PeriodRef): Earlier period to fetch.
 
         Returns:
-            Callable[[], Awaitable[Report | None]]: Deferred fetch for this period.
+            Report | None: Fetched report, or None when the period has no data.
         """
+        await progress(f"{index}/{len(earlier) + 1} Fetching {period.label}")
+        return await fetch(period, follow)
 
-        async def call() -> Report | None:
-            """Fetch the bound earlier report and report its progress.
-
-            Returns:
-                Report | None: Fetched report, or None when the period has no data.
-            """
-            await progress(f"{index}/{len(earlier) + 1} Fetching {period.label}")
-            return await fetch(period, follow)
-
-        return call
-
-    older = await gather([bind(index, period) for index, period in enumerate(earlier, 2)])
+    older = await gather_all(
+        fetch_earlier(index, period) for index, period in enumerate(earlier, 2)
+    )
     notes.extend(_missing_notes(earlier, older))
     return Chain(ref, (newest, *(r for r in older if r is not None)), tuple(notes))

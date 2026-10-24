@@ -15,10 +15,11 @@ from typing import TYPE_CHECKING, Final, Protocol
 
 from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date
 from opendart_analysis.extracts import fold, is_total
+from opendart_analysis.extracts.fields import sum_known
 from opendart_analysis.reports import ReportQuery, first_available, period_volatility
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Sequence
+    from collections.abc import Callable, Sequence
     from datetime import date
 
     from _typeshed import DataclassInstance
@@ -269,19 +270,6 @@ def share_class(text: str | None) -> str | None:
     folded = cleaned.casefold()
     found = (name for name, words in _CLASS_WORDS if any(word in folded for word in words))
     return next(found, cleaned)
-
-
-def sum_known(values: Iterable[int | None]) -> int | None:
-    """Add the known values.
-
-    Args:
-        values (Iterable[int | None]): Values; None means unknown.
-
-    Returns:
-        int | None: The sum, or None when every value is unknown.
-    """
-    known = [value for value in values if value is not None]
-    return sum(known) if known else None
 
 
 def is_blank(row: DataclassInstance, *ignore: str) -> bool:

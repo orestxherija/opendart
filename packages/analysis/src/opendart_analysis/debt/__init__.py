@@ -61,6 +61,7 @@ from opendart_analysis.debt.profile import (
     fetch_tables,
 )
 from opendart_analysis.debt.schedule import MaturitySchedule, maturity_schedule, prior_annual
+from opendart_analysis.domain.dates import DateWindow
 
 __all__ = [
     "BONDS",
@@ -69,6 +70,7 @@ __all__ = [
     "LADDERS",
     "Bucket",
     "BucketAmount",
+    "DateWindow",
     "DebtFigures",
     "DebtProfile",
     "DebtTables",

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Final, Literal, get_args
+from typing import TYPE_CHECKING, Final, Literal
 
 from opendart_analysis.financials.accounts import (
     COMPONENT_ORDER,
@@ -39,9 +39,6 @@ StatementKind = Literal[
     "summary", "income", "balance", "cash_flow", "comprehensive_income", "equity_changes"
 ]
 """A statement: the major accounts (``summary``) or one of the full statements."""
-
-STATEMENT_KINDS: Final[tuple[StatementKind, ...]] = get_args(StatementKind)
-"""Every statement kind, the major accounts first."""
 
 SCOPES: Final[Mapping[Basis, tuple[tuple[StatementScope, StatementBasis], ...]]] = MappingProxyType(
     {

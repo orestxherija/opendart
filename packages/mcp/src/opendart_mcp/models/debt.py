@@ -97,19 +97,3 @@ class DebtProfileResult(CompanyOutput):
     ladder: list[LadderEntry] = Field(default_factory=list)
     issuance: list[Issuance] = Field(default_factory=list)
     derived: DebtDerived = Field(default_factory=DebtDerived)
-
-
-class DebtMaturity(OutputModel):
-    """A future maturity from the issuance record, for the corporate-action calendar."""
-
-    date: dt.date
-    instrument: str = Field(description="Security type as filed, such as 'Corporate Bonds'.")
-    face_value: int | None = Field(
-        default=None, description="Original face value in won; partly redeemed issues owe less."
-    )
-    filing_number: str | None = Field(
-        default=None, description="Periodic report that lists the issue."
-    )
-    coupon: float | None = None
-    redeemed: Redeemed | None = Field(default=None, description="As of the period end.")
-    issuer: str | None = Field(default=None, description="Set when another entity issued it.")

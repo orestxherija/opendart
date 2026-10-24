@@ -15,7 +15,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from opendart_analysis import calendar
-from opendart_analysis.calendar import DEBT_ACTION, DEBT_SOURCE_KIND
 from opendart_analysis.errors import AnalysisError
 from opendart_mcp.core.errors import QuotaExhaustedError, UpstreamError, from_analysis
 from opendart_mcp.core.upstream import filing_search, service_fetch
@@ -28,8 +27,6 @@ if TYPE_CHECKING:
     from opendart_mcp.models.calendar import CalendarItem
     from opendart_mcp.services.companies import Company
 
-ACTION: Final = DEBT_ACTION
-SOURCE_KIND: Final = DEBT_SOURCE_KIND
 COVERAGE: Final = "Debt maturities list only the securities in the latest periodic reports' issuance records (issues of the latest fiscal year and current period), not older bonds still outstanding; amounts are original face values. get_debt_profile has the full maturity ladder."
 """Note on what the itemized maturities cover, added once per calendar."""
 

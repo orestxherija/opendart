@@ -13,9 +13,10 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final, Protocol
 
-from opendart_analysis.capital.shares import COMMON, ShareClassCounts, share_class, sum_known
+from opendart_analysis.capital.shares import COMMON, ShareClassCounts, share_class
 from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_percent
 from opendart_analysis.extracts import is_total
+from opendart_analysis.extracts.fields import sum_known
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence

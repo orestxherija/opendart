@@ -17,8 +17,8 @@ from getpass import getpass
 from pydantic import SecretStr
 from opendart import OpenDART, OpenDARTSettings
 from opendart_analysis.catalog import service
-from opendart_analysis.domain.dates import DateWindow
 from opendart_analysis.events import (
+    DateWindow,
     EventQuery,
     amendment_flag,
     covered_window,

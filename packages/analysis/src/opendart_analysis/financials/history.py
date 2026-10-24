@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from opendart_analysis.financials import derived
 from opendart_analysis.financials.access import StatementQuery
-from opendart_analysis.financials.chain import Span, chain, check_reports, no_progress
+from opendart_analysis.financials.chain import Span, chain, check_reports
 from opendart_analysis.financials.specs import SCOPES, STATEMENTS, summary_rank
 from opendart_analysis.financials.statements import (
     build_report,
@@ -26,6 +26,7 @@ from opendart_analysis.financials.statements import (
 )
 from opendart_analysis.reports import period_volatility
 from opendart_analysis.reports.query import ReportQuery
+from opendart_analysis.upstream import no_progress
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -34,10 +35,11 @@ if TYPE_CHECKING:
     from opendart_analysis.domain.periods import PeriodRef
     from opendart_analysis.domain.types import Basis
     from opendart_analysis.financials.access import FetchFullStatements, FetchMajorAccounts
-    from opendart_analysis.financials.chain import FetchReport, Progress
+    from opendart_analysis.financials.chain import FetchReport
     from opendart_analysis.financials.specs import FullStatement, StatementSpec
     from opendart_analysis.financials.statements import Item, Report
     from opendart_analysis.reports import FiscalCompany, ResolvedPeriod
+    from opendart_analysis.upstream import Progress
 
 
 @dataclass(frozen=True, slots=True)

@@ -16,25 +16,13 @@ from typing import TYPE_CHECKING, Literal, Protocol
 from opendart_analysis.upstream import MAX_FILING_PAGE, FilingRecord
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable, Sequence
+    from collections.abc import Sequence
     from datetime import date
 
     from opendart_analysis.upstream import DisclosureGroup, Volatility
 
 type CorporationType = Literal["Y", "K", "N", "E"]
 """OpenDART corporation type (``corp_cls``): KOSPI, KOSDAQ, KONEX, or other (unlisted)."""
-
-type Progress = Callable[[str], Awaitable[None]]
-"""Async callback that receives short progress messages, such as "3/12 event reports read"."""
-
-
-async def no_progress(message: str) -> None:
-    """Discard a progress message.
-
-    Args:
-        message (str): Ignored.
-    """
-    del message
 
 
 @dataclass(frozen=True, slots=True)

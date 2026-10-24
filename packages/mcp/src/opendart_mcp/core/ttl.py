@@ -22,9 +22,6 @@ HOUR: Final = 3600.0
 FILINGS: Final = 15 * 60.0
 """Filing searches, which change whenever a company files."""
 
-NONE: Final = 0.0
-"""Do not cache."""
-
 
 def lifetime(volatility: Volatility) -> float:
     """Choose the cache lifetime for data an analysis workflow requests.

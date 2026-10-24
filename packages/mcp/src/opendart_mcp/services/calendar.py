@@ -10,8 +10,9 @@ into the unchanged output model, caps it at ``MAX_ITEMS``, and words the notes.
 Debt maturities are merged through an optional MaturityProvider: a coroutine function that
 takes the state, one resolved company, and the calendar window, and returns calendar items
 (action "debt_maturity") and notes, for example on what the items cover or why the source
-was unavailable. It runs when kinds is None or names DEBT_KIND; items outside the window are
-dropped, and its items merge with event maturities like the analysis reader's.
+was unavailable. It runs when kinds is None or names ``opendart_analysis.calendar.DEBT_KIND``;
+items outside the window are dropped, and its items merge with event maturities like the
+analysis reader's.
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ from typing import TYPE_CHECKING, Final
 
 from opendart_analysis import calendar
 from opendart_analysis.calendar import (
-    DEBT_KIND,
+    LONG_KINDS,
     MAX_COMPANIES,
     UndatedKindsError,
     UnknownKindsError,
@@ -35,14 +36,18 @@ from opendart_mcp.core.upstream import service_fetch
 from opendart_mcp.core.upstream_filings import filing_pages
 from opendart_mcp.models.calendar import CalendarResult
 from opendart_mcp.services.calendar_items import analysis_item, output_item, subject
-from opendart_mcp.services.calendar_reads import LONG_KINDS, source_note
 from opendart_mcp.services.events import FOREGROUND_DEADLINE, READ_POLICY, bounded
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
     from datetime import date
 
-    from opendart_analysis.calendar import CalendarSubject, CorporateActionCalendar, KindSelection
+    from opendart_analysis.calendar import (
+        CalendarSubject,
+        CorporateActionCalendar,
+        KindSelection,
+        Reads,
+    )
     from opendart_analysis.domain.dates import DateWindow
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
@@ -55,7 +60,6 @@ type MaturityProvider = Callable[
 """Debt maturity source: (state, company, calendar window) to calendar items and notes."""
 
 __all__ = [
-    "DEBT_KIND",
     "MAX_ITEMS",
     "CalendarRequest",
     "MaturityProvider",
@@ -77,7 +81,7 @@ class CalendarRequest:
         horizon (str): Last date, as an ISO date or a forward duration.
         include_past (str | None): First date when earlier than today, as an ISO date or a
             backward duration; None starts today.
-        kinds (tuple[str, ...] | None): Event groups or kinds, and DEBT_KIND; None for
+        kinds (tuple[str, ...] | None): Event groups or kinds, and the debt kind; None for
             every kind with calendar dates and debt maturities.
     """
 
@@ -103,7 +107,7 @@ def calendar_kinds(kinds: Sequence[str] | None) -> KindSelection:
     """Validate requested kinds, keeping those whose reports have calendar dates.
 
     Args:
-        kinds (Sequence[str] | None): Event groups or kinds, and DEBT_KIND; None or empty
+        kinds (Sequence[str] | None): Event groups or kinds, and the debt kind; None or empty
             for all.
 
     Returns:
@@ -309,6 +313,27 @@ def _window(request: CalendarRequest, today: date) -> DateWindow:
         raise from_analysis(error) from error
 
 
+def _source_note(reads: Reads) -> str | None:
+    """Say which filings the event dates come from.
+
+    Args:
+        reads (Reads): Event reports read.
+
+    Returns:
+        str | None: The note, or None when no event reports are read.
+    """
+    recent, bonds = reads.reads_recent, reads.reads_bonds
+    if recent and bonds:
+        return f"Dates come from major-issue and registration filings made since {reads.recent.start} and, for convertible, warrant, exchangeable, and other bonds, since {reads.extended.start}."
+    if recent:
+        return (
+            f"Dates come from major-issue and registration filings made since {reads.recent.start}."
+        )
+    if bonds:
+        return f"Dates come from convertible, warrant, exchangeable, and other bond filings made since {reads.extended.start}."
+    return None
+
+
 def _coverage(
     found: CorporateActionCalendar[_Provided], selection: KindSelection, *, missing: bool
 ) -> list[str]:
@@ -324,7 +349,7 @@ def _coverage(
     """
     dropped = ", ".join(selection.dropped)
     notes = [f"Left out kinds without calendar dates: {dropped}."] if dropped else []
-    if source := source_note(found.reads):
+    if source := _source_note(found.reads):
         notes.append(source)
     if missing:
         notes.append("Debt maturities are not included; see get_debt_profile.")

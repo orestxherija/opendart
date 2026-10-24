@@ -15,19 +15,18 @@ from typing import TYPE_CHECKING, Final, Protocol
 
 from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
 from opendart_analysis.financials.accounts import normalize
-from opendart_analysis.financials.chain import no_progress
 from opendart_analysis.financials.statements import prior_year_end, shift
 from opendart_analysis.reports import first_available, period_volatility
 from opendart_analysis.reports.query import ReportQuery
+from opendart_analysis.upstream import no_progress
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from datetime import date
 
     from opendart_analysis.domain.periods import PeriodRef
-    from opendart_analysis.financials.chain import Progress
     from opendart_analysis.reports import FiscalCompany, ResolvedPeriod
-    from opendart_analysis.upstream import Volatility
+    from opendart_analysis.upstream import Progress, Volatility
 
 _TOTALS: Final = frozenset({"total", "합계", "총계", "계"})
 _SUBTOTALS: Final = frozenset({"subtotal", "소계"})

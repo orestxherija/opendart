@@ -1,8 +1,8 @@
-"""get_debt_profile and the calendar's debt maturities, from periodic reports.
+"""get_debt_profile: debt-security ladders, issuance, and derived figures from a periodic report.
 
 The logic lives in ``opendart_analysis.debt``. This adapter resolves the company and period,
-binds the workflows to the gateway and the server clock (periodic-report lifetimes, as
-``services.extracts`` uses), and projects their values into the unchanged output models.
+binds the workflow to the gateway and the server clock (periodic-report lifetimes through
+``core.upstream.service_fetch``), and projects its values into the unchanged output models.
 Presentation stays here: concise results list at most ``CONCISE_ISSUES`` open issues, without
 fully redeemed issues, underwriters, the company's own name as issuer, or filed ladder
 columns, and the notes point to ``response_format`` and get_financials.
@@ -10,7 +10,6 @@ columns, and the notes point to ``response_format`` and get_financials.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
 from opendart_analysis import debt
@@ -20,24 +19,27 @@ from opendart_mcp.core.errors import from_analysis
 from opendart_mcp.core.progress import no_progress
 from opendart_mcp.core.upstream import service_fetch
 from opendart_mcp.models.common import SourceFiling
-from opendart_mcp.models.debt import DebtMaturity, DebtProfileResult, Issuance
-from opendart_mcp.services.debt_tables import derived, ladder_entry
+from opendart_mcp.models.debt import (
+    DebtDerived,
+    DebtProfileResult,
+    FiledBucket,
+    Issuance,
+    LadderBucket,
+    LadderEntry,
+)
 from opendart_mcp.services.periods import resolve_period
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Sequence
     from datetime import date
 
-    from opendart_analysis.debt import DebtProfile, Issue, Maturity
-    from opendart_analysis.domain.dates import DateWindow
-    from opendart_analysis.domain.periods import PeriodRef
+    from opendart_analysis.debt import DebtFigures, DebtProfile, Issue, Ladder
     from opendart_analysis.domain.types import Period
+    from opendart_analysis.reports import ResolvedPeriod
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
     from opendart_mcp.models.common import ResponseFormat
-    from opendart_mcp.models.debt import LadderEntry
     from opendart_mcp.services.companies import Company
-    from opendart_mcp.services.periods import ResolvedPeriod
 
 _SCOPE: Final = (
     "Covers debt securities only; bank loans and total borrowings are in get_financials."
@@ -62,6 +64,52 @@ async def _translated[T](call: Awaitable[T]) -> T:
         return await call
     except AnalysisError as error:
         raise from_analysis(error) from error
+
+
+def _ladder_entry(ladder: Ladder, *, detailed: bool) -> LadderEntry:
+    """Describe one instrument's ladder; only detailed results list every filed column.
+
+    Args:
+        ladder (Ladder): Ladder from ``opendart_analysis.debt``.
+        detailed (bool): Whether to add every maturity column as filed.
+
+    Returns:
+        LadderEntry: Output entry.
+    """
+    filed = [
+        FiledBucket(
+            label=column.label, public=column.public, private=column.private, total=column.total
+        )
+        for column in ladder.filed
+    ]
+    return LadderEntry(
+        instrument=ladder.instrument,
+        buckets=[
+            LadderBucket(maturity_bucket=b.maturity_bucket, amount=b.amount) for b in ladder.buckets
+        ],
+        total=ladder.total,
+        public=ladder.public,
+        private=ladder.private,
+        issuance_limit=ladder.issuance_limit,
+        remaining_limit=ladder.remaining_limit,
+        filed=filed if detailed else None,
+    )
+
+
+def _derived(figures: DebtFigures) -> DebtDerived:
+    """Describe derived debt figures.
+
+    Args:
+        figures (DebtFigures): Figures from ``opendart_analysis.debt.derive``.
+
+    Returns:
+        DebtDerived: Output figures; empty for an empty ladder.
+    """
+    return DebtDerived(
+        total_debt_securities=figures.total_debt_securities,
+        due_within_1y=figures.due_within_1y,
+        due_within_1y_pct=figures.due_within_1y_pct,
+    )
 
 
 def _names(company: Company) -> tuple[str | None, str]:
@@ -137,7 +185,7 @@ def _profile(
         DebtProfileResult: Ladder, issuance record, and derived figures.
     """
     ref = profile.ref
-    ladder = [ladder_entry(entry, detailed=detailed) for entry in profile.ladder]
+    ladder = [_ladder_entry(entry, detailed=detailed) for entry in profile.ladder]
     issues, omitted = _issues(profile.issues, detailed=detailed)
     shown = issues if detailed else issues[:CONCISE_ISSUES]
     notes = [resolved.note] if resolved.note else []
@@ -161,7 +209,7 @@ def _profile(
         period_end=ref.end_date,
         ladder=ladder,
         issuance=shown,
-        derived=derived(profile.figures),
+        derived=_derived(profile.figures),
     )
 
 
@@ -207,78 +255,3 @@ async def debt_profile(
         return DebtProfileResult(company=resolved_company.ref, notes=notes, as_of=state.today())
     detailed = response_format == "detailed"
     return _profile(resolved_company, found, resolved, detailed=detailed, as_of=state.today())
-
-
-@dataclass(frozen=True, slots=True)
-class MaturitySchedule:
-    """Debt maturities in a calendar window, with the reports they come from.
-
-    Attributes:
-        maturities (list[DebtMaturity]): Maturities, earliest first, each issue once.
-        period (PeriodRef | None): Latest period read, or None when no report had debt
-            tables.
-        bonds (LadderEntry | None): Corporate bonds outstanding at that period's end by
-            remaining maturity, or None when none are reported.
-    """
-
-    maturities: list[DebtMaturity]
-    period: PeriodRef | None = None
-    bonds: LadderEntry | None = None
-
-
-def _maturity(item: Maturity) -> DebtMaturity:
-    """Describe one maturity.
-
-    Args:
-        item (Maturity): Maturity from ``opendart_analysis.debt``.
-
-    Returns:
-        DebtMaturity: Output maturity.
-    """
-    return DebtMaturity(
-        date=item.date,
-        instrument=item.instrument,
-        face_value=item.face_value,
-        filing_number=item.filing_number,
-        coupon=item.coupon,
-        redeemed=item.redeemed,
-        issuer=item.issuer,
-    )
-
-
-async def maturity_schedule(
-    state: AppState, company: Company, *, window: DateWindow
-) -> MaturitySchedule:
-    """List debt securities that mature in a calendar window, with the corporate-bond ladder.
-
-    Reads the latest periodic report's issuance record and corporate-bond balance and, for a
-    quarterly or half-year report, the previous annual report's issuance record (see
-    ``opendart_analysis.debt.maturity_schedule``). Costs one cached filing search and two or
-    three upstream calls per period probed.
-
-    Args:
-        state (AppState): Server state.
-        company (Company): Resolved company, from ``state.companies.resolve``.
-        window (DateWindow): Maturity dates to include, from the calendar's first date
-            (which may be in the past) to its horizon.
-
-    Returns:
-        MaturitySchedule: Maturities and the ladder; empty when the reports list neither.
-
-    Raises:
-        ServerError: Upstream failures such as quota exhaustion or a missing API key, from
-            the gateway; "no data" is an empty schedule, not an error.
-    """
-    resolved = await resolve_period(state, company, period="latest", fiscal_year=None)
-    schedule = await _translated(
-        debt.maturity_schedule(
-            company,
-            resolved,
-            window=window,
-            names=_names(company),
-            fetch_service=service_fetch(state.require_gateway),
-            today=state.today(),
-        )
-    )
-    bonds = None if schedule.bonds is None else ladder_entry(schedule.bonds, detailed=False)
-    return MaturitySchedule(list(map(_maturity, schedule.maturities)), schedule.period, bonds)

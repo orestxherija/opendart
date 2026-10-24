@@ -16,7 +16,12 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from opendart_analysis.profile import NO_OVERVIEW, NO_REPORT, profile_company
+from opendart_analysis.profile import (
+    NO_OVERVIEW,
+    NO_REPORT,
+    fiscal_year_end_month,
+    profile_company,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Sequence
@@ -97,8 +102,7 @@ class Company:
 async def print_profile(client: FakeClient) -> list[object]:
     printed: list[object] = []
     overview = await or_none(client.disclosures.company(corporation_code="00126380"))
-    month = (overview.acc_mt or "") if overview else ""
-    samsung = Company("00126380", int(month) if month.isdigit() else 12)
+    samsung = Company("00126380", fiscal_year_end_month(overview))
     profile = await profile_company(
         samsung,
         overview,

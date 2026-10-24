@@ -24,7 +24,7 @@ from opendart_analysis.domain.dates import DateWindow, yyyymmdd
 from opendart_analysis.errors import DataSourceError
 from opendart_analysis.events.index import MAX_PAGES, search_index
 from opendart_analysis.events.records import records_from
-from opendart_analysis.filings.access import no_progress
+from opendart_analysis.upstream import no_progress
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -32,8 +32,8 @@ if TYPE_CHECKING:
     from opendart_analysis.catalog import EventKind
     from opendart_analysis.events.index import EventIndex
     from opendart_analysis.events.records import EventRecord
-    from opendart_analysis.filings.access import Progress, ReadFilingPage
-    from opendart_analysis.upstream import FetchService
+    from opendart_analysis.filings.access import ReadFilingPage
+    from opendart_analysis.upstream import FetchService, Progress
 
 type Strategy = Literal["requested", "filing_index", "all_kinds"]
 """How the kinds read were chosen: as requested, from a complete filing index, or from an

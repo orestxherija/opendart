@@ -10,7 +10,7 @@ from opendart_analysis.domain.identifiers import (
     Identifier,
     dart_viewer_url,
     filing_date,
-    filing_source,
+    filing_origin,
     is_corp_code,
     is_filing_number,
     parse_identifier,
@@ -114,5 +114,5 @@ def test_filing_date_comes_from_the_first_eight_digits(number, expected):
         ("not-a-number", "other"),
     ],
 )
-def test_filing_source_comes_from_the_sequence_prefix(number, expected):
-    assert filing_source(number) == expected
+def test_filing_origin_comes_from_the_sequence_prefix(number, expected):
+    assert filing_origin(number) == expected

@@ -1556,6 +1556,7 @@ dependencies = [
     { name = "opentelemetry-api" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "starlette" },
 ]
 
 [package.metadata]
@@ -1569,6 +1570,7 @@ requires-dist = [
     { name = "opentelemetry-api", specifier = ">=1.30,<2" },
     { name = "pydantic", specifier = ">=2.12,<3" },
     { name = "pydantic-settings", specifier = ">=2.14.2,<3" },
+    { name = "starlette", specifier = ">=1,<2" },
 ]
 
 [[package]]

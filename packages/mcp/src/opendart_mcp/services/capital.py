@@ -15,6 +15,7 @@ from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Final
 
 from opendart_analysis.capital import capital_structure as read_capital_structure
+from opendart_analysis.reports import PROBE_ATTEMPTS
 from opendart_mcp.core.progress import no_progress
 from opendart_mcp.core.upstream_ownership import (
     capital_changes_fetch,
@@ -31,7 +32,7 @@ from opendart_mcp.models.capital import (
     TreasuryMovement,
 )
 from opendart_mcp.models.common import SourceFiling
-from opendart_mcp.services.periods import PROBE_ATTEMPTS, resolve_period
+from opendart_mcp.services.periods import resolve_period
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -41,11 +42,11 @@ if TYPE_CHECKING:
 
     from opendart_analysis import capital
     from opendart_analysis.domain.types import Period
+    from opendart_analysis.reports import ResolvedPeriod
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
     from opendart_mcp.models.capital import CapitalSection
     from opendart_mcp.services.companies import Company
-    from opendart_mcp.services.periods import ResolvedPeriod
 
 SECTIONS: Final[tuple[CapitalSection, ...]] = (
     "shares",

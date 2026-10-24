@@ -8,7 +8,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from opendart_analysis.profile import NO_REPORT, company_facts, profile_company
+from opendart_analysis.profile import (
+    NO_REPORT,
+    company_facts,
+    fiscal_year_end_month,
+    profile_company,
+)
 from opendart_analysis.reports import PeriodRef
 
 pytestmark = pytest.mark.anyio
@@ -83,3 +88,15 @@ async def test_no_recent_report_is_noted():
         Company("00126380", 12), overview(), search_filings=Search(None), today=TODAY
     )
     assert (profile.latest_report, profile.sources, profile.notes) == (None, (), (NO_REPORT,))
+
+
+@pytest.mark.parametrize(
+    ("acc_mt", "month"),
+    [("03", 3), ("12", 12), (" 6 ", 6), ("", 12), ("-", 12), (None, 12), ("13", 12), ("0", 12)],
+)
+def test_the_fiscal_year_end_month_comes_from_acc_mt_and_defaults_to_december(acc_mt, month):
+    assert fiscal_year_end_month(SimpleNamespace(acc_mt=acc_mt)) == month
+
+
+def test_without_an_overview_the_fiscal_year_ends_in_december():
+    assert fiscal_year_end_month(None) == 12

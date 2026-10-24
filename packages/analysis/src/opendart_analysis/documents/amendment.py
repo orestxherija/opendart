@@ -13,10 +13,10 @@ from typing import TYPE_CHECKING
 
 from opendart_analysis.documents.models import Amendment, AmendmentChange
 from opendart_analysis.documents.tables import view
-from opendart_analysis.documents.tree import Paragraph, Section, Table, compact, walk_sections
+from opendart_analysis.documents.tree import Paragraph, Table, compact, walk_sections, walk_tables
 
 if TYPE_CHECKING:
-    from opendart_analysis.documents.tree import Block, DocumentTree
+    from opendart_analysis.documents.tree import Block, DocumentTree, Section
 
 _CORRECTION = "정정신고"
 _DATE = re.compile(r"(\d{4})\s*[년.\-/]\s*(\d{1,2})\s*[월.\-/]\s*(\d{1,2})")
@@ -69,29 +69,11 @@ def _correction_tables(tree: DocumentTree) -> tuple[str, list[Table]] | None:
     """
     for section in walk_sections(tree.items):
         if section.kind == "correction" or compact(section.title.ko).startswith(_CORRECTION):
-            return section.id, _tables(section.items)
+            return section.id, walk_tables(section.items)
         if section.kind == "body":
             tables = _krx_block(section.items)
             return (section.id, tables) if tables else None
     return None
-
-
-def _tables(items: tuple[Block | Section, ...]) -> list[Table]:
-    """List tables among items and their subsections.
-
-    Args:
-        items (tuple[Block | Section, ...]): Items to search.
-
-    Returns:
-        list[Table]: Tables in document order.
-    """
-    found: list[Table] = []
-    for item in items:
-        if isinstance(item, Table):
-            found.append(item)
-        elif isinstance(item, Section):
-            found.extend(_tables(item.items))
-    return found
 
 
 def _krx_block(items: tuple[Block | Section, ...]) -> list[Table]:

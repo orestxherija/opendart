@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 
 from opendart_analysis.domain.dates import DateWindow, parse_date_arg
 from opendart_analysis.ownership import ownership_report
+from opendart_analysis.reports import PROBE_ATTEMPTS
 from opendart_mcp.core.errors import InvalidArgumentError
 from opendart_mcp.core.progress import no_progress
 from opendart_mcp.core.upstream_ownership import (
@@ -29,7 +30,7 @@ from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.models.ownership import ControlChange, OwnershipResult
 from opendart_mcp.services.control import snapshot_view
 from opendart_mcp.services.holdings import holding_activity
-from opendart_mcp.services.periods import PROBE_ATTEMPTS, resolve_period
+from opendart_mcp.services.periods import resolve_period
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

@@ -1,7 +1,8 @@
 """Company profiles: reference facts from the overview and the latest periodic report.
 
-The workflow takes a company (its corporation code and fiscal year-end month), its overview
-record, and a filing search, following ``opendart_analysis.upstream``:
+The workflow takes a company (its corporation code and fiscal year-end month, which
+``fiscal_year_end_month`` reads from the overview), its overview record, and a filing search,
+following ``opendart_analysis.upstream``:
 
     profile = await profile_company(
         company, overview, search_filings=search, today=today_kst()
@@ -13,7 +14,12 @@ package starts nothing.
 
 from __future__ import annotations
 
-from opendart_analysis.profile.facts import CompanyFacts, CompanyOverview, company_facts
+from opendart_analysis.profile.facts import (
+    CompanyFacts,
+    CompanyOverview,
+    company_facts,
+    fiscal_year_end_month,
+)
 from opendart_analysis.profile.latest import (
     NO_OVERVIEW,
     NO_REPORT,
@@ -28,5 +34,6 @@ __all__ = [
     "CompanyOverview",
     "CompanyProfile",
     "company_facts",
+    "fiscal_year_end_month",
     "profile_company",
 ]

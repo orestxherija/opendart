@@ -12,6 +12,8 @@ SearchFilings``, and the caller binds it to any source: the OpenDART SDK, a cach
 - Volatility: every call states how quickly the requested data can change. The source decides
   whether and how long to cache; analysis keeps no cache and knows no cache lifetimes.
 - Failures: exceptions raised by a callable propagate unchanged; analysis never retries.
+- Progress: long workflows take an optional ``progress`` callback (``Progress``) that receives
+  short messages; ``no_progress`` discards them.
 """
 
 from __future__ import annotations
@@ -20,7 +22,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, Protocol
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Awaitable, Callable, Sequence
     from datetime import date
 
 type Volatility = Literal["low", "medium", "high"]
@@ -38,6 +40,18 @@ type DisclosureGroup = Literal["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
 
 MAX_FILING_PAGE = 100
 """Most filings OpenDART returns for one search request."""
+
+type Progress = Callable[[str], Awaitable[None]]
+"""Async callback that receives short progress messages, such as "3/12 event reports read"."""
+
+
+async def no_progress(message: str) -> None:
+    """Discard a progress message.
+
+    Args:
+        message (str): Ignored.
+    """
+    del message
 
 
 @dataclass(frozen=True, slots=True)

@@ -3,10 +3,10 @@
 ``opendart_analysis.governance`` fetches the requested sections' services for the resolved
 period and computes the sections and flags. This adapter resolves the company and period,
 binds fetching to the gateway (``core.upstream.service_fetch``, whose lifetimes follow the
-period's volatility as ``periodic_ttl`` does), and projects the analysis values into the
-unchanged output models. Concise results drop unregistered executives (with a note), personal
-details, opinion history, prior-year non-audit services, filed remarks, stock-based pay, and
-non-headline workforce rows; the analysis values keep them all.
+period's volatility), and projects the analysis values into the unchanged output models.
+Concise results drop unregistered executives (with a note), personal details, opinion
+history, prior-year non-audit services, filed remarks, stock-based pay, and non-headline
+workforce rows; the analysis values keep them all.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from opendart_mcp.models.common import CompanyRef, ResponseFormat
     from opendart_mcp.models.governance import GovernanceSection
 
-__all__ = ["DEFAULT_SECTIONS", "GovernanceQuery", "governance"]
+__all__ = ["GovernanceQuery", "governance"]
 
 
 def _audit(facts: analysis.AuditFacts, fiscal_year: int, *, detailed: bool) -> AuditFacts:

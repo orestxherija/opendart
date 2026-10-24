@@ -40,13 +40,10 @@ if TYPE_CHECKING:
         TreasuryRecord,
     )
     from opendart_analysis.reports import FiscalCompany, PeriodRef, ResolvedPeriod
-    from opendart_analysis.upstream import Volatility
+    from opendart_analysis.upstream import Progress, Volatility
 
 type Section = Literal["shares", "treasury_stock", "capital_changes", "use_of_proceeds"]
 """Parts of a capital structure: share counts are always read, since they settle the period."""
-
-type Progress = Callable[[str], Awaitable[None]]
-"""Receives progress messages."""
 
 SECTIONS: Final[tuple[Section, ...]] = (
     "shares",

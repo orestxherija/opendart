@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Literal
 
+from opendart_analysis.domain.periods import DECEMBER
 from opendart_analysis.financials import derived
 from opendart_analysis.financials.accounts import METRICS
 from opendart_analysis.financials.indicators import (
@@ -20,7 +21,6 @@ from opendart_analysis.financials.indicators import (
     label as indicator_label,
     rank as indicator_rank,
 )
-from opendart_analysis.financials.peers import DECEMBER
 from opendart_analysis.financials.statements import shift
 from opendart_mcp.models.compare import MissingCompany, PeerRow
 from opendart_mcp.services.tables import sources

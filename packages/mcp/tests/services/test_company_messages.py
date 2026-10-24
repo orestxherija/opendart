@@ -10,7 +10,6 @@ import pytest
 from opendart_analysis.domain.directory import CorpRecord, Match
 from opendart_mcp.services.company_messages import (
     ambiguity_message,
-    directory_not_ready_message,
     not_found_message,
 )
 
@@ -60,11 +59,3 @@ def test_ambiguity_message_without_hidden_candidates():
 )
 def test_not_found_message(text, expected):
     assert not_found_message(text).startswith(expected)
-
-
-def test_directory_not_ready_message():
-    assert "still loading (42 s so far)" in directory_not_ready_message(elapsed_seconds=42.7)
-    assert "still loading;" in directory_not_ready_message()
-    failed = directory_not_ready_message(error="HTTP 503", elapsed_seconds=1.0)
-    assert failed.startswith("The company directory could not be loaded (HTTP 503)")
-    assert all("8-digit DART corp code" in text for text in (failed, directory_not_ready_message()))

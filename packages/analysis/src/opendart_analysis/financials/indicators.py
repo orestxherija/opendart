@@ -16,21 +16,22 @@ from typing import TYPE_CHECKING, Final, Literal, Protocol
 from opendart_analysis.domain.normalize import clean_text, parse_percent
 from opendart_analysis.domain.periods import FIRST_INDICATOR_YEAR
 from opendart_analysis.errors import MissingDataError
+from opendart_analysis.extracts import gather_all
 from opendart_analysis.financials.access import check_peer_count
-from opendart_analysis.financials.chain import Span, chain, check_reports, gather, no_progress
+from opendart_analysis.financials.chain import Span, chain, check_reports
 from opendart_analysis.financials.history import StatementHistory
 from opendart_analysis.financials.statements import Line, Report, merge
 from opendart_analysis.reports import period_volatility
+from opendart_analysis.upstream import no_progress
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
+    from collections.abc import Iterable, Mapping, Sequence
     from datetime import date
 
     from opendart_analysis.domain.periods import PeriodRef
     from opendart_analysis.domain.types import Basis, ReportCode
-    from opendart_analysis.financials.chain import Progress
     from opendart_analysis.reports import FiscalCompany, ResolvedPeriod
-    from opendart_analysis.upstream import Volatility
+    from opendart_analysis.upstream import Progress, Volatility
 
     type Records = Sequence[IndicatorRecord] | None
 
@@ -302,19 +303,13 @@ async def company_indicators(
     """
     volatility = period_volatility(ref, fye_month=company.fye_month, today=today)
 
-    def bind(category: IndicatorCategory) -> Callable[[], Awaitable[Records]]:
-        """Bind one category's call.
-
-        Args:
-            category (IndicatorCategory): Indicator category.
-
-        Returns:
-            Callable[[], Awaitable[Records]]: Call to await.
-        """
-        query = IndicatorQuery(company.corp_code, ref.fiscal_year, ref.report_code, category)
-        return lambda: fetch_indicators(query, volatility=volatility)
-
-    answers = await gather([bind(category) for category in CATEGORIES])
+    answers = await gather_all(
+        fetch_indicators(
+            IndicatorQuery(company.corp_code, ref.fiscal_year, ref.report_code, category),
+            volatility=volatility,
+        )
+        for category in CATEGORIES
+    )
     values = [value for records in answers for value in indicator_values(records)]
     if not values:
         return None
@@ -377,19 +372,13 @@ async def peer_indicators(
     codes = tuple(company.corp_code for company in companies)
     volatility = peer_volatility(companies, ref, today=today)
 
-    def bind(category: IndicatorCategory) -> Callable[[], Awaitable[Records]]:
-        """Bind one category's call.
-
-        Args:
-            category (IndicatorCategory): Indicator category.
-
-        Returns:
-            Callable[[], Awaitable[Records]]: Call to await.
-        """
-        query = PeerIndicatorQuery(codes, ref.fiscal_year, ref.report_code, category)
-        return lambda: fetch_peer_indicators(query, volatility=volatility)
-
-    answers = await gather([bind(category) for category in categories])
+    answers = await gather_all(
+        fetch_peer_indicators(
+            PeerIndicatorQuery(codes, ref.fiscal_year, ref.report_code, category),
+            volatility=volatility,
+        )
+        for category in categories
+    )
     return [value for records in answers for value in indicator_values(records)]
 
 

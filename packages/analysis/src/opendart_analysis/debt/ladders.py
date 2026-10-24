@@ -15,10 +15,10 @@ from typing import TYPE_CHECKING, Final, Literal, Protocol
 
 from opendart_analysis.catalog import field_label
 from opendart_analysis.domain.normalize import parse_amount
-from opendart_analysis.extracts.fields import fold, is_total, text
+from opendart_analysis.extracts.fields import fold, is_total, sum_known, text
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Sequence
 
 Instrument = Literal[
     "corporate_bonds",
@@ -233,19 +233,6 @@ def offering(label: str | None) -> Offering | None:
     return next((kind for kind, words in _OFFERINGS if any(w in folded for w in words)), None)
 
 
-def _sum(values: Iterable[int | None]) -> int | None:
-    """Add the known values.
-
-    Args:
-        values (Iterable[int | None]): Values; None means not filed.
-
-    Returns:
-        int | None: Sum, or None when no value is known.
-    """
-    known = [value for value in values if value is not None]
-    return sum(known) if known else None
-
-
 def _column(rows: Sequence[object], name: str) -> int | None:
     """Add one column across rows.
 
@@ -256,7 +243,7 @@ def _column(rows: Sequence[object], name: str) -> int | None:
     Returns:
         int | None: Sum of the parsed amounts, or None when none is filed.
     """
-    return _sum(parse_amount(text(row, name)) for row in rows)
+    return sum_known(parse_amount(text(row, name)) for row in rows)
 
 
 def _rows_by_offering(rows: Sequence[object]) -> dict[Offering, list[object]]:
@@ -330,7 +317,7 @@ def build_ladder(spec: LadderSpec, rows: Sequence[object]) -> Ladder | None:
     grouped = _rows_by_offering(rows)
     totals = grouped["total"]
     buckets = _buckets(spec, totals)
-    total = _column(totals, "sm") or _sum(bucket.amount for bucket in buckets)
+    total = _column(totals, "sm") or sum_known(bucket.amount for bucket in buckets)
     if not total:
         return None
     return Ladder(
@@ -354,7 +341,7 @@ def derive(ladder: Sequence[LadderTotals]) -> DebtFigures:
     Returns:
         DebtFigures: Derived figures; empty when the ladders add up to nothing.
     """
-    total = _sum(entry.total for entry in ladder)
+    total = sum_known(entry.total for entry in ladder)
     if not total:
         return DebtFigures()
     within = sum(b.amount for e in ladder for b in e.buckets if b.maturity_bucket == "<=1y")

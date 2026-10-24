@@ -19,6 +19,7 @@ dependencies = [
   "opentelemetry-api>=1.30,<2",
   "pydantic>=2.12,<3",
   "pydantic-settings>=2.14.2,<3",
+  "starlette>=1,<2",
 ]
 
 [project.scripts]

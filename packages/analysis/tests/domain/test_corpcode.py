@@ -9,12 +9,8 @@ from datetime import date
 
 import pytest
 
-from opendart_analysis.domain.directory import (
-    MEMBER_NAME,
-    CorpRecord,
-    DirectoryError,
-    parse_directory,
-)
+from opendart_analysis.domain.corpcode import MEMBER_NAME, parse_directory
+from opendart_analysis.domain.records import CorpRecord, DirectoryError
 
 
 def entry(

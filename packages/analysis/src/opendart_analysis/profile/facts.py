@@ -1,4 +1,4 @@
-"""Normalize OpenDART's company overview into reference facts.
+"""Normalize OpenDART's company overview into reference facts and the fiscal year-end month.
 
 The overview (``disclosures.company``) holds a company's names, codes, CEO, registration
 numbers, contact details, industry code, establishment date, and fiscal year-end month, all
@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
 from opendart_analysis.domain.normalize import clean_text, parse_date
+from opendart_analysis.domain.periods import DECEMBER
 
 if TYPE_CHECKING:
     from datetime import date
@@ -74,6 +75,11 @@ class CompanyOverview(Protocol):
         """Business registration number."""
         ...
 
+    @property
+    def acc_mt(self) -> str | None:
+        """Fiscal year-end month (``MM``)."""
+        ...
+
 
 @dataclass(frozen=True, slots=True)
 class CompanyFacts:
@@ -106,6 +112,21 @@ class CompanyFacts:
     fax: str | None
     corporate_registration_number: str | None
     business_registration_number: str | None
+
+
+def fiscal_year_end_month(overview: CompanyOverview | None) -> int:
+    """Read the fiscal year-end month from the overview's ``acc_mt``.
+
+    Period resolution needs it: a March year end shifts every period's end and deadline.
+
+    Args:
+        overview (CompanyOverview | None): Company overview, or None when there is none.
+
+    Returns:
+        int: Month 1 to 12; December without an overview or a valid month.
+    """
+    month = clean_text(overview.acc_mt if overview else None)
+    return int(month) if month and month.isdigit() and 1 <= int(month) <= DECEMBER else DECEMBER
 
 
 def company_facts(overview: CompanyOverview | None, fye_month: int) -> CompanyFacts:

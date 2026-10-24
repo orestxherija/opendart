@@ -225,3 +225,21 @@ def walk_sections(items: tuple[Block | Section, ...]) -> list[Section]:
             found.append(item)
             found.extend(walk_sections(item.items))
     return found
+
+
+def walk_tables(items: tuple[Block | Section, ...]) -> list[Table]:
+    """List tables depth-first in document order.
+
+    Args:
+        items (tuple[Block | Section, ...]): Items to search.
+
+    Returns:
+        list[Table]: Every table among the items and their subsections.
+    """
+    found: list[Table] = []
+    for item in items:
+        if isinstance(item, Table):
+            found.append(item)
+        elif isinstance(item, Section):
+            found.extend(walk_tables(item.items))
+    return found

@@ -24,17 +24,15 @@ from typing import TYPE_CHECKING, Final, Protocol
 from opendart_analysis.documents import extract_preliminary_earnings
 from opendart_analysis.domain.filings import clean_title
 from opendart_analysis.domain.identifiers import filing_date, is_filing_number
-from opendart_analysis.financials.chain import no_progress
-from opendart_analysis.upstream import MAX_FILING_PAGE
+from opendart_analysis.upstream import MAX_FILING_PAGE, no_progress
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from datetime import date
 
     from opendart_analysis.documents import ParsedFiling, PreliminaryEarnings
-    from opendart_analysis.financials.chain import Progress
     from opendart_analysis.reports import FiscalCompany
-    from opendart_analysis.upstream import FilingRecord, Volatility
+    from opendart_analysis.upstream import FilingRecord, Progress, Volatility
 
 FAIR_DISCLOSURE: Final = "I002"
 """Disclosure subtype (``pblntf_detail_ty``) of KRX fair disclosures."""

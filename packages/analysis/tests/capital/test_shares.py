@@ -14,7 +14,7 @@ from opendart_analysis.capital import (
     period_share_counts,
     share_class,
 )
-from opendart_analysis.capital.shares import is_blank, sum_known
+from opendart_analysis.capital.shares import is_blank
 from opendart_analysis.domain.periods import PeriodRef
 from opendart_analysis.extracts import is_total
 from opendart_analysis.reports import ResolvedPeriod
@@ -122,8 +122,6 @@ def test_tables_of_dashes_have_no_counts():
 
 
 def test_row_helpers():
-    assert sum_known([1, None, 2]) == 3
-    assert sum_known([None, None]) is None
     assert not is_blank(ShareClassCounts("common", authorized=1), "share_class")
     assert is_blank(ShareClassCounts("common"), "share_class")
     assert not is_blank(ShareClassCounts("common"))

@@ -195,9 +195,6 @@ CATEGORY_INFO: Mapping[FilingCategory, CategoryInfo] = MappingProxyType(
 )
 """Every category's upstream codes and description, in documentation order."""
 
-EVENT_INDEX_CATEGORIES: tuple[FilingCategory, ...] = ("major_issues", "offerings")
-"""Categories searched to find which OpenDART event services apply to a company."""
-
 
 def category_query(category: FilingCategory) -> tuple[str, str | None]:
     """Return the search parameters for a category.
