@@ -1,6 +1,6 @@
 """The package guide's first use case, run against a synthetic archive without the SDK.
 
-``load_filing`` matches the README; a duck-typed client stands in for ``opendart.OpenDART``.
+``load_filing`` matches docs/documents.md; a duck-typed client stands in for ``opendart.OpenDART``.
 """
 
 from __future__ import annotations

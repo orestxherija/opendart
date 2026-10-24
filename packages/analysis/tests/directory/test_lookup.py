@@ -1,6 +1,6 @@
 """The public directory API, used the way the package guide shows, without the SDK or MCP.
 
-``load_directory`` matches the README; a duck-typed client stands in for ``opendart.OpenDART``
+``load_directory`` matches docs/directory.md; a duck-typed client stands in for ``opendart.OpenDART``
 and answers ``disclosures.corporation_codes`` with a synthetic archive built from the domain
 test rows.
 """

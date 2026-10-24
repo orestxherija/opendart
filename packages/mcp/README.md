@@ -96,7 +96,7 @@ filters, and view switches for hosts that render apps. Other hosts get the same 
 
 ## Design
 
-![MCP server design: an MCP client calls /mcp over Streamable HTTP; middleware, then tools, resources, and prompts; services; one caching gateway; opendart-sdk; the FSS English API. Server state, including the document store built on the SDK download client, sits alongside; services and server state use opendart-analysis for filing documents and company-domain logic; checked-in generated files sit below](docs/architecture.svg)
+![MCP server design: an MCP client calls /mcp over Streamable HTTP; middleware, then tools, resources, and prompts; services; one caching gateway; opendart-sdk; the FSS English API. Server state, including the document store built on the SDK download client, sits alongside; services and server state use opendart-analysis for the service catalog, filing documents, and company-domain logic; checked-in generated files sit below](docs/architecture.svg)
 
 MCP clients connect to `/mcp` over Streamable HTTP in either protocol era: 2026-07-28 discovery or the 2025-11-25
 initialize handshake. Each request passes through access logging, rate limiting, usage metrics, and error recovery,
@@ -113,7 +113,7 @@ one shared gateway.
   five requests at once, retries a transient failure once (never quota or maintenance errors), and counts requests per
   KST day.
 - **Company directory**: the corporation-code archive loads in the background, from a disk cache that is refreshed
-  daily. Corp codes work while it loads. [opendart-analysis](../analysis/README.md#company-directory) parses, searches,
+  daily. Corp codes work while it loads. [opendart-analysis](../analysis/docs/directory.md) parses, searches,
   and resolves it; the server adds the loader, elicitation, and model-facing messages.
 - **Slow calls** report progress at least every five seconds and stop waiting at a deadline while the work continues,
   so repeating the call a minute later returns the cached result.

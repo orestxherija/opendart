@@ -30,10 +30,31 @@ type = "forbidden"
 source_modules = ["opendart_analysis.documents.*"]
 forbidden_modules = ["opendart_analysis.documents.store"]
 
-# Company lookup is pure and synchronous: no runtime store, no async machinery, no background work.
+# Company lookup is pure and synchronous: no runtime store, no async machinery, no background work,
+# and no caller-supplied data access, which belongs to the workflows built on these primitives.
 [[tool.importlinter.contracts]]
 id = "domain-pure"
-name = "Company-domain and directory modules reach neither the document store nor AnyIO"
+name = "Company-domain and directory modules reach neither the document store, AnyIO, nor data access"
 type = "forbidden"
 source_modules = ["opendart_analysis.domain", "opendart_analysis.directory"]
-forbidden_modules = ["opendart_analysis.documents.store", "anyio"]
+forbidden_modules = [
+    "opendart_analysis.documents.store",
+    "anyio",
+    "opendart_analysis.upstream",
+    "opendart_analysis.reports",
+]
+
+# The data-access convention and failure categories are leaves every capability can import.
+[[tool.importlinter.contracts]]
+id = "conventions-leaf"
+name = "Data-access and error conventions import no capability or framework"
+type = "forbidden"
+source_modules = ["opendart_analysis.upstream", "opendart_analysis.errors"]
+forbidden_modules = [
+    "opendart_analysis.documents",
+    "opendart_analysis.directory",
+    "opendart_analysis.domain",
+    "opendart_analysis.reports",
+    "anyio",
+    "pydantic",
+]

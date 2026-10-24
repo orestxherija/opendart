@@ -8,7 +8,9 @@ from types import SimpleNamespace
 import pytest
 
 from opendart_analysis.domain.periods import PeriodRef
+from opendart_analysis.reports import PeriodUnavailableError
 from opendart_mcp.core.cache import TTLCache
+from opendart_mcp.core.errors import API_KEY_MISSING, ConfigurationError, InvalidArgumentError
 from opendart_mcp.core.gateway import Gateway
 from opendart_mcp.core.ttl import DAY, FILINGS
 from opendart_mcp.models.common import CompanyRef
@@ -102,3 +104,48 @@ async def test_a_title_that_does_not_fit_the_fiscal_year_is_ignored(state, upstr
     # A December year end has no quarterly report ending in December.
     upstream.records("/list.json", filing("20260213000111", "Quarterly Report (2025.12)"))
     assert await latest_periodic_report(state, COMPANY) is None
+
+
+@pytest.mark.anyio
+async def test_the_filing_search_is_sent_and_cached_as_before(state, upstream):
+    upstream.records("/list.json", filing("20260814001234", "Semi-Annual Report (2026.06)"))
+    for _ in range(2):
+        assert await latest_periodic_report(state, COMPANY) is not None
+    assert upstream.params("/list.json") == [
+        {
+            "corp_code": "00126380",
+            "bgn_de": "20250719",
+            "end_de": "20261022",
+            "pblntf_ty": "A",
+            "last_reprt_at": "Y",
+            "page_count": "100",
+        }
+    ]
+
+
+@pytest.mark.anyio
+async def test_an_unavailable_period_keeps_its_message(state):
+    with pytest.raises(InvalidArgumentError) as raised:
+        await resolve_period(state, COMPANY, period="FY", fiscal_year=2030)
+    assert str(raised.value) == (
+        "No FY 2030 period is available: it has not ended yet or predates 2015, when OpenDART's periodic data begins."
+    )
+    assert isinstance(raised.value.__cause__, PeriodUnavailableError)
+
+
+@pytest.fixture
+def keyless():
+    def require_gateway():
+        raise ConfigurationError(API_KEY_MISSING)
+
+    return SimpleNamespace(require_gateway=require_gateway, today=lambda: dt.date(2026, 10, 22))
+
+
+@pytest.mark.anyio
+async def test_a_keyless_server_needs_the_gateway_only_to_search(keyless):
+    resolved = await resolve_period(keyless, COMPANY, period="FY", fiscal_year=2024)
+    assert [ref.label for ref in resolved.candidates] == ["FY2024"]
+    with pytest.raises(InvalidArgumentError, match="No FY 2030 period"):
+        await resolve_period(keyless, COMPANY, period="FY", fiscal_year=2030)
+    with pytest.raises(ConfigurationError, match="API key is not configured"):
+        await resolve_period(keyless, COMPANY, period="latest", fiscal_year=None)

@@ -32,7 +32,7 @@ Imports point down the table only. The pure layers never import FastMCP.
 | Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, lifespan |
 | Services | `services/` | Business logic per component, callable from tests without MCP |
 | Infrastructure | `core/` | Gateway, cache, errors, state, runtime |
-| Pure layers | `registry/`, `events/`; `opendart_analysis.domain`, `opendart_analysis.documents` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
+| Pure layers | `events/`; `opendart_analysis.catalog`, `opendart_analysis.domain`, `opendart_analysis.documents` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
 | Output | `models/`, `render/` | Pydantic output models and Markdown renderers |
 
 Every handwritten file stays under 500 lines (loq). Tool modules hold the decorated function and its docstring only;
@@ -64,6 +64,9 @@ the service, model, and renderer live in their layers.
   concurrency (5), retries transient failures once, never retries quota (020) or maintenance (800), and counts calls
   per KST day.
 - Never call the SDK directly from services; never retry in services.
+- Workflows in `opendart-analysis` receive typed data-access callables instead of the gateway. `core.upstream` binds
+  each one to `gateway.call` with unchanged arguments, and `core.ttl.lifetime` maps the call's `Volatility` hint
+  (`low`, `medium`, `high`) to `DAY`, `HOUR`, or `FILINGS`.
 
 ### Errors
 
@@ -72,6 +75,9 @@ the service, model, and renderer live in their layers.
   `QuotaExhaustedError`). `ServerErrorMiddleware` converts them; the text always reaches the model.
 - Raise from a `message` variable (`message = f"..."; raise X(message)`) to satisfy ruff's EM and TRY rules.
 - Unexpected exceptions are masked (`mask_error_details=True`) and logged.
+- Adapters translate `opendart_analysis.errors.AnalysisError` with `core.errors.from_analysis`, which keeps the
+  message: `DataSourceError` becomes `UpstreamError`, `NotConfiguredError` becomes `ConfigurationError`, and other
+  analysis errors become `InvalidArgumentError`.
 
 ### Arguments
 
@@ -91,9 +97,10 @@ explained once in `opendart://reference/vocabulary` and the server instructions.
 
 ### Periods
 
+`opendart_analysis.reports` holds the period logic; `services.periods` adapts it with unchanged signatures.
 `services.periods.resolve_period(state, company, period, fiscal_year)` returns the fiscal year, report code, period end,
 and the periodic report that defines `latest`. It searches the company's periodic reports first and falls back to
-deadline-based candidates; `first_available(candidates, fetch)` probes candidates until one has data.
+deadline-based candidates; `first_available(resolved, fetch)` probes a `ResolvedPeriod`'s candidates until one has data.
 
 ### Progress and deadlines
 
@@ -116,9 +123,9 @@ deadline-based candidates; `first_available(candidates, fetch)` probes candidate
 | `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py` | C |
 | `get_ownership`, `get_capital_structure` | `tools/ownership.py`, `tools/capital.py` | `services/ownership.py`, `services/capital.py` | D1 |
 | `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services | D2 |
-| `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `registry/` | E |
+| `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `opendart_analysis.catalog`, SDK binding in `services/sdk_binding.py` | E |
 | Company and filing resources | `resources/company.py`, `resources/filings.py` | streams' services | A |
-| Reference and status resources | `resources/reference.py`, `resources/status.py` | `registry/`, `opendart_analysis.domain` | E |
+| Reference and status resources | `resources/reference.py`, `resources/status.py` | `opendart_analysis.catalog`, `opendart_analysis.domain` | E |
 | 11 prompts, completions, instructions | `prompts/`, `completions.py`, `instructions.py` | | E |
 | Middleware, manifest, CI, container | `app/middleware.py`, `manifest.py`, `scripts/` | | F |
 | Apps | `apps/` | | F, after B and C |
@@ -154,7 +161,8 @@ a `title`, tags (`identity`, `filings`, `documents`, `financials`, `events`, `ow
 
 ## CI and tooling
 
-- `scripts/generate_mcp_registry.py --check` keeps the generated registry in sync with the catalog.
+- `scripts/generate_mcp_registry.py --check` (`just analysis generated`) keeps the generated service catalog in
+  `opendart_analysis.catalog` in sync with the API catalog; the analysis workflow and a pre-push hook run it.
 - `scripts/check_mcp_components.py` checks versions, fingerprints, and token budgets against the lock; `--update`
   rewrites the lock after an intentional change.
 - `scripts/check_mcp.py` checks both protocol eras, the tool list, `/health`, a reference resource, and the
