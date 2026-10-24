@@ -16,19 +16,19 @@ import re
 from typing import TYPE_CHECKING, Final
 
 from opendart_analysis.domain.normalize import clean_text, parse_amount
-from opendart_mcp.models.governance import (
+from opendart_analysis.extracts.fields import filed_text, fold, term_ages, text
+from opendart_analysis.governance.values import (
     AuditFacts,
     AuditFee,
     AuditYear,
     GovernanceFlag,
     NonAuditService,
 )
-from opendart_mcp.services.extracts import filed_text, fold, term_ages, text
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
 
-    from opendart_mcp.models.governance import Opinion
+    from opendart_analysis.governance.values import Opinion
 
 _OPINIONS: Final[tuple[tuple[Opinion, tuple[str, ...]], ...]] = (
     ("adverse", ("부적정", "adverse")),
@@ -109,7 +109,7 @@ def opinion_rows(records: Sequence[object], fiscal_year: int) -> list[AuditYear]
         list[AuditYear]: One entry per distinct row.
     """
     ages = term_ages([text(record, "fiscal_year") for record in records])
-    years: dict[str, AuditYear] = {}
+    years: dict[AuditYear, None] = {}
     for record, age in zip(records, ages, strict=True):
         filed = text(record, "adt_opinion")
         year = AuditYear(
@@ -118,12 +118,12 @@ def opinion_rows(records: Sequence[object], fiscal_year: int) -> list[AuditYear]
             opinion=opinion(filed),
             opinion_as_filed=filed_text(filed),
             emphasis=filed_text(text(record, "emphs_matter")),
-            key_audit_matters=key_matters(text(record, "core_adt_matter")),
+            key_audit_matters=tuple(key_matters(text(record, "core_adt_matter"))),
             special_matters=filed_text(text(record, "adt_reprt_spcmnt_matter")),
             term_as_filed=clean_text(text(record, "fiscal_year")),
         )
-        years.setdefault(year.model_dump_json(), year)
-    return sorted(years.values(), key=lambda y: -(y.fiscal_year or 0))
+        years.setdefault(year)
+    return sorted(years, key=lambda y: -(y.fiscal_year or 0))
 
 
 def same_auditor(first: str | None, second: str | None) -> bool | None:
@@ -247,16 +247,13 @@ def _scaled(value: int | None, scale: int | None) -> int | None:
     return None if value is None else value * (scale or 1)
 
 
-def audit_fees(
-    records: Sequence[object], fiscal_year: int, scale: int | None, *, detailed: bool
-) -> list[AuditFee]:
+def audit_fees(records: Sequence[object], fiscal_year: int, scale: int | None) -> list[AuditFee]:
     """Parse audit fees and hours by fiscal year.
 
     Args:
         records (Sequence[object]): ``adt_servc_cncls_sttus`` records.
         fiscal_year (int): Fiscal year of the report's current term.
         scale (int | None): Won per filed fee unit.
-        detailed (bool): Whether to keep the work covered.
 
     Returns:
         list[AuditFee]: Fees, newest fiscal year first.
@@ -275,25 +272,25 @@ def audit_fees(
                 contract_hours=hours if hours is not None else old_hours,
                 actual_fee=_scaled(spent, scale),
                 actual_hours=worked,
-                scope=filed_text(text(record, "cn")) if detailed else None,
+                scope=filed_text(text(record, "cn")),
             )
         )
     return [fee for fee in fees if fee.contract_fee is not None or fee.actual_fee is not None]
 
 
 def non_audit_services(
-    records: Sequence[object], fiscal_year: int, scale: int | None, *, detailed: bool
+    records: Sequence[object], fiscal_year: int, scale: int | None
 ) -> list[NonAuditService]:
-    """Parse non-audit services contracted with the auditor.
+    """Parse non-audit services contracted with the auditor, for every fiscal year filed.
 
     Args:
         records (Sequence[object]): ``accnut_adtor_non_adt_servc_cncls_sttus`` records.
         fiscal_year (int): Fiscal year of the report's current term.
         scale (int | None): Won per filed fee unit, from the audit-fee table.
-        detailed (bool): Whether to keep prior fiscal years.
 
     Returns:
-        list[NonAuditService]: Services with a description, date, or fee.
+        list[NonAuditService]: Services with a description, date, or fee, in filing order;
+            ``fiscal_year`` equal to the report's marks the current year.
     """
     ages = term_ages([text(record, "fiscal_year") for record in records])
     services = [
@@ -306,7 +303,6 @@ def non_audit_services(
             note=filed_text(text(record, "rm")),
         )
         for record, age in zip(records, ages, strict=True)
-        if detailed or age == 0
     ]
     return [s for s in services if s.service or s.fee is not None or s.contracted]
 
@@ -317,16 +313,14 @@ def audit_facts(
     services: Sequence[object],
     *,
     fiscal_year: int,
-    detailed: bool,
 ) -> AuditFacts | None:
     """Combine the opinion, fee, and non-audit tables of one report.
 
     Args:
-        history (Sequence[AuditYear]): Parsed opinion rows.
+        history (Sequence[AuditYear]): Parsed opinion rows, from ``opinion_rows``.
         fees (Sequence[object]): ``adt_servc_cncls_sttus`` records.
         services (Sequence[object]): ``accnut_adtor_non_adt_servc_cncls_sttus`` records.
         fiscal_year (int): Fiscal year of the report's current term.
-        detailed (bool): Whether to add history, prior-year services, and filed text.
 
     Returns:
         AuditFacts | None: Audit facts, or None when all three tables are empty.
@@ -344,13 +338,13 @@ def audit_facts(
         opinion=worst.opinion,
         opinion_as_filed=worst.opinion_as_filed,
         emphasis=next((year.emphasis for year in current if year.emphasis), None),
-        key_audit_matters=next((y.key_audit_matters for y in current if y.key_audit_matters), []),
+        key_audit_matters=next((y.key_audit_matters for y in current if y.key_audit_matters), ()),
         prior_auditor=prior,
         auditor_changed_vs_prior_year=changed(current[0].auditor, prior),
-        fees=audit_fees(fees, fiscal_year, scale, detailed=detailed),
+        fees=tuple(audit_fees(fees, fiscal_year, scale)),
         fee_scale=scale,
-        non_audit_services=non_audit_services(services, fiscal_year, scale, detailed=detailed),
-        history=list(history) if detailed else None,
+        non_audit_services=tuple(non_audit_services(services, fiscal_year, scale)),
+        history=tuple(history),
     )
 
 

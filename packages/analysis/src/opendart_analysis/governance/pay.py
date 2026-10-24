@@ -6,7 +6,7 @@ category (English categories such as "Outside director (excluding members of the
 committee)"), individual directors and auditors paid KRW 500 million or more, the five
 highest-paid people over KRW 500 million, and unregistered executives. Amounts arrive in
 won. The Ver 2.0 individual services nest people under ``group`` with stock-based pay
-details; the caller prefers them and falls back to Ver 1.0 rows, which read the same way
+details; the workflow prefers them and falls back to Ver 1.0 rows, which read the same way
 here. Tables that cover several fiscal years (``fscl_year``) keep the newest.
 """
 
@@ -16,8 +16,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from opendart_analysis.domain.normalize import clean_text, parse_amount
-from opendart_mcp.models.governance import Compensation, PayGroup, PersonPay
-from opendart_mcp.services.extracts import filed_text, is_total, term_ages, text
+from opendart_analysis.extracts.fields import filed_text, is_total, term_ages, text
+from opendart_analysis.governance.values import Compensation, PayGroup, PersonPay
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -73,13 +73,12 @@ def _approved(records: Sequence[object]) -> int | None:
     return sum(known) if known else None
 
 
-def _group(row: object, fields: tuple[str, str, str], *, detailed: bool) -> PayGroup:
+def _group(row: object, fields: tuple[str, str, str]) -> PayGroup:
     """Read a pay group.
 
     Args:
         row (object): Pay record.
         fields (tuple[str, str, str]): Headcount, total, and average field names.
-        detailed (bool): Whether to keep stock-based pay and notes.
 
     Returns:
         PayGroup: Group.
@@ -90,36 +89,30 @@ def _group(row: object, fields: tuple[str, str, str], *, detailed: bool) -> PayG
         headcount=parse_amount(text(row, headcount)),
         total=parse_amount(text(row, total)),
         average=parse_amount(text(row, average)),
-        stock_based=parse_amount(text(row, "stk_bsd_pd_mendng_totamt")) if detailed else None,
-        note=filed_text(text(row, "rm")) if detailed else None,
+        stock_based=parse_amount(text(row, "stk_bsd_pd_mendng_totamt")),
+        note=filed_text(text(row, "rm")),
     )
 
 
-def _by_type(records: Sequence[object], *, detailed: bool) -> list[PayGroup]:
+def _by_type(records: Sequence[object]) -> list[PayGroup]:
     """Read pay by director category, without total rows and empty categories.
 
     Args:
         records (Sequence[object]): ``drctr_adt_all_mendng_sttus_mendng_pymntamt_ty_cl`` records.
-        detailed (bool): Whether to keep stock-based pay and notes.
 
     Returns:
         list[PayGroup]: Categories with figures.
     """
     fields = ("nmpr", "pymnt_totamt", "psn1_avrg_pymntamt")
-    groups = [
-        _group(row, fields, detailed=detailed)
-        for row in newest(records)
-        if not is_total(text(row, "se"))
-    ]
+    groups = [_group(row, fields) for row in newest(records) if not is_total(text(row, "se"))]
     return [g for g in groups if g.headcount is not None or g.total is not None]
 
 
-def people(records: Sequence[object], *, detailed: bool) -> list[PersonPay]:
+def people(records: Sequence[object]) -> list[PersonPay]:
     """Read individual pay, highest first.
 
     Args:
         records (Sequence[object]): Ver 2.0 ``group`` items or Ver 1.0 ``list`` records.
-        detailed (bool): Whether to keep pay outside the total, as filed.
 
     Returns:
         list[PersonPay]: People with a name.
@@ -129,9 +122,7 @@ def people(records: Sequence[object], *, detailed: bool) -> list[PersonPay]:
             name=name,
             position=clean_text(text(row, "ofcps")),
             total=parse_amount(text(row, "mendng_totamt")),
-            not_in_total=filed_text(text(row, "mendng_totamt_ct_incls_mendng"))
-            if detailed
-            else None,
+            not_in_total=filed_text(text(row, "mendng_totamt_ct_incls_mendng")),
         )
         for row in newest(records)
         if (name := clean_text(text(row, "nm")))
@@ -139,12 +130,11 @@ def people(records: Sequence[object], *, detailed: bool) -> list[PersonPay]:
     return sorted(found, key=lambda person: -(person.total or 0))
 
 
-def compensation(tables: PayTables, *, detailed: bool) -> Compensation | None:
+def compensation(tables: PayTables) -> Compensation | None:
     """Combine the pay tables of one report.
 
     Args:
         tables (PayTables): Pay records.
-        detailed (bool): Whether to keep stock-based pay, notes, and filed remarks.
 
     Returns:
         Compensation | None: Pay facts, or None when every table is empty.
@@ -156,13 +146,11 @@ def compensation(tables: PayTables, *, detailed: bool) -> Compensation | None:
         paid_total=parse_amount(text(paid, "mendng_totamt")),
         headcount=parse_amount(text(paid, "nmpr")),
         average=parse_amount(text(paid, "jan_avrg_mendng_am")),
-        by_type=_by_type(tables.by_type, detailed=detailed),
-        directors_over_500m=people(tables.directors, detailed=detailed),
-        top_paid=people(tables.top, detailed=detailed),
+        by_type=tuple(_by_type(tables.by_type)),
+        directors_over_500m=tuple(people(tables.directors)),
+        top_paid=tuple(people(tables.top)),
         unregistered_executives=None
         if unregistered is None
-        else _group(
-            unregistered, ("nmpr", "fyer_salary_totamt", "jan_salary_am"), detailed=detailed
-        ),
+        else _group(unregistered, ("nmpr", "fyer_salary_totamt", "jan_salary_am")),
     )
     return None if result == Compensation() else result

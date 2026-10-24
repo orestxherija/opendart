@@ -14,13 +14,13 @@ import re
 from typing import TYPE_CHECKING, Final
 
 from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_decimal
-from opendart_mcp.models.governance import BoardFacts, EmployeeGroup, Employees, Executive
-from opendart_mcp.services.extracts import filed_text, fold, is_total, text
+from opendart_analysis.extracts.fields import filed_text, fold, is_total, text
+from opendart_analysis.governance.values import BoardFacts, EmployeeGroup, Employees, Executive
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
 
-    from opendart_mcp.models.governance import Role
+    from opendart_analysis.governance.values import Role
 
 _BOARD_FIELDS: Final = ("drctr_co", "otcmp_drctr_co", "apnt", "rlsofc", "mdstrm_resig")
 _ROLES: Final[tuple[tuple[Role, tuple[str, ...]], ...]] = (
@@ -154,56 +154,42 @@ def is_subtotal(value: str | None) -> bool:
     return is_total(value) or any(word in folded for word in _SUBTOTALS)
 
 
-def _executive(record: object, *, detailed: bool) -> Executive:
+def executive(record: object) -> Executive:
     """Normalize one executive.
 
     Args:
         record (object): ``exctv_sttus`` record.
-        detailed (bool): Whether to add personal details and career.
 
     Returns:
-        Executive: Executive.
+        Executive: Executive with personal details and career.
     """
     filed_role = clean_text(text(record, "rgist_exctv_at"))
-    extra: dict[str, object] = {}
-    if detailed:
-        extra = {
-            "gender": gender(text(record, "sexdstn")),
-            "born": born(text(record, "birth_ym")),
-            "career": bullets(text(record, "main_career")),
-            "largest_shareholder_relation": filed_text(text(record, "mxmm_shrholdr_relate")),
-            "tenure": filed_text(text(record, "hffc_pd")),
-            "role_as_filed": filed_role,
-        }
-    return Executive.model_validate(
-        {
-            "name": clean_text(text(record, "nm")) or "",
-            "position": clean_text(text(record, "ofcps")),
-            "role": role(filed_role),
-            "full_time": full_time(text(record, "fte_at")),
-            "responsibilities": bullets(text(record, "chrg_job")),
-            "term_ends": parse_date(text(record, "tenure_end_on")),
-            **extra,
-        }
+    return Executive(
+        name=clean_text(text(record, "nm")) or "",
+        position=clean_text(text(record, "ofcps")),
+        role=role(filed_role),
+        full_time=full_time(text(record, "fte_at")),
+        responsibilities=bullets(text(record, "chrg_job")),
+        term_ends=parse_date(text(record, "tenure_end_on")),
+        gender=gender(text(record, "sexdstn")),
+        born=born(text(record, "birth_ym")),
+        career=bullets(text(record, "main_career")),
+        largest_shareholder_relation=filed_text(text(record, "mxmm_shrholdr_relate")),
+        tenure=filed_text(text(record, "hffc_pd")),
+        role_as_filed=filed_role,
     )
 
 
-def executives(records: Sequence[object], *, detailed: bool) -> tuple[list[Executive], int]:
-    """List executives; concise results keep registered officers only.
+def executives(records: Sequence[object]) -> list[Executive]:
+    """List the named executives, registered and unregistered, in filing order.
 
     Args:
         records (Sequence[object]): ``exctv_sttus`` records.
-        detailed (bool): Whether to keep unregistered executives and personal details.
 
     Returns:
-        tuple[list[Executive], int]: Executives as filed, and how many unregistered
-            executives were left out.
+        list[Executive]: Executives; rows without a name are skipped.
     """
-    people = [_executive(r, detailed=detailed) for r in records if clean_text(text(r, "nm"))]
-    if detailed:
-        return people, 0
-    kept = [person for person in people if person.role != "unregistered"]
-    return kept, len(people) - len(kept)
+    return [executive(r) for r in records if clean_text(text(r, "nm"))]
 
 
 def _first(*values: int | None) -> int | None:
@@ -315,15 +301,14 @@ def _average_tenure(rows: Sequence[EmployeeGroup]) -> float | None:
     return round(sum(years * count for years, count in known) / weight, 1) if weight else None
 
 
-def employees(records: Sequence[object], *, detailed: bool) -> Employees | None:
-    """Summarize the workforce.
+def employees(records: Sequence[object]) -> Employees | None:
+    """Summarize the workforce from its headline rows.
 
     Args:
         records (Sequence[object]): ``emp_sttus`` records.
-        detailed (bool): Whether to list every row rather than the headline rows.
 
     Returns:
-        Employees | None: Totals and rows, or None when no row has figures.
+        Employees | None: Totals and every row with figures, or None when no row has any.
     """
     groups = [g for g in map(_group, records) if g.total is not None or g.total_salary]
     if not groups:
@@ -335,5 +320,5 @@ def employees(records: Sequence[object], *, detailed: bool) -> Employees | None:
         total_salary=_sum(row.total_salary for row in rows),
         average_salary=_average_salary(rows),
         average_tenure_years=_average_tenure(rows),
-        groups=groups if detailed else rows,
+        groups=tuple(groups),
     )

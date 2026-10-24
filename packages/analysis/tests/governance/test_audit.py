@@ -1,4 +1,4 @@
-"""Audit facts and the shared periodic-report helpers: terms, opinions, fees, and flags."""
+"""Audit facts from synthetic opinion, fee, and non-audit records: opinions, fees, and flags."""
 
 from __future__ import annotations
 
@@ -6,18 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from opendart_analysis.domain.periods import PeriodRef
-from opendart_mcp.core.errors import UpstreamError
-from opendart_mcp.services.extracts import (
-    checked,
-    filed_text,
-    gather_all,
-    is_total,
-    records,
-    sources,
-    term_ages,
-)
-from opendart_mcp.services.governance_audit import (
+from opendart_analysis.governance import (
+    AuditYear,
     audit_facts,
     audit_flags,
     changed,
@@ -28,7 +18,6 @@ from opendart_mcp.services.governance_audit import (
     same_auditor,
     scale_note,
 )
-from opendart_mcp.services.periods import PeriodicReport, ResolvedPeriod
 
 
 def row(**fields):
@@ -50,28 +39,6 @@ def fee_row(term, fee, hours, **fields):
         cn="분ㆍ반기 검토\n연결 감사",
         **fields,
     )
-
-
-@pytest.mark.parametrize(
-    ("labels", "expected"),
-    [
-        (
-            ["제57기 \n(당기)", "제57기 \n(당기)", "제56기\n(전기)", "제55기\n(전전기)"],
-            [0, 0, 1, 2],
-        ),
-        (["제57기(당기)", "제56기(당기)", "제55기(당기)"], [0, 1, 2]),
-        (["당기", "전기", "전전기"], [0, 1, 2]),
-        (["2025", "2024", "2023"], [0, 1, 2]),
-        (["57th (current)", "56th (prior)"], [0, 1]),
-        (["Current term", "Prior term", "Two years prior"], [0, 1, 2]),
-        (["A", "B", "A"], [0, 1, 0]),
-        (["제57기(당기)", None, "-", "제56기(전기)"], [0, 0, 0, 1]),
-        (["-", "-"], [0, 0]),
-        ([], []),
-    ],
-)
-def test_term_ages(labels, expected):
-    assert term_ages(labels) == expected
 
 
 @pytest.mark.parametrize(
@@ -157,9 +124,16 @@ def test_opinion_rows_drop_duplicates_and_number_years():
     assert (current.opinion, current.emphasis, current.key_audit_matters) == (
         "unqualified",
         None,
-        ["매출", "재고"],
+        ("매출", "재고"),
     )
     assert current.term_as_filed == "제57기 (당기)"
+    assert history[1] == AuditYear(
+        fiscal_year=2024,
+        auditor="다라회계법인",
+        opinion="unqualified",
+        opinion_as_filed="적정의견",
+        term_as_filed="제56기 (전기)",
+    )
 
 
 def test_audit_facts_take_the_worst_current_opinion_and_scale_fees():
@@ -200,7 +174,7 @@ def test_audit_facts_take_the_worst_current_opinion_and_scale_fees():
             rm="-",
         ),
     ]
-    facts = audit_facts(history, fees, services, fiscal_year=2025, detailed=False)
+    facts = audit_facts(history, fees, services, fiscal_year=2025)
     assert facts is not None
     assert (facts.opinion, facts.opinion_as_filed) == ("qualified", "한정의견")
     assert facts.emphasis == "계속기업 가정에 관한 불확실성"
@@ -210,21 +184,18 @@ def test_audit_facts_take_the_worst_current_opinion_and_scale_fees():
         (2025, 300_000_000, 2000),
         (2024, 250_000_000, 1900),
     ]
-    assert facts.fees[0].scope is None
-    assert [(s.fiscal_year, s.fee, s.note) for s in facts.non_audit_services] == [
-        (2025, 20_000_000, "가나회계법인")
+    assert facts.fees[0].scope == "분ㆍ반기 검토 연결 감사"
+    # Every fiscal year's services stay, in filing order; the blank prior-year row is dropped.
+    assert [(s.fiscal_year, s.service, s.fee, s.note) for s in facts.non_audit_services] == [
+        (2025, "세무자문", 20_000_000, "가나회계법인"),
+        (2024, "ESG 인증", 10_000_000, None),
     ]
-    assert facts.history is None
-    detailed = audit_facts(history, fees, services, fiscal_year=2025, detailed=True)
-    assert detailed is not None
-    assert [s.service for s in detailed.non_audit_services] == ["세무자문", "ESG 인증"]
-    assert detailed.fees[0].scope == "분ㆍ반기 검토 연결 감사"
-    assert detailed.history == history
+    assert facts.history == tuple(history)
 
 
 def test_audit_facts_without_tables_or_current_rows():
-    assert audit_facts([], [], [], fiscal_year=2025, detailed=False) is None
-    facts = audit_facts([], [fee_row("2025", "9", "-")], [], fiscal_year=2025, detailed=False)
+    assert audit_facts([], [], [], fiscal_year=2025) is None
+    facts = audit_facts([], [fee_row("2025", "9", "-")], [], fiscal_year=2025)
     assert facts is not None
     assert (facts.auditor, facts.opinion, facts.fee_scale) == (None, None, None)
     assert facts.fees[0].contract_fee == 9
@@ -240,7 +211,7 @@ def test_flags_cover_modified_opinions_going_concern_and_auditor_changes():
         ],
         2025,
     )
-    facts = audit_facts(history, [], [], fiscal_year=2025, detailed=False)
+    facts = audit_facts(history, [], [], fiscal_year=2025)
     assert facts is not None
     flags = audit_flags(facts, history, fiscal_year=2025, label="FY2025")
     assert [flag.kind for flag in flags] == ["modified_opinion", "going_concern", "auditor_change"]
@@ -248,66 +219,6 @@ def test_flags_cover_modified_opinions_going_concern_and_auditor_changes():
     assert flags[1].detail.endswith("...")
     assert flags[2].detail == "Auditor changed from 다라회계법인 to 가나회계법인."
     clean = opinion_rows([opinion_row("2025"), opinion_row("2024")], 2025)
-    clean_facts = audit_facts(clean, [], [], fiscal_year=2025, detailed=False)
+    clean_facts = audit_facts(clean, [], [], fiscal_year=2025)
     assert clean_facts is not None
     assert audit_flags(clean_facts, clean, fiscal_year=2025, label="FY2025") == []
-
-
-def test_filed_text_and_totals():
-    assert filed_text("해당사항 없음") is None
-    assert filed_text("N/A") is None
-    assert filed_text("  감사\n  의견 ") == "감사 의견"
-    assert is_total("합 계")
-    assert is_total("Total")
-    assert not is_total("Public offering")
-
-
-def test_sources_skip_invalid_numbers_and_title_the_report():
-    report = PeriodicReport(
-        PeriodRef(2025, "FY"), None, "20260310002820", "Annual Report (2025.12)", None
-    )
-    found = sources(["20260310002820", None, "bad", "20260310002820", "20250310000001"], report)
-    assert [(s.filing_number, s.title) for s in found] == [
-        ("20260310002820", "Annual Report (2025.12)"),
-        ("20250310000001", None),
-    ]
-
-
-def test_checked_names_the_report_or_the_probed_periods():
-    report = PeriodicReport(
-        PeriodRef(2025, "FY"), None, "20260310002820", "Annual Report (2025.12)", None
-    )
-    assert (
-        checked(ResolvedPeriod((PeriodRef(2025, "FY"),), report, None))
-        == '"Annual Report (2025.12)"'
-    )
-    refs = (
-        PeriodRef(2026, "Q3"),
-        PeriodRef(2026, "H1"),
-        PeriodRef(2026, "Q1"),
-        PeriodRef(2025, "FY"),
-    )
-    assert checked(ResolvedPeriod(refs, None, "guessed")) == "Q3 2026, H1 2026, Q1 2026"
-
-
-def test_records_read_containers_safely():
-    assert records(row(list=[1, 2])) == [1, 2]
-    assert records(row(group=[3]), "group") == [3]
-    assert records(row(list=None)) == []
-
-
-@pytest.mark.anyio
-async def test_gather_all_raises_the_first_failure_after_every_call_ends():
-    finished = []
-
-    async def ok(name):
-        finished.append(name)
-        return name
-
-    async def fail():
-        raise UpstreamError("upstream down")
-
-    assert await gather_all([ok("a"), ok("b")]) == ["a", "b"]
-    with pytest.raises(UpstreamError, match="upstream down"):
-        await gather_all([fail(), ok("c")])
-    assert finished == ["a", "b", "c"]

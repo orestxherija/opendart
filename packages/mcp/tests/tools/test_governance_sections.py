@@ -193,6 +193,23 @@ async def test_executives_keep_registered_officers_in_concise_results(client, up
 
 
 @pytest.mark.anyio
+async def test_concise_results_without_registered_officers_note_both(client, upstream):
+    samsung(upstream)
+    upstream.records("/exctvSttus.json", executive("병", "Unregistered executive"))
+    result = await client.call_tool(
+        "get_governance", {"company": "005930", "sections": ["executives", "board"]}
+    )
+    data = result.structured_content
+    assert "executives" not in data
+    assert data["notes"] == [
+        "1 unregistered executives are omitted; response_format='detailed' lists them.",
+        "No executives data in the FY2025 report.",
+        "No board data in the FY2025 report.",
+        "Flags come from the audit section, which was not requested.",
+    ]
+
+
+@pytest.mark.anyio
 async def test_compensation_falls_back_to_version_one_services(client, upstream):
     samsung(upstream)
     pay_tables(upstream)
