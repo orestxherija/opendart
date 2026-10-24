@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from packages.mcp.tests.events.data import debt_registration, identity, profile
+from tests.support.events import debt_registration, identity, profile
 
 SHORT_TRANCHES = (
     ("301-1", "100,000,000,000", "3.10", "2026.12.15"),

@@ -13,21 +13,22 @@ the original filing date.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, cast
 
 from pydantic import BaseModel
 
 from opendart_analysis.catalog import EVENT_KINDS, field_kind, field_spec, service
 from opendart_analysis.domain.identifiers import is_filing_number
 from opendart_analysis.domain.normalize import clean_text
-from opendart_mcp.events.values import normalize
+from opendart_analysis.events.values import normalize
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping
+    from collections.abc import Iterable, Iterator
 
     from opendart_analysis.catalog import EventKind, ServiceSpec
-    from opendart_mcp.events.values import Scalar
+    from opendart_analysis.events.values import Scalar
 
 COMMON_FIELDS: Final = frozenset(
     {"filing_number", "corporation_type", "corporation_code", "corporation_name"}
@@ -89,7 +90,7 @@ class EventRecord:
         return None
 
     def value(self, name: str) -> Scalar:
-        """Return a field's first value, normalized by its registry kind.
+        """Return a field's first value, normalized by its catalog kind.
 
         Args:
             name (str): SDK field name.
@@ -100,40 +101,78 @@ class EventRecord:
         return normalize(field_kind(self.service, name), self.raw(name))
 
 
+def _get(container: object, name: str) -> object:
+    """Read a member of a response or record, from a mapping or an attribute.
+
+    Args:
+        container (object): Model or mapping, such as an SDK response or a decoded JSON body.
+        name (str): Member name.
+
+    Returns:
+        object: The member, or None when it is absent.
+    """
+    if isinstance(container, Mapping):
+        return cast("Mapping[str, object]", container).get(name)
+    return getattr(container, name, None)
+
+
+def _members(container: object, name: str) -> Iterable[object]:
+    """Iterate a list member of a response, treating anything but a list as no items.
+
+    Args:
+        container (object): Model or mapping.
+        name (str): Member name, such as ``list`` or ``group``.
+
+    Returns:
+        Iterable[object]: The member's items.
+    """
+    members = _get(container, name)
+    return cast("Iterable[object]", members) if isinstance(members, list) else ()
+
+
 def _items(response: object, path: tuple[str, ...]) -> Iterator[tuple[str | None, object]]:
     """Walk the record containers of a response.
 
     Args:
-        response (object): SDK response model.
-        path (tuple[str, ...]): Record path from the registry: ("list",) or
+        response (object): SDK response model, or a decoded JSON body.
+        path (tuple[str, ...]): Record path from the catalog: ("list",) or
             ("group", "list").
 
     Yields:
         tuple[str | None, object]: Section title from the response (None without groups)
-            and the record model.
+            and the record.
     """
     if path[0] != "group":
-        for item in getattr(response, "list", None) or ():
+        for item in _members(response, "list"):
             yield None, item
         return
-    for group in getattr(response, "group", None) or ():
-        for item in getattr(group, "list", None) or ():
-            yield getattr(group, "title", None), item
+    for group in _members(response, "group"):
+        title = _get(group, "title")
+        for item in _members(group, "list"):
+            yield title if isinstance(title, str) else None, item
 
 
 def _values(spec: ServiceSpec, item: object) -> dict[str, str]:
     """Read a record's raw values by SDK field name.
 
-    Undocumented upstream fields keep their upstream names.
+    A model is read through its dump, keyed by SDK names; a mapping, such as a decoded JSON
+    record keyed by upstream names, is read as it is. Either way, documented fields take their
+    SDK names and undocumented upstream fields keep their upstream names.
 
     Args:
         spec (ServiceSpec): Service of the record.
-        item (object): SDK record model.
+        item (object): SDK record model, or a mapping of field values.
 
     Returns:
         dict[str, str]: Non-null values as text.
     """
-    data: dict[str, object] = item.model_dump() if isinstance(item, BaseModel) else {}
+    data: Mapping[str, object]
+    if isinstance(item, BaseModel):
+        data = item.model_dump()
+    elif isinstance(item, Mapping):
+        data = cast("Mapping[str, object]", item)
+    else:
+        data = {}
     values: dict[str, str] = {}
     for key, value in data.items():
         if value is not None:
@@ -212,7 +251,8 @@ def records_from(kind: EventKind, response: object) -> list[EventRecord]:
 
     Args:
         kind (EventKind): Event kind the response answers.
-        response (object): SDK response model.
+        response (object): The kind's service response: an SDK response model, or a decoded
+            JSON body with the same ``list`` or ``group`` containers.
 
     Returns:
         list[EventRecord]: Records in upstream order; rows without a valid filing number

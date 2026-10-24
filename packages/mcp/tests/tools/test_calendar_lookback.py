@@ -9,7 +9,7 @@ import pytest
 from fastmcp import Client
 
 from opendart_mcp.server import create_server
-from packages.mcp.tests.events.data import buyback, convertible_bond, filing, merger, profile
+from tests.support.events import buyback, convertible_bond, filing, merger, profile
 
 LONG_START = "20231022"
 RECENT_START = "20251022"

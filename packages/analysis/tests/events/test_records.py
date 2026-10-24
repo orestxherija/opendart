@@ -1,17 +1,19 @@
-"""Grouping upstream rows into one record per filing, and section matching."""
+"""Grouping upstream rows into one record per filing, and section matching.
+
+Responses are decoded JSON bodies; MCP's suite checks that SDK response models give the same
+records.
+"""
 
 from __future__ import annotations
 
-from opendart.models.major_issues import CvbdIsDecsnResponse
-from opendart.models.securities_registration import EstkRsResponse
-from opendart_mcp.events import labeled_fields, records_from
-from packages.mcp.tests.events.data import REDEMPTION, convertible_bond, equity_registration
+from types import SimpleNamespace
+
+from opendart_analysis.events import labeled_fields, records_from
+from tests.support.events import REDEMPTION, convertible_bond, equity_registration
 
 
 def response(*rows):
-    return CvbdIsDecsnResponse.model_validate(
-        {"status": "000", "message": "ok", "list": list(rows)}
-    )
+    return {"status": "000", "message": "ok", "list": list(rows)}
 
 
 def test_list_rows_become_one_record_per_filing():
@@ -41,16 +43,25 @@ def test_undocumented_fields_keep_their_names():
 
 
 def test_missing_containers_give_no_records():
-    empty = CvbdIsDecsnResponse.model_validate({"status": "000", "message": "ok"})
-    assert records_from("convertible_bond", empty) == []
+    assert records_from("convertible_bond", {"status": "000", "message": "ok"}) == []
+    assert records_from("convertible_bond", {"list": None, "group": "text"}) == []
     assert records_from("convertible_bond", object()) == []
+
+
+def test_containers_are_also_read_as_attributes():
+    model = SimpleNamespace(list=[convertible_bond("20261021000315")])
+    (record,) = records_from("convertible_bond", model)
+    assert record.raw("bd_tm") == "3"
+    row = {"rcept_no": "20261021000435", "slprc": "1"}
+    group = SimpleNamespace(title="General matters", list=[row])
+    (record,) = records_from("equity_offering_registration", SimpleNamespace(group=[group]))
+    assert (record.rows[0].section, record.raw("slprc")) == ("General matters", "1")
 
 
 def test_registration_sections_are_matched_by_title_or_fields():
     body = equity_registration()
     body["group"].append({"list": [{"rcept_no": "20261021000435", "se": "시설자금", "amt": "1"}]})
-    model = EstkRsResponse.model_validate({"status": "000", "message": "ok", **body})
-    (record,) = records_from("equity_offering_registration", model)
+    (record,) = records_from("equity_offering_registration", {"status": "000", **body})
     sections = [row.section for row in record.rows]
     assert sections == [
         "General matters",
@@ -65,9 +76,7 @@ def test_registration_sections_are_matched_by_title_or_fields():
 
 
 def test_labeled_fields_skip_blanks_and_identity_and_use_section_labels():
-    model = EstkRsResponse.model_validate(
-        {"status": "000", "message": "ok", **equity_registration()}
-    )
+    model = {"status": "000", "message": "ok", **equity_registration()}
     (record,) = records_from("equity_offering_registration", model)
     fields = labeled_fields(record)
     names = {(f.section, f.name) for f in fields}

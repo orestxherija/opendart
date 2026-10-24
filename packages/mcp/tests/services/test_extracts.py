@@ -15,7 +15,7 @@ from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.services.companies import Company
 from opendart_mcp.services.extracts import checked, fetch_records, probe_attempts
 from opendart_mcp.services.periods import PROBE_ATTEMPTS, PeriodicReport, ResolvedPeriod
-from packages.mcp.tests.events.data import filing, profile
+from tests.support.events import filing, profile
 
 COMPANY = Company(ref=CompanyRef(name="Example", corp_code="00126380"), fye_month=12, profile=None)
 MARCH_END = dt.date(2026, 3, 31)

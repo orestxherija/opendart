@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Final
 from opendart_analysis.catalog import EVENT_KINDS, kinds_in
 from opendart_analysis.domain.dates import DateWindow, add_months
 from opendart_analysis.domain.identifiers import filing_date
-from opendart_mcp.events import CALENDAR_KINDS
+from opendart_analysis.events import CALENDAR_KINDS
 from opendart_mcp.services.event_index import GROUP_RESOURCES, search_index
 from opendart_mcp.services.events import EARLIEST, fetch_events
 from opendart_mcp.services.extracts import gather_all

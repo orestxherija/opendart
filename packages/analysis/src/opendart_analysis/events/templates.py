@@ -2,7 +2,7 @@
 
 A headline is a lead fragment followed by optional fragments, each a ``str.format`` template
 over named fields. A fragment appears only when every field it names has a value, so one
-template serves reports that fill different columns. Values are normalized by registry
+template serves reports that fill different columns. Values are normalized by catalog
 field kind and formatted for reading (``KRW 5.0bn``, ``8.52%``, ISO dates). Key terms are
 the normalized values of a short list of fields under friendly names: amounts in won,
 ``*_pct`` in percent. Derived values (a sum of financing purposes, new shares as a percentage
@@ -15,11 +15,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
 from opendart_analysis.catalog import field_kind
-from opendart_mcp.events.values import TEXT_LIMIT, display, shorten
+from opendart_analysis.events.values import TEXT_LIMIT, display, shorten
 
 if TYPE_CHECKING:
-    from opendart_mcp.events.records import EventRecord
-    from opendart_mcp.events.values import Scalar
+    from opendart_analysis.events.records import EventRecord
+    from opendart_analysis.events.values import Scalar
 
 
 @dataclass(frozen=True, slots=True)

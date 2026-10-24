@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.events.templates import Presentation, part
+from opendart_analysis.events.templates import Presentation, part
 
 if TYPE_CHECKING:
     from opendart_analysis.catalog import EventKind

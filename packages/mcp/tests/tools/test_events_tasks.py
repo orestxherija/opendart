@@ -9,7 +9,7 @@ from fastmcp.client.transports import FastMCPTransport
 from fastmcp_tasks import call_tool_task  # importing fastmcp_tasks enables client tasks
 
 from opendart_mcp.tools import events as events_tool
-from packages.mcp.tests.events.data import convertible_bond, filing, merger, profile
+from tests.support.events import convertible_bond, filing, merger, profile
 
 ARGUMENTS = {"company": "005930"}
 

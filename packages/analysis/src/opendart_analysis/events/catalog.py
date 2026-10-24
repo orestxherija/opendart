@@ -13,29 +13,29 @@ from typing import TYPE_CHECKING, Final
 
 from opendart_analysis.catalog import EVENT_KINDS, field_spec
 from opendart_analysis.domain.normalize import clean_text
-from opendart_mcp.events.dates import board_date, event_dates
-from opendart_mcp.events.flags import event_flags
-from opendart_mcp.events.kinds_capital import CAPITAL
-from opendart_mcp.events.kinds_deals import DEALS
-from opendart_mcp.events.kinds_other import OTHER
-from opendart_mcp.events.records import COMMON_FIELDS
-from opendart_mcp.events.templates import headline, key_terms
-from opendart_mcp.events.values import normalize
+from opendart_analysis.events.dates import board_date, event_dates
+from opendart_analysis.events.flags import event_flags
+from opendart_analysis.events.kinds_capital import CAPITAL
+from opendart_analysis.events.kinds_deals import DEALS
+from opendart_analysis.events.kinds_other import OTHER
+from opendart_analysis.events.records import COMMON_FIELDS
+from opendart_analysis.events.templates import headline, key_terms
+from opendart_analysis.events.values import normalize
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from datetime import date
 
     from opendart_analysis.catalog import EventGroup, EventKind
-    from opendart_mcp.events.records import EventRecord
-    from opendart_mcp.events.templates import Presentation
-    from opendart_mcp.events.values import Scalar
+    from opendart_analysis.events.records import EventRecord
+    from opendart_analysis.events.templates import Presentation
+    from opendart_analysis.events.values import Scalar
 
 _ALL: Final = {**CAPITAL, **DEALS, **OTHER}
 PRESENTATIONS: Final[Mapping[EventKind, Presentation]] = MappingProxyType(
     {kind: _ALL[kind] for kind in EVENT_KINDS}
 )
-"""Presentation of every event kind, in registry order."""
+"""Presentation of every event kind, in catalog order."""
 
 
 @dataclass(frozen=True, slots=True)

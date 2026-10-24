@@ -1,9 +1,9 @@
 """The filing index: search OpenDART's disclosure list by company or across the market.
 
 Searches resolve the company and the date window, then read the index through
-:mod:`opendart_mcp.services.filing_scan`. Without a company, OpenDART limits the window to
-three calendar months. Results carry the exact call for the next page, with absolute dates
-so that it covers the same window on any day.
+``opendart_analysis.filings``, bound to the gateway with this server's page budgets. Without
+a company, OpenDART limits the window to three calendar months. Results carry the exact call
+for the next page, with absolute dates so that it covers the same window on any day.
 """
 
 from __future__ import annotations
@@ -11,26 +11,52 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
-from opendart_analysis.domain.categories import CATEGORY_INFO, FILING_CATEGORIES
+from opendart_analysis import filings
+from opendart_analysis.domain.categories import FILING_CATEGORIES
 from opendart_analysis.domain.dates import cap_to_three_months, resolve_window, within_three_months
+from opendart_analysis.filings import (
+    FilingSearchRequest,
+    SearchBudgetError,
+    disjoint_categories,
+)
+from opendart_analysis.upstream import MAX_FILING_PAGE
 from opendart_mcp.core.errors import InvalidArgumentError
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.models.common import NextCall, Pagination
-from opendart_mcp.models.filings import SearchFilingsResult
-from opendart_mcp.services.filing_scan import UPSTREAM_PAGE, Query, read_merged, read_single
+from opendart_mcp.core.upstream_filings import filing_pages
+from opendart_mcp.models.common import CompanyRef, NextCall, Pagination
+from opendart_mcp.models.filings import FilingItem, SearchFilingsResult
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from pydantic import JsonValue
 
     from opendart_analysis.domain.categories import FilingCategory
     from opendart_analysis.domain.dates import DateWindow
     from opendart_analysis.domain.types import MarketFilter
+    from opendart_analysis.filings import Filing, TitleScan
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
     from opendart_mcp.services.companies import Company
 
+__all__ = [
+    "DEFAULT_LIMIT",
+    "DEFAULT_SINCE",
+    "MAX_CALLS",
+    "TITLE_SCAN_CALLS",
+    "UPSTREAM_PAGE",
+    "WINDOW_TOO_WIDE",
+    "FilingSearch",
+    "category_named",
+    "company_filing_index",
+    "disjoint_categories",
+    "find_filings",
+]
+
+UPSTREAM_PAGE: Final = MAX_FILING_PAGE
+"""Rows per upstream page, OpenDART's maximum."""
+MAX_CALLS: Final = 20
+"""Upstream calls one page of a multi-category search may take."""
+TITLE_SCAN_CALLS: Final = 5
+"""Upstream pages read to match title text (500 filings)."""
 DEFAULT_SINCE: Final = "90d"
 DEFAULT_LIMIT: Final = 50
 WINDOW_TOO_WIDE: Final = "OpenDART limits searches without a company to three months; narrow since/until or pass company."
@@ -107,26 +133,47 @@ def _window(
     return capped, [note]
 
 
-def disjoint_categories(
-    categories: Sequence[FilingCategory],
-) -> tuple[FilingCategory | None, ...]:
-    """Drop repeated categories and subtypes whose group is also requested.
+def _item(filing: Filing, *, with_company: bool) -> FilingItem:
+    """Project an analysis filing into the tool's output model.
 
     Args:
-        categories (Sequence[FilingCategory]): Requested categories; empty for all.
+        filing (Filing): Normalized filing.
+        with_company (bool): Whether to name the filer; a company search names it once.
 
     Returns:
-        tuple[FilingCategory | None, ...]: Disjoint categories, or ``(None,)`` for all filings.
+        FilingItem: The filing as the tool returns it.
     """
-    if not categories:
-        return (None,)
-    unique = list(dict.fromkeys(categories))
-    groups = {CATEGORY_INFO[c].group for c in unique if CATEGORY_INFO[c].subtype is None}
-    return tuple(
-        c
-        for c in unique
-        if CATEGORY_INFO[c].subtype is None or CATEGORY_INFO[c].group not in groups
+    company = CompanyRef(
+        name=filing.corp_name,
+        corp_code=filing.corp_code,
+        stock_code=filing.stock_code,
+        market=filing.market,
     )
+    return FilingItem(
+        filing_number=filing.filing_number,
+        filed=filing.filed,
+        company=company if with_company else None,
+        title=filing.title,
+        submitter=filing.submitter,
+        category=filing.category,
+        is_amendment=filing.is_amendment,
+        corrected_later=filing.corrected_later or None,
+        withdrawn=filing.withdrawn or None,
+        dart_url=filing.dart_url,
+    )
+
+
+def _title_note(scan: TitleScan) -> str:
+    """Explain how far back an incomplete title filter reached.
+
+    Args:
+        scan (TitleScan): Filings matched and the oldest date reached.
+
+    Returns:
+        str: Note naming the number of filings matched and the oldest date reached.
+    """
+    back = f" back to {scan.reached.isoformat()}" if scan.reached else ""
+    return f"title_contains was matched against the newest {scan.scanned} filings{back}; older filings in the window were not read. Narrow since/until or categories to search further back."
 
 
 def _arguments(
@@ -196,40 +243,44 @@ async def find_filings(
         await state.companies.resolve(search.company, progress=progress) if search.company else None
     )
     window, notes = _window(state, search, market_wide=company is None)
-    query = Query(
-        state, company.corp_code if company else None, window, search.market, search.final_only
+    request = FilingSearchRequest(
+        corp_code=company.corp_code if company else None,
+        window=window,
+        categories=search.categories,
+        market=search.market,
+        title_contains=search.title_contains,
+        final_only=search.final_only,
+        offset=search.offset,
+        limit=search.limit,
     )
-    categories = disjoint_categories(search.categories)
-    if search.title_contains is None and len(categories) == 1:
-        outcome = await read_single(query, categories[0], offset=search.offset, limit=search.limit)
-    else:
-        outcome = await read_merged(
-            query,
-            categories,
-            offset=search.offset,
-            limit=search.limit,
-            title=search.title_contains,
+    try:
+        results = await filings.find_filings(
+            request,
+            read_page=filing_pages(state.require_gateway),
+            max_calls=MAX_CALLS,
+            title_scan_calls=TITLE_SCAN_CALLS,
+            page_size=UPSTREAM_PAGE,
             progress=progress,
         )
-    notes.extend(outcome.notes)
-    if not outcome.items:
+    except SearchBudgetError as error:
+        message = f"Page {search.page} of this search needs more than {error.max_calls} OpenDART requests; narrow since/until or pass fewer categories."
+        raise InvalidArgumentError(message) from error
+    if results.title_scan is not None:
+        notes.append(_title_note(results.title_scan))
+    if not results.filings:
         notes.append(_empty_note(search, window))
     # Every filing of a company search names the same company, given once at the top.
-    items = (
-        [item.model_copy(update={"company": None}) for item in outcome.items]
-        if company
-        else outcome.items
-    )
+    items = [_item(filing, with_company=company is None) for filing in results.filings]
     next_call = (
         NextCall(tool="search_filings", arguments=_arguments(search, company, window))
-        if outcome.has_more
+        if results.has_more
         else None
     )
     pagination = Pagination(
-        total=outcome.total,
+        total=results.total,
         page=search.page,
         limit=search.limit,
-        has_more=outcome.has_more,
+        has_more=results.has_more,
         next_call=next_call,
     )
     return SearchFilingsResult(

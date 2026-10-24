@@ -6,7 +6,7 @@ from datetime import date
 
 import pytest
 
-from opendart_mcp.events.values import display, normalize, parse_flag, parse_span, shorten, won
+from opendart_analysis.events.values import display, normalize, parse_flag, parse_span, shorten, won
 
 
 @pytest.mark.parametrize(

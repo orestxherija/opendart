@@ -2,7 +2,7 @@
 
 Event reports send every value as text: amounts with separators, dashes for "none", English
 or Korean yes/no words ("Non-applicable", "N/A", "해당사항 없음"), and dates that are sometimes
-ranges such as ``2026.12.14 ~ 2026.12.15``. The registry's FieldKind says how to read each
+ranges such as ``2026.12.14 ~ 2026.12.15``. The catalog's FieldKind says how to read each
 field. These helpers never raise on malformed text; they return None, or the cleaned text
 when a date field holds words.
 """
@@ -203,10 +203,10 @@ _PARSERS: Final[dict[str, Callable[[str | None], Scalar]]] = {
 
 
 def normalize(kind: str, raw: str | None) -> Scalar:
-    """Normalize one raw value by its registry field kind.
+    """Normalize one raw value by its catalog field kind.
 
     Args:
-        kind (str): Registry FieldKind, such as amount, percent, or date.
+        kind (str): Catalog FieldKind, such as amount, percent, or date.
         raw (str | None): Raw field.
 
     Returns:
@@ -258,7 +258,7 @@ def display(kind: str, value: Scalar) -> str | None:
     """Format a normalized value for a headline.
 
     Args:
-        kind (str): Registry FieldKind of the value.
+        kind (str): Catalog FieldKind of the value.
         value (Scalar): Normalized value.
 
     Returns:

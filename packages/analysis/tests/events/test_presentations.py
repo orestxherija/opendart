@@ -8,8 +8,8 @@ from datetime import date
 import pytest
 
 from opendart_analysis.catalog import EVENT_KINDS, EVENT_KIND_NAMES, service
-from opendart_mcp.events import PRESENTATIONS, EventRecord, Row, describe
-from opendart_mcp.events.templates import (
+from opendart_analysis.events import PRESENTATIONS, EventRecord, Row, describe
+from opendart_analysis.events.templates import (
     Lookup,
     Presentation,
     headline,
@@ -18,7 +18,7 @@ from opendart_mcp.events.templates import (
     ratio,
     total,
 )
-from packages.mcp.tests.events.data import buyback, convertible_bond, merger, rights_issue
+from tests.support.events import buyback, convertible_bond, merger, rights_issue
 
 SAMPLE = {
     "amount": "1,000,000,000",

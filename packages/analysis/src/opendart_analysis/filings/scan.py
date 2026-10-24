@@ -1,16 +1,12 @@
 """Read pages of the filing index and merge several category queries newest first.
 
-``disclosures.search`` takes one category code per request and returns at most 100 rows per
-page, by filing date (``rcept_dt``) and then time of day, newest first. Filing numbers do
+OpenDART's filing search takes one category code per request and returns at most 100 rows
+per page, by filing date (``rcept_dt``) and then time of day, newest first. Filing numbers do
 not follow that order within a day (exchange and FSS series interleave), so nothing here
 sorts by number. One category is served in upstream order from the pages that cover the
-requested page. Several categories, or a title filter, are read round by round and merged by
+requested slice. Several categories, or a title filter, are read round by round and merged by
 filing date, then position in each query; a filing is certain once no unread row can
-precede it, so every merged page is a stable slice of one order.
-
-Upstream quirk, verified live: ``pblntf_detail_ty`` filters only when ``pblntf_ty`` is
-omitted. Sent together, the subtype is ignored and the whole group comes back, so subtype
-categories send the subtype alone.
+precede it, so every merged slice is a stable part of one order.
 """
 
 from __future__ import annotations
@@ -18,46 +14,33 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date
 from operator import itemgetter
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Final
 
 import anyio
 
-from opendart_analysis.domain.categories import category_query
-from opendart_analysis.domain.dates import yyyymmdd
 from opendart_analysis.domain.filings import clean_title, is_amendment, parse_remarks
-from opendart_analysis.domain.identifiers import (
-    dart_viewer_url,
-    filing_date,
-    is_filing_number,
-)
+from opendart_analysis.domain.identifiers import dart_viewer_url, filing_date, is_filing_number
 from opendart_analysis.domain.normalize import clean_text, market_from_corp_cls, parse_date
-from opendart_mcp.core.errors import InvalidArgumentError
-from opendart_mcp.core.ttl import FILINGS
-from opendart_mcp.models.common import CompanyRef
-from opendart_mcp.models.filings import FilingItem
-from opendart_mcp.services.filing_category import infer_category
+from opendart_analysis.filings.access import FilingPageQuery
+from opendart_analysis.filings.category import category_codes, infer_category
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from opendart.models.disclosures import ListResponseListItem
     from opendart_analysis.domain.categories import FilingCategory
     from opendart_analysis.domain.dates import DateWindow
-    from opendart_analysis.domain.types import MarketFilter
-    from opendart_mcp.core.progress import Progress
-    from opendart_mcp.core.state import AppState
+    from opendart_analysis.domain.types import Market, MarketFilter
+    from opendart_analysis.filings.access import (
+        CorporationType,
+        ListedFiling,
+        Progress,
+        ReadFilingPage,
+    )
 
     # Merge position: negated filing-day ordinal, position in the query, query order.
     type _Key = tuple[int, int, int]
 
-UPSTREAM_PAGE: Final = 100
-"""Rows per upstream page, OpenDART's maximum."""
-MAX_CALLS: Final = 20
-"""Upstream calls one page of a multi-category search may take."""
-TITLE_SCAN_CALLS: Final = 5
-"""Upstream pages read to match title text (500 filings)."""
-
-_CORPORATION_TYPES: Final[dict[str, Literal["Y", "K", "N", "E"]]] = {
+_CORPORATION_TYPES: Final[dict[str, CorporationType]] = {
     "KOSPI": "Y",
     "KOSDAQ": "K",
     "KONEX": "N",
@@ -68,46 +51,131 @@ _UNDATED: Final = date.max.toordinal()
 
 
 @dataclass(frozen=True, slots=True)
-class Query:
-    """Server state and the upstream parameters shared by every category query.
+class Filing:
+    """One filing from the index, normalized.
 
     Attributes:
-        state (AppState): Server state.
+        filing_number (str): 14-digit filing (receipt) number.
+        filed (date | None): Filing date, from the listing or else the filing number.
+        corp_code (str): 8-digit DART corporation code of the filer.
+        corp_name (str): Company name as listed, or the corp code when blank.
+        stock_code (str | None): Stock code of a listed company.
+        market (Market | None): Listing market.
+        title (str): Report title as filed, whitespace collapsed.
+        submitter (str | None): Name of the submitter.
+        category (FilingCategory | None): Category searched, or one inferred from the title
+            and number when every category was searched.
+        is_amendment (bool): Whether the title marks a re-submission of an earlier filing.
+        corrected_later (bool): Whether a correction was filed after this filing.
+        withdrawn (bool): Whether the filing was withdrawn.
+    """
+
+    filing_number: str
+    filed: date | None
+    corp_code: str
+    corp_name: str
+    stock_code: str | None
+    market: Market | None
+    title: str
+    submitter: str | None
+    category: FilingCategory | None
+    is_amendment: bool
+    corrected_later: bool
+    withdrawn: bool
+
+    @property
+    def dart_url(self) -> str:
+        """DART viewer link of the filing.
+
+        Returns:
+            str: URL for citation.
+        """
+        return dart_viewer_url(self.filing_number)
+
+
+def filing_from(row: ListedFiling, category: FilingCategory | None) -> Filing | None:
+    """Normalize one search row.
+
+    Args:
+        row (ListedFiling): Search row.
+        category (FilingCategory | None): Category the row was searched under; None to infer
+            one from the title and number.
+
+    Returns:
+        Filing | None: The filing, or None for a row without a filing number or company.
+    """
+    number = (row.filing_number or "").strip()
+    corp_code = clean_text(row.corporation_code)
+    if not is_filing_number(number) or corp_code is None:
+        return None
+    title = clean_title(row.report_title or "")
+    flags = parse_remarks(row.rm)
+    return Filing(
+        filing_number=number,
+        filed=parse_date(row.filing_date) or filing_date(number),
+        corp_code=corp_code,
+        corp_name=clean_text(row.corporation_name) or corp_code,
+        stock_code=clean_text(row.stock_code),
+        market=market_from_corp_cls(row.corporation_type),
+        title=title,
+        submitter=clean_text(row.submitter_name),
+        category=category or infer_category(title, number),
+        is_amendment=is_amendment(title),
+        corrected_later=flags.corrected_later,
+        withdrawn=flags.withdrawn,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class Source:
+    """The data source and the upstream parameters shared by every category query.
+
+    Attributes:
+        read_page (ReadFilingPage): Reads one upstream page.
         corp_code (str | None): Company to search; None for every company.
         window (DateWindow): Filing dates to cover.
         market (MarketFilter): Listing market filter.
         final_only (bool): Only the latest version of amended filings.
+        page_size (int): Rows per upstream page, at most 100.
+        progress (Progress): Receives a message after each round of merged pages.
     """
 
-    state: AppState
+    read_page: ReadFilingPage
     corp_code: str | None
     window: DateWindow
     market: MarketFilter
     final_only: bool
+    page_size: int
+    progress: Progress
 
 
 @dataclass(frozen=True, slots=True)
 class Outcome:
-    """Filings for the requested page and what is known about the rest.
+    """Filings for the requested slice and what is known about the rest.
 
     Attributes:
-        items (list[FilingItem]): Filings on the page, newest first.
+        filings (tuple[Filing, ...]): Filings in the slice, newest first.
         total (int | None): Matching filings, when known.
-        has_more (bool): Whether another page may hold more.
-        notes (list[str]): Coverage caveats.
+        has_more (bool): Whether filings after the slice may exist.
+        complete (bool): False when the call budget ran out before the slice was certain.
+        scanned (int): Filings read in merge order, each once.
+        reached (date | None): Oldest filing date before which every filing was read; None
+            when no filing read is dated.
     """
 
-    items: list[FilingItem]
+    filings: tuple[Filing, ...]
     total: int | None
     has_more: bool
-    notes: list[str] = field(default_factory=list)
+    complete: bool = True
+    scanned: int = 0
+    reached: date | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class _Page:
     """One upstream page of filings."""
 
-    items: tuple[FilingItem, ...]
+    items: tuple[Filing, ...]
     total: int
     pages: int
 
@@ -122,7 +190,7 @@ class _Stream:
 
     category: FilingCategory | None
     order: int
-    items: list[FilingItem] = field(default_factory=list)
+    items: list[Filing] = field(default_factory=list)
     days: list[int] = field(default_factory=list)
     total: int = 0
     fetched: int = 0
@@ -171,110 +239,55 @@ class _Stream:
         return (-(self.days[-1] if self.days else _UNDATED), len(self.items), self.order)
 
 
-def category_codes(category: FilingCategory | None) -> tuple[Any, Any]:
-    """Return ``pblntf_ty`` and ``pblntf_detail_ty`` for a category.
-
-    Subtypes are sent without their group, because OpenDART ignores a subtype sent with one.
-
-    Args:
-        category (FilingCategory | None): Category, or None for every filing.
-
-    Returns:
-        tuple[Any, Any]: Group and subtype codes, either possibly None.
-    """
-    if category is None:
-        return None, None
-    group, subtype = category_query(category)
-    return (None, subtype) if subtype else (group, None)
-
-
-def _item(row: ListResponseListItem, category: FilingCategory | None) -> FilingItem | None:
-    """Normalize one search row.
-
-    Args:
-        row (ListResponseListItem): Upstream row.
-        category (FilingCategory | None): Category the row was searched under.
-
-    Returns:
-        FilingItem | None: The filing, or None for a row without a filing number or company.
-    """
-    number = (row.filing_number or "").strip()
-    corp_code = clean_text(row.corporation_code)
-    if not is_filing_number(number) or corp_code is None:
-        return None
-    title = clean_title(row.report_title or "")
-    flags = parse_remarks(row.rm)
-    company = CompanyRef(
-        name=clean_text(row.corporation_name) or corp_code,
-        corp_code=corp_code,
-        stock_code=clean_text(row.stock_code),
-        market=market_from_corp_cls(row.corporation_type),
-    )
-    return FilingItem(
-        filing_number=number,
-        filed=parse_date(row.filing_date) or filing_date(number),
-        company=company,
-        title=title,
-        submitter=clean_text(row.submitter_name),
-        category=category or infer_category(title, number),
-        is_amendment=is_amendment(title),
-        corrected_later=flags.corrected_later or None,
-        withdrawn=flags.withdrawn or None,
-        dart_url=dart_viewer_url(number),
-    )
-
-
-async def _page(query: Query, category: FilingCategory | None, number: int) -> _Page:
+async def _page(source: Source, category: FilingCategory | None, number: int) -> _Page:
     """Fetch one upstream page.
 
     Args:
-        query (Query): Shared search parameters.
+        source (Source): Data source and shared search parameters.
         category (FilingCategory | None): Category to search, or None for all.
         number (int): 1-based upstream page number.
 
     Returns:
-        _Page: Filings, total matches, and total pages; empty when OpenDART has none.
+        _Page: Filings, total matches, and total pages; empty when the source has none.
     """
-    gateway = query.state.require_gateway()
     group, subtype = category_codes(category)
-    response = await gateway.call(
-        FILINGS,
-        gateway.sdk.disclosures.search,
-        corporation_code=query.corp_code,
-        filing_start_date=yyyymmdd(query.window.start),
-        filing_end_date=yyyymmdd(query.window.end),
-        final_reports_only="Y" if query.final_only else None,
-        disclosure_category=group,
-        disclosure_subcategory=subtype,
-        corporation_type=_CORPORATION_TYPES.get(query.market),
-        page_number=number,
-        page_size=UPSTREAM_PAGE,
+    query = FilingPageQuery(
+        corp_code=source.corp_code,
+        start=source.window.start,
+        end=source.window.end,
+        group=group,
+        subtype=subtype,
+        final_only=source.final_only,
+        corporation_type=_CORPORATION_TYPES.get(source.market),
+        page=number,
+        page_size=source.page_size,
     )
+    response = await source.read_page(query, volatility="high")
     if response is None:
         return _Page((), 0, 0)
     rows = response.list or []
-    items = tuple(item for row in rows if (item := _item(row, category)) is not None)
+    items = tuple(item for row in rows if (item := filing_from(row, category)) is not None)
     total = len(rows) if response.total_count is None else response.total_count
     pages = (1 if rows else 0) if response.total_page is None else response.total_page
     return _Page(items, total, pages)
 
 
-def _matcher(text: str | None) -> Callable[[FilingItem], bool]:
+def _matcher(text: str | None) -> Callable[[Filing], bool]:
     """Build the title filter.
 
     Args:
         text (str | None): Required title text; None keeps every filing.
 
     Returns:
-        Callable[[FilingItem], bool]: Predicate that ignores case and spacing differences.
+        Callable[[Filing], bool]: Predicate that ignores case and spacing differences.
     """
     needle = " ".join((text or "").split()).casefold()
 
-    def matches(item: FilingItem) -> bool:
+    def matches(item: Filing) -> bool:
         """Check whether a filing title contains the normalized search text.
 
         Args:
-            item (FilingItem): Filing to inspect.
+            item (Filing): Filing to inspect.
 
         Returns:
             bool: True when its title contains the filter, ignoring case and spacing.
@@ -285,29 +298,30 @@ def _matcher(text: str | None) -> Callable[[FilingItem], bool]:
 
 
 async def read_single(
-    query: Query, category: FilingCategory | None, *, offset: int, limit: int
+    source: Source, category: FilingCategory | None, *, offset: int, limit: int
 ) -> Outcome:
-    """Serve one category without a title filter from the upstream pages that cover a page.
+    """Serve one category without a title filter from the upstream pages that cover a slice.
 
     Args:
-        query (Query): Shared search parameters.
+        source (Source): Data source and shared search parameters.
         category (FilingCategory | None): Category, or None for all filings.
         offset (int): Index of the first filing wanted.
-        limit (int): Filings wanted, at most 100.
+        limit (int): Filings wanted, at most the page size.
 
     Returns:
         Outcome: The filings with the exact total.
     """
-    first = offset // UPSTREAM_PAGE + 1
-    page = await _page(query, category, first)
+    size = source.page_size
+    first = offset // size + 1
+    page = await _page(source, category, first)
     items = list(page.items)
-    last = (offset + limit - 1) // UPSTREAM_PAGE + 1
+    last = (offset + limit - 1) // size + 1
     if last > first and page.pages > first:
-        items.extend((await _page(query, category, last)).items)
-    start = offset - (first - 1) * UPSTREAM_PAGE
+        items.extend((await _page(source, category, last)).items)
+    start = offset - (first - 1) * size
     total = page.total if page.items or first == 1 else None
     has_more = total is not None and offset + limit < total
-    return Outcome(items[start : start + limit], total, has_more)
+    return Outcome(tuple(items[start : start + limit]), total, has_more)
 
 
 @dataclass(slots=True)
@@ -319,10 +333,9 @@ class _Merge:
     order. A filing is certain once it precedes every position an unread filing can take.
     """
 
-    query: Query
+    source: Source
     streams: list[_Stream]
-    matches: Callable[[FilingItem], bool]
-    progress: Progress
+    matches: Callable[[Filing], bool]
 
     @property
     def exhausted(self) -> bool:
@@ -341,11 +354,11 @@ class _Merge:
         """
         return min((s.bound() for s in self.streams if not s.exhausted), default=None)
 
-    def ordered(self) -> list[FilingItem]:
+    def ordered(self) -> list[Filing]:
         """Merge the filings that no unread filing can precede.
 
         Returns:
-            list[FilingItem]: Certain filings in merge order, each filing once.
+            list[Filing]: Certain filings in merge order, each filing once.
         """
         horizon = self.horizon()
         keyed = (
@@ -354,16 +367,16 @@ class _Merge:
             for index, item in enumerate(stream.items)
         )
         kept = sorted((p for p in keyed if horizon is None or p[0] < horizon), key=itemgetter(0))
-        unique: dict[str, FilingItem] = {}
+        unique: dict[str, Filing] = {}
         for _, item in kept:
             unique.setdefault(item.filing_number, item)
         return list(unique.values())
 
-    def certain(self) -> list[FilingItem]:
+    def certain(self) -> list[Filing]:
         """List the certain filings that match the title filter.
 
         Returns:
-            list[FilingItem]: Matching filings in merge order.
+            list[Filing]: Matching filings in merge order.
         """
         return [item for item in self.ordered() if self.matches(item)]
 
@@ -401,7 +414,7 @@ class _Merge:
                 for stream in pending:
                     group.start_soon(self.advance, stream)
             calls += len(pending)
-            await self.progress(f"Searching filings: {calls} result pages read")
+            await self.source.progress(f"Searching filings: {calls} result pages read")
         return True
 
     async def advance(self, stream: _Stream) -> None:
@@ -410,59 +423,59 @@ class _Merge:
         Args:
             stream (_Stream): Query to advance.
         """
-        stream.add(await _page(self.query, stream.category, stream.fetched + 1))
+        stream.add(await _page(self.source, stream.category, stream.fetched + 1))
 
-    def coverage_note(self) -> str:
-        """Explain how far back an incomplete title filter reached.
+    def reached(self) -> date | None:
+        """Return the oldest filing date before which every filing has been read.
 
         Returns:
-            str: Note naming the number of filings matched and the oldest date reached.
+            date | None: The date, or None when no filing read so far is dated.
         """
         horizon = self.horizon()
         day = _UNDATED if horizon is None else -horizon[0]
-        back = f" back to {date.fromordinal(day).isoformat()}" if day < _UNDATED else ""
-        return f"title_contains was matched against the newest {len(self.ordered())} filings{back}; older filings in the window were not read. Narrow since/until or categories to search further back."
+        return date.fromordinal(day) if day < _UNDATED else None
 
 
 async def read_merged(
-    query: Query,
+    source: Source,
     categories: tuple[FilingCategory | None, ...],
     *,
     offset: int,
     limit: int,
     title: str | None,
-    progress: Progress,
+    budget: int,
 ) -> Outcome:
     """Merge several category queries, or filter titles, over a bounded number of pages.
 
     Args:
-        query (Query): Shared search parameters.
+        source (Source): Data source and shared search parameters.
         categories (tuple[FilingCategory | None, ...]): Disjoint categories.
         offset (int): Index of the first filing wanted.
         limit (int): Filings wanted.
         title (str | None): Text the title must contain; None keeps every filing.
-        progress (Progress): Receives a message after each round of pages.
+        budget (int): Most upstream calls to make; raised to one per category when lower.
 
     Returns:
-        Outcome: The filings. Once every query is read the total is the exact count; before
-            that it is OpenDART's count without a title filter and unknown with one.
-
-    Raises:
-        InvalidArgumentError: The page lies beyond what the call budget can merge.
+        Outcome: The filings, with ``complete`` False when the budget ran out first. Once
+            every query is read the total is the exact count; before that it is OpenDART's
+            count without a title filter and unknown with one.
     """
     end = offset + limit
     streams = [_Stream(category, order) for order, category in enumerate(categories)]
-    merge = _Merge(query, streams, _matcher(title), progress)
-    budget = max(MAX_CALLS if title is None else TITLE_SCAN_CALLS, len(categories))
-    complete = await merge.scan(wanted=end, budget=budget)
+    merge = _Merge(source, streams, _matcher(title))
+    complete = await merge.scan(wanted=end, budget=max(budget, len(categories)))
     found = merge.certain()
     exhausted = merge.exhausted
     has_more = len(found) > end or (complete and not exhausted)
     if title is None:
-        if not complete:
-            message = f"Page {offset // limit + 1} of this search needs more than {MAX_CALLS} OpenDART requests; narrow since/until or pass fewer categories."
-            raise InvalidArgumentError(message)
         total = len(found) if exhausted else sum(stream.total for stream in merge.streams)
-        return Outcome(found[offset:end], total, has_more)
-    notes = [] if complete else [merge.coverage_note()]
-    return Outcome(found[offset:end], len(found) if exhausted else None, has_more, notes)
+    else:
+        total = len(found) if exhausted else None
+    return Outcome(
+        tuple(found[offset:end]),
+        total,
+        has_more,
+        complete=complete,
+        scanned=len(merge.ordered()),
+        reached=merge.reached(),
+    )

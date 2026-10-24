@@ -12,7 +12,7 @@ from fastmcp_tasks import call_tool_task
 from opendart_mcp.server import create_server
 from opendart_mcp.settings import Settings, UpstreamSettings
 from opendart_mcp.tools import calendar as calendar_tool
-from packages.mcp.tests.events.data import (
+from tests.support.events import (
     HYNIX,
     SAMSUNG,
     buyback,

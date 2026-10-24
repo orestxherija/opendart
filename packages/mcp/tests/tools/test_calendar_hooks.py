@@ -14,7 +14,7 @@ from opendart_mcp.core.metrics import Metrics
 from opendart_mcp.core.runtime import open_state
 from opendart_mcp.models.calendar import CalendarItem
 from opendart_mcp.services.calendar import CalendarRequest, action_calendar
-from packages.mcp.tests.events.data import merger, profile
+from tests.support.events import merger, profile
 
 BOND = "20260314000100"
 

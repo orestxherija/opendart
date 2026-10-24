@@ -4,17 +4,15 @@ from __future__ import annotations
 
 from datetime import date
 
-from opendart.models.major_issues import StkrtbdInhDecsnResponse
-from opendart.models.securities_registration import BdRsResponse
-from opendart_mcp.events import describe, labeled_fields, records_from
-from packages.mcp.tests.events.data import debt_registration, identity
+from opendart_analysis.events import describe, labeled_fields, records_from
+from tests.support.events import debt_registration, identity
 
 NUMBER = "20261020000111"
 
 
 def response(*bodies):
     groups = [group for body in bodies for group in body["group"]]
-    return BdRsResponse.model_validate({"status": "000", "message": "ok", "group": groups})
+    return {"status": "000", "message": "ok", "group": groups}
 
 
 def offering(*bodies):
@@ -121,6 +119,6 @@ def test_reports_without_sections_are_never_split():
         {"rcept_no": NUMBER, **identity(), "tm": "3", "bdknd": "전환사채"},
         {"rcept_no": NUMBER, **identity(), "tm": "4", "bdknd": "전환사채"},
     ]
-    model = StkrtbdInhDecsnResponse.model_validate({"status": "000", "message": "ok", "list": rows})
+    model = {"status": "000", "message": "ok", "list": rows}
     (record,) = records_from("acquire_equity_linked_bonds", model)
     assert len(record.rows) == 2

@@ -17,14 +17,14 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
 from opendart_analysis.catalog import EVENT_KINDS
-from opendart_mcp.events.values import parse_span
+from opendart_analysis.events.values import parse_span
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from datetime import date
 
     from opendart_analysis.catalog import EventKind, EventKindSpec
-    from opendart_mcp.events.records import EventRecord
+    from opendart_analysis.events.records import EventRecord
 
 
 @dataclass(frozen=True, slots=True)

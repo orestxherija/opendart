@@ -7,7 +7,7 @@ import datetime as dt
 from opendart_analysis.catalog import EVENT_KINDS
 from opendart_analysis.domain.dates import DateWindow
 from opendart_analysis.domain.identifiers import dart_viewer_url
-from opendart_mcp.events import EventRecord, Row
+from opendart_analysis.events import EventRecord, Row
 from opendart_mcp.models.calendar import CalendarItem
 from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.services.calendar_items import REGISTERED, event_items, merge_maturities

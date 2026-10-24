@@ -7,7 +7,7 @@ from datetime import date
 import pytest
 
 from opendart_analysis.catalog import EVENT_KINDS, EVENT_KIND_NAMES, service
-from opendart_mcp.events import (
+from opendart_analysis.events import (
     ACTIONS,
     CALENDAR_KINDS,
     FLAG_FIELDS,
@@ -17,8 +17,8 @@ from opendart_mcp.events import (
     event_dates,
     event_flags,
 )
-from opendart_mcp.events.dates import BOARD_DATE_FIELDS, DATE_FIELDS, IGNORED_DATE_FIELDS
-from packages.mcp.tests.events.data import REDEMPTION
+from opendart_analysis.events.dates import BOARD_DATE_FIELDS, DATE_FIELDS, IGNORED_DATE_FIELDS
+from tests.support.events import REDEMPTION
 
 NUMBER = "20261021000092"
 

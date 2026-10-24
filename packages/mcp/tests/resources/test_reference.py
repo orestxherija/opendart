@@ -10,7 +10,7 @@ import pytest
 from opendart_analysis.catalog import EVENT_GROUPS, EVENT_KINDS
 from opendart_analysis.domain.categories import CATEGORY_INFO, FILING_CATEGORIES
 from opendart_analysis.domain.types import Basis, Market, MarketFilter, Period, Unit
-from opendart_mcp.events import CALENDAR_KINDS, PRESENTATIONS
+from opendart_analysis.events import CALENDAR_KINDS, PRESENTATIONS
 from opendart_mcp.models.common import ResponseFormat
 from opendart_mcp.resources.reference import (
     BASIS_MEANINGS,

@@ -24,8 +24,8 @@ from opendart_analysis.domain.periods import (
 )
 from opendart_analysis.domain.types import Market, MarketFilter, Unit
 from opendart_analysis.domain.units import unit_label
+from opendart_analysis.events import CALENDAR_KINDS, PRESENTATIONS
 from opendart_mcp.app.annotations import FOR_ASSISTANT
-from opendart_mcp.events import CALENDAR_KINDS, PRESENTATIONS
 from opendart_mcp.render.markdown import join, table
 
 if TYPE_CHECKING:

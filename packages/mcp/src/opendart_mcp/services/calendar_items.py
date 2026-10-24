@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Final
 
 from opendart_analysis.catalog import kinds_in
 from opendart_analysis.domain.identifiers import dart_viewer_url, is_filing_number
-from opendart_mcp.events import ACTIONS, describe
+from opendart_analysis.events import ACTIONS, describe
 from opendart_mcp.models.calendar import CalendarItem
 
 if TYPE_CHECKING:
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from datetime import date
 
     from opendart_analysis.domain.dates import DateWindow
-    from opendart_mcp.events import EventRecord, EventView
+    from opendart_analysis.events import EventRecord, EventView
     from opendart_mcp.models.calendar import DetailValue
     from opendart_mcp.services.companies import Company
 

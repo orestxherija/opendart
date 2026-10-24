@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from opendart_analysis.catalog import EVENT_KINDS
-from opendart_mcp.events.titles import RULES, kind_for_title, plain_title
+from opendart_analysis.events.titles import RULES, kind_for_title, plain_title
 
 
 @pytest.mark.parametrize(
