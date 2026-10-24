@@ -67,6 +67,8 @@ Applications that download filings with the SDK install both distributions, `ope
   interpreted into headlines, key terms, dated actions, and flags.
 - [Filing discovery](docs/filings.md): search the filing index by company, market, category, and title, merged newest
   first within page budgets.
+- [Corporate-action calendar](docs/calendar.md): forward corporate-action dates and debt maturities for one company
+  or a watchlist, with lookback windows, merged repeats, and per-company coverage.
 
 ## Maintainer notes
 

@@ -1,86 +1,78 @@
 """Debt-security maturities from periodic reports, as calendar items and notes.
 
-``debt_maturities`` is the calendar's maturity provider. Issuance records list only the
-securities issued in the latest fiscal year and current period, so the items miss older
-bonds still outstanding; the notes say so and give the corporate bonds due within a year
-from the latest ladder, which covers every bond. Amounts are original face values; a
-partly redeemed issue owes less and says so in ``redeemed``.
+``debt_maturities`` is the calendar's maturity provider. Reading the latest periodic reports'
+maturities and the corporate-bond ladder lives in ``opendart_analysis.calendar.maturities``;
+this adapter binds it to the gateway and the server clock (the requests and lifetimes of
+get_debt_profile), projects the items, and words the notes: issuance records list only the
+securities issued in the latest fiscal year and current period, so the items miss older bonds
+still outstanding, and a note gives the corporate bonds due within a year from the latest
+ladder, which covers every bond. Amounts are original face values; a partly redeemed issue
+owes less and says so in ``redeemed``.
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from opendart_analysis.domain.identifiers import dart_viewer_url, is_filing_number
-from opendart_analysis.domain.periods import period_end
-from opendart_mcp.core.errors import QuotaExhaustedError, UpstreamError
-from opendart_mcp.models.calendar import CalendarItem
-from opendart_mcp.services.debt import maturity_schedule
-from opendart_mcp.services.debt_tables import derive
+from opendart_analysis import calendar
+from opendart_analysis.calendar import DEBT_ACTION, DEBT_SOURCE_KIND
+from opendart_analysis.errors import AnalysisError
+from opendart_mcp.core.errors import QuotaExhaustedError, UpstreamError, from_analysis
+from opendart_mcp.core.upstream import filing_search, service_fetch
+from opendart_mcp.services.calendar_items import output_item, subject
 
 if TYPE_CHECKING:
+    from opendart_analysis.calendar import BondsDue, DebtMaturities
     from opendart_analysis.domain.dates import DateWindow
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.models.calendar import DetailValue
-    from opendart_mcp.models.debt import DebtMaturity
+    from opendart_mcp.models.calendar import CalendarItem
     from opendart_mcp.services.companies import Company
-    from opendart_mcp.services.debt import MaturitySchedule
 
-ACTION: Final = "debt_maturity"
-SOURCE_KIND: Final = "debt_securities"
+ACTION: Final = DEBT_ACTION
+SOURCE_KIND: Final = DEBT_SOURCE_KIND
 COVERAGE: Final = "Debt maturities list only the securities in the latest periodic reports' issuance records (issues of the latest fiscal year and current period), not older bonds still outstanding; amounts are original face values. get_debt_profile has the full maturity ladder."
 """Note on what the itemized maturities cover, added once per calendar."""
 
 
-def _item(company: Company, maturity: DebtMaturity, filing_number: str) -> CalendarItem:
-    """Describe one maturity as a calendar item.
-
-    Args:
-        company (Company): Resolved company.
-        maturity (DebtMaturity): Maturity from the issuance record.
-        filing_number (str): Periodic report listing the issue.
-
-    Returns:
-        CalendarItem: Calendar entry.
-    """
-    details: dict[str, DetailValue] = {
-        "event": "Debt maturity",
-        "instrument": maturity.instrument,
-        "face_value": maturity.face_value,
-        "coupon": maturity.coupon,
-        "redeemed": maturity.redeemed,
-        "issuer": maturity.issuer,
-    }
-    return CalendarItem(
-        date=maturity.date,
-        company=company.ref,
-        action=ACTION,
-        source_kind=SOURCE_KIND,
-        filing_number=filing_number,
-        dart_url=dart_viewer_url(filing_number),
-        details={key: value for key, value in details.items() if value is not None},
-    )
-
-
-def _ladder_note(company: Company, schedule: MaturitySchedule) -> str | None:
+def ladder_note(company: Company, bonds: BondsDue) -> str:
     """State the corporate bonds due within a year at the latest period end.
 
     Args:
         company (Company): Resolved company.
-        schedule (MaturitySchedule): Schedule with the corporate-bond ladder.
+        bonds (BondsDue): Totals of the latest corporate-bond ladder.
 
     Returns:
-        str | None: The note, or None without a ladder.
+        str: The note, in KRW million.
     """
-    ref, bonds = schedule.period, schedule.bonds
-    if ref is None or bonds is None:
-        return None
-    figures = derive([bonds])
-    due = round((figures.due_within_1y or 0) / 1_000_000)
-    total = round((figures.total_debt_securities or 0) / 1_000_000)
-    end = ref.end_date or period_end(ref.fiscal_year, ref.period, fye_month=company.fye_month)
+    due = round(bonds.due_within_1y / 1_000_000)
+    total = round(bonds.outstanding / 1_000_000)
     share = f"KRW {due:,} million" if due else "none"
-    return f"{company.ref.name}: {share} of the KRW {total:,} million in corporate bonds outstanding at {end} was due within a year of that date ({ref.label} report)."
+    return f"{company.ref.name}: {share} of the KRW {total:,} million in corporate bonds outstanding at {bonds.period_end} was due within a year of that date ({bonds.period.label} report)."
+
+
+async def read_maturities(state: AppState, company: Company, window: DateWindow) -> DebtMaturities:
+    """Read one company's maturities through the gateway.
+
+    Args:
+        state (AppState): Server state.
+        company (Company): Resolved company.
+        window (DateWindow): Calendar dates.
+
+    Returns:
+        DebtMaturities: Maturities and ladder totals.
+
+    Raises:
+        ServerError: An analysis failure, translated; gateway failures pass unchanged.
+    """
+    read = calendar.read_debt_maturities(
+        search_filings=filing_search(state.require_gateway),
+        fetch_service=service_fetch(state.require_gateway),
+        today=state.today(),
+    )
+    try:
+        return await read(subject(company), window)
+    except AnalysisError as error:
+        raise from_analysis(error) from error
 
 
 async def debt_maturities(
@@ -105,19 +97,13 @@ async def debt_maturities(
         QuotaExhaustedError: The API key's daily quota is exhausted.
     """
     try:
-        schedule = await maturity_schedule(state, company, window=window)
+        found = await read_maturities(state, company, window)
     except QuotaExhaustedError:
         raise
     except UpstreamError as error:
         return [], [f"Debt maturities unavailable for {company.ref.name}: {error}"]
-    items = [
-        _item(company, maturity, maturity.filing_number)
-        for maturity in schedule.maturities
-        if maturity.filing_number
-        and is_filing_number(maturity.filing_number)
-        and window.start <= maturity.date <= window.end
-    ]
-    if schedule.period is None:
+    items = [output_item(item, company) for item in found.items]
+    if found.period is None:
         return items, []
-    ladder = _ladder_note(company, schedule)
-    return items, [COVERAGE, *([ladder] if ladder else [])]
+    ladder = [] if found.bonds is None else [ladder_note(company, found.bonds)]
+    return items, [COVERAGE, *ladder]

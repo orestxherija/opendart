@@ -41,6 +41,7 @@ __all__ = [
     "DEFAULT_SINCE",
     "EARLIEST",
     "FOREGROUND_DEADLINE",
+    "READ_POLICY",
     "EventBatch",
     "bounded",
     "corporate_events",
@@ -122,9 +123,9 @@ def _failed_kind(error: BaseException) -> bool:
     return isinstance(error, UpstreamError) and not isinstance(error, QuotaExhaustedError)
 
 
-_POLICY: Final = ReadPolicy(tolerate=_failed_kind, max_index_pages=MAX_PAGES)
-"""Upstream failures other than an exhausted quota become failed kinds; the gateway bounds
-concurrency."""
+READ_POLICY: Final = ReadPolicy(tolerate=_failed_kind, max_index_pages=MAX_PAGES)
+"""Upstream failures other than an exhausted quota become failed kinds (and failed companies in
+the calendar); the gateway bounds concurrency."""
 
 
 async def fetch_events(
@@ -161,7 +162,7 @@ async def fetch_events(
         query,
         fetch_service=service_fetch(state.require_gateway),
         read_filing_page=filing_pages(state.require_gateway),
-        policy=_POLICY,
+        policy=READ_POLICY,
         progress=progress,
     )
 

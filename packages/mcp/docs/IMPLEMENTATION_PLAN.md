@@ -32,7 +32,7 @@ Imports point down the table only. The pure layers never import FastMCP.
 | Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, lifespan |
 | Services | `services/` | Business logic per component, callable from tests without MCP |
 | Infrastructure | `core/` | Gateway, cache, errors, state, runtime |
-| Pure layers | `opendart_analysis.catalog`, `opendart_analysis.domain`, `opendart_analysis.documents`, `opendart_analysis.events`, `opendart_analysis.filings`, `opendart_analysis.extracts`, `opendart_analysis.financials`, `opendart_analysis.ownership`, `opendart_analysis.capital`, `opendart_analysis.debt`, `opendart_analysis.dividends`, `opendart_analysis.profile`, `opendart_analysis.governance` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
+| Pure layers | `opendart_analysis.catalog`, `opendart_analysis.domain`, `opendart_analysis.documents`, `opendart_analysis.events`, `opendart_analysis.filings`, `opendart_analysis.extracts`, `opendart_analysis.financials`, `opendart_analysis.ownership`, `opendart_analysis.capital`, `opendart_analysis.debt`, `opendart_analysis.dividends`, `opendart_analysis.profile`, `opendart_analysis.governance`, `opendart_analysis.calendar` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
 | Output | `models/`, `render/` | Pydantic output models and Markdown renderers |
 
 Every handwritten file stays under 500 lines (loq). Tool modules hold the decorated function and its docstring only;
@@ -123,7 +123,7 @@ deadline-based candidates; `first_available(resolved, fetch)` probes a `Resolved
 | `get_financials` | `tools/financials.py` | `services/financials.py`, `statement_views.py` over `opendart_analysis.financials` (`preliminary` from stream A) | B |
 | `compare_companies` | `tools/compare.py` | `services/compare.py`, `peer_table.py` over `opendart_analysis.financials.compare_peers` | B |
 | `get_corporate_events` (task) | `tools/events.py` | `services/events.py` over `opendart_analysis.events` | C |
-| `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py` | C |
+| `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py`, `calendar_items.py`, `calendar_reads.py`, `calendar_debt.py` over `opendart_analysis.calendar` | C |
 | `get_ownership`, `get_capital_structure` | `tools/ownership.py`, `tools/capital.py` | `services/ownership.py`, `control.py`, `holdings.py`, `services/capital.py` over `opendart_analysis.ownership` and `opendart_analysis.capital` | D1 |
 | `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services over `opendart_analysis.debt`, `.dividends`, and `.governance` | D2 |
 | `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `opendart_analysis.catalog`, SDK binding in `services/sdk_binding.py` | E |

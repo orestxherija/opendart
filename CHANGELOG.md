@@ -38,6 +38,9 @@
   from one periodic report, with modified-opinion, going-concern, and auditor-change flags.
 - MCP's ownership, capital, debt, dividends, profile, and governance tools adapt these packages with unchanged
   requests, cache lifetimes, outputs, and messages.
+- `opendart_analysis.calendar`: corporate-action calendar assembly for one company or a watchlist, with lookback
+  windows, event dates, debt maturities, merged repeats, ordering, and explicit company bounds. MCP's
+  `get_corporate_action_calendar` adapts it with unchanged requests, outputs, messages, progress, and deadlines.
 - `opendart_analysis.extracts`: fetch periodic-report services through a caller-supplied `FetchService` with
   period-based volatility, read their all-string fields, and describe source filings. MCP's `services/extracts.py` is
   a thin adapter with unchanged signatures, requests, cache lifetimes, and messages.

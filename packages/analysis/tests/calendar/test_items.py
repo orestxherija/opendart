@@ -3,21 +3,21 @@
 from __future__ import annotations
 
 import datetime as dt
+from dataclasses import replace
 
+from opendart_analysis.calendar import (
+    ACTION_ORDER,
+    REGISTERED,
+    CalendarItem,
+    event_items,
+    merge_maturities,
+    sort_key,
+)
 from opendart_analysis.catalog import EVENT_KINDS
 from opendart_analysis.domain.dates import DateWindow
-from opendart_analysis.domain.identifiers import dart_viewer_url
 from opendart_analysis.events import EventRecord, Row
-from opendart_mcp.models.calendar import CalendarItem
-from opendart_mcp.models.common import CompanyRef
-from opendart_mcp.services.calendar_items import REGISTERED, event_items, merge_maturities
-from opendart_mcp.services.companies import Company
 
-COMPANY = Company(
-    ref=CompanyRef(name="Example Co.", corp_code="00126380", stock_code="005930", market="KOSPI"),
-    fye_month=12,
-    profile=None,
-)
+COMPANY = "00126380"
 SPAN = DateWindow(dt.date(2026, 10, 22), dt.date(2030, 1, 1))
 DECISION = "20260901000456"
 STATEMENT = "20261015000123"
@@ -156,15 +156,8 @@ def test_an_ambiguous_statement_is_dropped_without_citing_either_decision():
 
 
 def debt_item(day, face_value, number="20260325001401"):
-    return CalendarItem(
-        date=day,
-        company=COMPANY.ref,
-        action="debt_maturity",
-        source_kind="debt_securities",
-        filing_number=number,
-        dart_url=dart_viewer_url(number),
-        details={"event": "Debt maturity", "face_value": face_value, "redeemed": "no"},
-    )
+    details = {"event": "Debt maturity", "face_value": face_value, "redeemed": "no"}
+    return CalendarItem(day, COMPANY, "debt_maturity", "debt_securities", number, details)
 
 
 def test_a_debt_maturity_replaces_the_same_bonds_event_maturity():
@@ -181,9 +174,35 @@ def test_a_debt_maturity_replaces_the_same_bonds_event_maturity():
 def test_other_bonds_on_the_same_day_are_kept():
     straight = event_items(COMPANY, [debt_statement(link="-")], SPAN)
     different = debt_item(dt.date(2029, 11, 12), 20_000_000_000)
-    unknown = debt_item(dt.date(2029, 11, 12), None).model_copy(
-        update={"details": {"event": "Debt maturity"}}
-    )
+    unknown = replace(debt_item(dt.date(2029, 11, 12), None), details={"event": "Debt maturity"})
     merged = merge_maturities(straight, [different, unknown])
     assert [i.action for i in merged].count("maturity") == 1
     assert all("offering_filing" not in i.details for i in merged)
+
+
+def test_items_carry_the_company_and_only_calendar_dates_in_the_span():
+    narrow = DateWindow(dt.date(2026, 11, 1), dt.date(2026, 11, 30))
+    items = event_items(COMPANY, [merger()], narrow)
+    assert [(i.corp_code, str(i.date), i.action) for i in items] == [
+        (COMPANY, "2026-11-03", "record_date"),
+        (COMPANY, "2026-11-03", "objection_start"),
+    ]
+    assert items[0].details is items[1].details
+
+
+def test_items_sort_by_date_company_action_and_filing():
+    day = dt.date(2026, 12, 1)
+    debt = debt_item(day, 1)
+    meeting = CalendarItem(day, COMPANY, "shareholder_meeting", "merger", "20260101000002")
+    record_date = CalendarItem(day, COMPANY, "record_date", "merger", "20260101000001")
+    other = CalendarItem(day, "00164779", "record_date", "merger", "20260101000000")
+    names = {COMPANY: "B Co.", "00164779": "A Co."}
+    ordered = sorted(
+        [debt, meeting, record_date, other], key=lambda i: sort_key(i, names[i.corp_code])
+    )
+    assert ordered == [
+        other,
+        *sorted([record_date, meeting], key=lambda i: ACTION_ORDER[i.action]),
+        debt,
+    ]
+    assert "debt_maturity" not in ACTION_ORDER

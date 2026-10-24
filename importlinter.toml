@@ -53,6 +53,7 @@ forbidden_modules = [
     "opendart_analysis.dividends",
     "opendart_analysis.profile",
     "opendart_analysis.governance",
+    "opendart_analysis.calendar",
 ]
 
 # The data-access convention and failure categories are leaves every capability can import.
@@ -76,6 +77,7 @@ forbidden_modules = [
     "opendart_analysis.dividends",
     "opendart_analysis.profile",
     "opendart_analysis.governance",
+    "opendart_analysis.calendar",
     "anyio",
     "pydantic",
 ]
@@ -166,6 +168,7 @@ forbidden_modules = [
     "opendart_analysis.dividends",
     "opendart_analysis.profile",
     "opendart_analysis.governance",
+    "opendart_analysis.calendar",
     "anyio",
     "pydantic",
 ]
@@ -262,3 +265,55 @@ name = "Ownership workflows sit above table parsing and data access"
 type = "layers"
 containers = ["opendart_analysis.ownership"]
 layers = ["report | holdings", "control", "tables | holding_access"]
+
+# The calendar builds on events and debt; no other capability reads it.
+[[tool.importlinter.contracts]]
+id = "calendar-on-top"
+name = "No other capability imports the corporate-action calendar"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.documents",
+    "opendart_analysis.directory",
+    "opendart_analysis.catalog",
+    "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
+]
+forbidden_modules = ["opendart_analysis.calendar"]
+
+# Calendar requests and items are pure; reading and assembly sit above them.
+[[tool.importlinter.contracts]]
+id = "calendar-calculations-pure"
+name = "Calendar requests and items reach neither calendar workflows, fetching, data access, nor AnyIO"
+type = "forbidden"
+source_modules = ["opendart_analysis.calendar.request", "opendart_analysis.calendar.items"]
+forbidden_modules = [
+    "opendart_analysis.calendar.assemble",
+    "opendart_analysis.calendar.reads",
+    "opendart_analysis.calendar.maturities",
+    "opendart_analysis.calendar.lookback",
+    "opendart_analysis.events.fetch",
+    "opendart_analysis.events.index",
+    "opendart_analysis.filings",
+    "opendart_analysis.debt",
+    "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.upstream",
+    "opendart_analysis.documents",
+    "anyio",
+]
+
+[[tool.importlinter.contracts]]
+id = "calendar-layers"
+name = "Calendar assembly sits above reading, which sits above requests, lookback, and items"
+type = "layers"
+containers = ["opendart_analysis.calendar"]
+layers = ["assemble", "reads | maturities", "request | lookback", "items"]
