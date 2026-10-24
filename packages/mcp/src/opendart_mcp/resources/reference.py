@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Final, get_args
 
 from fastmcp.resources import resource
 
+from opendart_analysis.catalog import EVENT_GROUPS, EVENT_KINDS
 from opendart_analysis.domain.categories import CATEGORY_INFO
 from opendart_analysis.domain.periods import (
     FILING_DEADLINE_DAYS,
@@ -25,15 +26,14 @@ from opendart_analysis.domain.types import Market, MarketFilter, Unit
 from opendart_analysis.domain.units import unit_label
 from opendart_mcp.app.annotations import FOR_ASSISTANT
 from opendart_mcp.events import CALENDAR_KINDS, PRESENTATIONS
-from opendart_mcp.registry import EVENT_GROUPS, EVENT_KINDS
 from opendart_mcp.render.markdown import join, table
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from opendart_analysis.catalog import EventGroup, EventKindSpec
     from opendart_analysis.domain.types import Basis
     from opendart_mcp.models.common import ResponseFormat
-    from opendart_mcp.registry import EventGroup, EventKindSpec
 
 BASIS_MEANINGS: Final[Mapping[Basis, str]] = {
     "auto": "Consolidated statements when filed, otherwise separate ones, with a note.",

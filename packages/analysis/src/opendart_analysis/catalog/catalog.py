@@ -1,8 +1,8 @@
-"""Look up OpenDART services, field labels, and value kinds in the generated registry.
+"""Look up OpenDART services, field labels, and value kinds in the generated catalog.
 
-Lookups accept SDK names or upstream names, so a tool can label a raw upstream record and a
-typed SDK record alike. search_services backs the list_services escape-hatch tool, and
-sdk_method turns a ServiceSpec into the SDK coroutine function that calls it.
+Lookups accept SDK names or upstream names, so a caller can label a raw upstream record and a
+typed SDK record alike. search_services ranks services for a free-text query. SDK names are
+data here; binding a ServiceSpec to a client method belongs to the caller.
 """
 
 from __future__ import annotations
@@ -11,16 +11,13 @@ import difflib
 import re
 from dataclasses import dataclass
 from functools import cache
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.registry._generated import SERVICES, SERVICE_NAMES
-from opendart_mcp.registry.specs import RESOURCES
+from opendart_analysis.catalog._generated import SERVICES, SERVICE_NAMES
+from opendart_analysis.catalog.specs import RESOURCES
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
-
-    from opendart import OpenDART
-    from opendart_mcp.registry.specs import FieldKind, FieldSpec, ServiceSpec
+    from opendart_analysis.catalog.specs import FieldKind, FieldSpec, ServiceSpec
 
 _STOPWORDS: Final = frozenset(
     {"a", "an", "and", "by", "etc", "for", "in", "of", "on", "or", "the", "to", "with"}
@@ -320,24 +317,3 @@ def search_services(query: str, *, limit: int = 10) -> tuple[ServiceSpec, ...]:
     # sorted() is stable, so equal scores keep catalog order.
     ranked = sorted((item for item in scored if item[0] > 0), key=lambda item: -item[0])
     return tuple(spec for _, spec in ranked[: max(limit, 0)])
-
-
-def sdk_method(client: OpenDART, spec: str | ServiceSpec) -> Callable[..., Awaitable[Any]]:
-    """Return the bound SDK coroutine function for a service.
-
-    Args:
-        client (OpenDART): Open SDK client.
-        spec (str | ServiceSpec): Service name or spec.
-
-    Returns:
-        Callable[..., Awaitable[Any]]: The method, such as client.major_issues.cvbd_is_decsn;
-            call it with the ParamSpec names as keyword arguments.
-
-    Raises:
-        KeyError: The service is unknown.
-    """
-    resolved = _spec(spec)
-    method: Callable[..., Awaitable[Any]] = getattr(
-        getattr(client, resolved.resource), resolved.name
-    )
-    return method

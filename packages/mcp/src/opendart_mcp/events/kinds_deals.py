@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Final
 from opendart_mcp.events.templates import Presentation, part
 
 if TYPE_CHECKING:
-    from opendart_mcp.registry import EventKind
+    from opendart_analysis.catalog import EventKind
 
 
 def _restructuring_registration(label: str, noun: str) -> Presentation:

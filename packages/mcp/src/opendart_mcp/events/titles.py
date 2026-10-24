@@ -17,7 +17,7 @@ import re
 from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
-    from opendart_mcp.registry import EventKind
+    from opendart_analysis.catalog import EventKind
 
 type Rule = tuple[EventKind, tuple[str, ...], tuple[str, ...]]
 

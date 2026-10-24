@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.catalog import EVENT_KINDS
 from opendart_analysis.domain.filings import is_amendment
 from opendart_analysis.domain.identifiers import dart_viewer_url, filing_date
 from opendart_mcp.events import AMENDED, POSSIBLY_AMENDED, describe, labeled_fields
@@ -22,7 +23,6 @@ from opendart_mcp.models.events import (
     EventDate,
     EventField,
 )
-from opendart_mcp.registry import EVENT_KINDS
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

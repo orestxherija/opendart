@@ -1,6 +1,6 @@
 # GitHub automation
 
-![CI workflows: triggers start ci.yml, which selects check workflows from the changed files and gates on CI checks; release tags, a weekly audit, and a daily image scan run separately](workflows.svg)
+![CI workflows: triggers start ci.yml, which selects the quality, release, SDK, analysis, MCP, image, and reference check workflows from the changed files and gates on CI checks; release tags, a weekly audit, and a daily image scan run separately](workflows.svg)
 
 Pull requests and pushes to `main` start one workflow, [CI](workflows/ci.yml). Its first job
 compares the change with its base, applies the filters in [ci-paths.toml](ci-paths.toml), and
@@ -8,8 +8,10 @@ calls only the check workflows whose inputs changed. The required **CI checks** 
 every selected check passes. Draft pull requests skip the image, distribution, and conformance
 checks until they are marked ready. Analysis changes also select the MCP, image, and distribution
 checks, because MCP and its image install analysis; SDK changes do not select analysis checks. The
-analysis job installs neither the SDK nor MCP, and the MCP job, which installs all three packages,
-runs the import-boundary check. Run `just ci plan` to preview the selection for local changes.
+analysis job installs neither the SDK nor MCP and checks that the generated service catalog is
+fresh, so the catalog generator's inputs, including the SDK generator's naming rules, select it.
+The MCP job, which installs all three packages, runs the import-boundary check. Run `just ci plan`
+to preview the selection for local changes.
 
 | Trigger | Workflow | Runs |
 | --- | --- | --- |

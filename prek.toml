@@ -554,21 +554,21 @@ log_file = ".prek-mcp-components.log"
 
 [[repos.hooks]]
 id = "mcp-registry"
-name = "MCP registry freshness"
-description = "Checks that the generated MCP service registry matches the API catalog and the SDK naming rules."
+name = "Service catalog freshness"
+description = "Checks that the generated analysis service catalog matches the API catalog and the SDK naming rules."
 entry = "uv run --locked --no-progress --no-sync python scripts/generate_mcp_registry.py --check"
 language = "system"
 # Generation takes about five seconds, so it runs before pushes that change its inputs.
 files = { glob = [
     "api_reference/{sources/catalog.json,paths/**}",
     "scripts/generate_{mcp_registry,sdk}.py",
-    "packages/mcp/src/opendart_mcp/registry/_generated.py",
+    "packages/analysis/src/opendart_analysis/catalog/_generated.py",
     # The generator formats its output with the locked Ruff and the repository configuration.
     "{ruff,prek}.toml",
     "uv.lock",
 ] }
 pass_filenames = false
-groups = ["python", "mcp", "slow", "ci"]
+groups = ["python", "analysis", "slow", "ci"]
 stages = ["pre-push"]
 require_serial = true
 priority = "quality"
@@ -599,9 +599,12 @@ name = "Pytest (analysis)"
 description = "Runs offline analysis tests and writes isolated coverage and HTML reports."
 entry = "uv run --locked --no-progress --no-sync pytest packages/analysis/tests --cov-config=packages/analysis/.coveragerc.toml --html=.cache/pytest/analysis-report.html -o cache_dir=.cache/pytest/analysis"
 language = "system"
-# Analysis never uses the SDK, so SDK changes do not rerun these tests.
+# Analysis never uses the SDK, so SDK changes do not rerun these tests. Catalog tests run
+# the catalog generator on its inputs, which include the SDK generator's naming rules.
 files = { glob = [
     "packages/analysis/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
+    "scripts/generate_{mcp_registry,sdk}.py",
+    "api_reference/{sources/catalog.json,paths/**}",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
 ] }
 pass_filenames = false
@@ -621,11 +624,10 @@ files = { glob = [
     "packages/mcp/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
     # MCP runs on the installed SDK and analysis packages.
     "packages/{sdk,analysis}/{src/**,pyproject.toml}",
-    # Registry tests run the generator on its inputs and parse the component design;
-    # manifest tests run the component lock script.
+    # The event-vocabulary test parses the component design; manifest tests run the
+    # component lock script.
     "packages/mcp/docs/COMPONENT_DESIGN.md",
-    "scripts/{check_mcp_components,generate_mcp_registry,generate_sdk}.py",
-    "api_reference/{sources/catalog.json,paths/**}",
+    "scripts/check_mcp_components.py",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
 ] }
 pass_filenames = false

@@ -1,10 +1,10 @@
-"""Registry lookups: services, field labels and kinds, and service search."""
+"""Catalog lookups: services, field labels and kinds, and service search."""
 
 from __future__ import annotations
 
 import pytest
 
-from opendart_mcp.registry import (
+from opendart_analysis.catalog import (
     RESOURCES,
     SERVICES,
     field_kind,

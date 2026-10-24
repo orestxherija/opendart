@@ -14,8 +14,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
+from opendart_analysis.catalog import field_kind
 from opendart_mcp.events.values import TEXT_LIMIT, display, shorten
-from opendart_mcp.registry import field_kind
 
 if TYPE_CHECKING:
     from opendart_mcp.events.records import EventRecord

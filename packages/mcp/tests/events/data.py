@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendart_mcp.registry import service
+from opendart_analysis.catalog import service
 
 # The catalog title has a typographic apostrophe, as upstream sends it.
 REDEMPTION = next(r.section for r in service("estk_rs").records if "redemption" in r.section)

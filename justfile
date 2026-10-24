@@ -73,8 +73,8 @@ release-dist:
 # Run the release checks, then build and smoke-test the distributions.
 release-build: release-check release-dist
 
-# Regenerate the reference, then the SDK and the MCP registry built from it.
+# Regenerate the reference, then the SDK and the service catalog built from it.
 generate:
     just reference generate
     just sdk generate
-    just mcp generate
+    just analysis generate

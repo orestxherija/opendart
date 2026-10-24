@@ -8,7 +8,7 @@ attribute on the SDK record model. The wire names are the upstream ones.
 Each field has a FieldKind that tells the normalization layer how to read the upstream string:
 
 - amount: money in total, usually KRW and occasionally a foreign currency. Upstream text uses
-  commas, blanks, and "-". The only kind that the tools' unit argument scales.
+  commas, blanks, and "-". The only kind that display units, such as millions, scale.
 - per_share: money per share or per unit: par value; issue, offering, exercise, conversion,
   and appraisal prices. Never scaled.
 - count: a quantity other than money: shares, people, holders, hours, years of service.

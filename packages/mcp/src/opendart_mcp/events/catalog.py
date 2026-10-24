@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.catalog import EVENT_KINDS, field_spec
 from opendart_analysis.domain.normalize import clean_text
 from opendart_mcp.events.dates import board_date, event_dates
 from opendart_mcp.events.flags import event_flags
@@ -20,16 +21,15 @@ from opendart_mcp.events.kinds_other import OTHER
 from opendart_mcp.events.records import COMMON_FIELDS
 from opendart_mcp.events.templates import headline, key_terms
 from opendart_mcp.events.values import normalize
-from opendart_mcp.registry import EVENT_KINDS, field_spec
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from datetime import date
 
+    from opendart_analysis.catalog import EventGroup, EventKind
     from opendart_mcp.events.records import EventRecord
     from opendart_mcp.events.templates import Presentation
     from opendart_mcp.events.values import Scalar
-    from opendart_mcp.registry import EventGroup, EventKind
 
 _ALL: Final = {**CAPITAL, **DEALS, **OTHER}
 PRESENTATIONS: Final[Mapping[EventKind, Presentation]] = MappingProxyType(

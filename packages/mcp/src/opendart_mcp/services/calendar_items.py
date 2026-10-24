@@ -22,10 +22,10 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.catalog import kinds_in
 from opendart_analysis.domain.identifiers import dart_viewer_url, is_filing_number
 from opendart_mcp.events import ACTIONS, describe
 from opendart_mcp.models.calendar import CalendarItem
-from opendart_mcp.registry import kinds_in
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping, Sequence

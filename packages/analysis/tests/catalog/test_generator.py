@@ -7,8 +7,8 @@ from collections import Counter
 
 import pytest
 
-from opendart_mcp.registry import SERVICES
-from opendart_mcp.registry.specs import FieldSpec
+from opendart_analysis.catalog import SERVICES
+from opendart_analysis.catalog.specs import FieldSpec
 
 NUMERIC = "9,999,999,999"
 

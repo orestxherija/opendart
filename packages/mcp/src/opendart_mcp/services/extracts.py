@@ -18,8 +18,8 @@ from typing import TYPE_CHECKING, Final, cast
 from opendart_analysis.domain.identifiers import is_filing_number
 from opendart_analysis.domain.normalize import clean_text
 from opendart_mcp.models.common import SourceFiling
-from opendart_mcp.registry import sdk_method
 from opendart_mcp.services.periods import PROBE_ATTEMPTS, periodic_ttl
+from opendart_mcp.services.sdk_binding import sdk_method
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Iterable, Sequence

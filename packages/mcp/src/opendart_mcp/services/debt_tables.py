@@ -13,9 +13,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Literal
 
+from opendart_analysis.catalog import field_label
 from opendart_analysis.domain.normalize import parse_amount
 from opendart_mcp.models.debt import DebtDerived, FiledBucket, LadderBucket, LadderEntry
-from opendart_mcp.registry import field_label
 from opendart_mcp.services.extracts import fold, is_total, text
 
 if TYPE_CHECKING:

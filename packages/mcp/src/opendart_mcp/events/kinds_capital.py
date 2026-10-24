@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Final
 from opendart_mcp.events.templates import Presentation, part, ratio, total
 
 if TYPE_CHECKING:
-    from opendart_mcp.registry import EventKind
+    from opendart_analysis.catalog import EventKind
 
 _FUNDING: Final = ("fdpp_fclt", "fdpp_bsninh", "fdpp_op", "fdpp_dtrp", "fdpp_ocsa", "fdpp_etc")
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.catalog import EVENT_KINDS, search_services, service, services
 from opendart_mcp.core.errors import InvalidArgumentError
 from opendart_mcp.core.progress import no_progress
 from opendart_mcp.core.ttl import DAY, FILINGS, HOUR
@@ -20,7 +21,6 @@ from opendart_mcp.models.services import (
     ServiceListResult,
     ServiceParam,
 )
-from opendart_mcp.registry import EVENT_KINDS, sdk_method, search_services, service, services
 from opendart_mcp.services.catalog_params import Converter, accepts, bind
 from opendart_mcp.services.catalog_records import (
     flatten,
@@ -28,13 +28,14 @@ from opendart_mcp.services.catalog_records import (
     tables,
     upstream_paging,
 )
+from opendart_mcp.services.sdk_binding import sdk_method
 
 if TYPE_CHECKING:
+    from opendart_analysis.catalog import ServiceSpec
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
     from opendart_mcp.models.common import ResponseFormat
     from opendart_mcp.models.services import ParamValue
-    from opendart_mcp.registry import ServiceSpec
 
 _TTL: Final[dict[str, float]] = {
     "disclosures": FILINGS,

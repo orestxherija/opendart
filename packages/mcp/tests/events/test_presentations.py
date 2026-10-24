@@ -7,6 +7,7 @@ from datetime import date
 
 import pytest
 
+from opendart_analysis.catalog import EVENT_KINDS, EVENT_KIND_NAMES, service
 from opendart_mcp.events import PRESENTATIONS, EventRecord, Row, describe
 from opendart_mcp.events.templates import (
     Lookup,
@@ -17,7 +18,6 @@ from opendart_mcp.events.templates import (
     ratio,
     total,
 )
-from opendart_mcp.registry import EVENT_KINDS, EVENT_KIND_NAMES, service
 from packages.mcp.tests.events.data import buyback, convertible_bond, merger, rights_issue
 
 SAMPLE = {

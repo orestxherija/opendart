@@ -16,15 +16,15 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.catalog import EVENT_KINDS
 from opendart_mcp.events.values import parse_span
-from opendart_mcp.registry import EVENT_KINDS
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from datetime import date
 
+    from opendart_analysis.catalog import EventKind, EventKindSpec
     from opendart_mcp.events.records import EventRecord
-    from opendart_mcp.registry import EventKind, EventKindSpec
 
 
 @dataclass(frozen=True, slots=True)

@@ -6,7 +6,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.registry.specs import FieldSpec, ParamSpec, RecordSpec, ServiceSpec
+from opendart_analysis.catalog.specs import FieldSpec, ParamSpec, RecordSpec, ServiceSpec
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

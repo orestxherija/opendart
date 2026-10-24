@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[4]
 
 @pytest.fixture(scope="session")
 def generator() -> ModuleType:
-    """The registry generator module, imported by path."""
+    """The catalog generator module, imported by path."""
     path = ROOT / "scripts/generate_mcp_registry.py"
     spec = importlib.util.spec_from_file_location("generate_mcp_registry", path)
     assert spec is not None

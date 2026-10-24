@@ -1,8 +1,8 @@
-"""Event vocabulary for get_corporate_events: groups, kinds, upstream services, and date fields.
+"""Corporate-event vocabulary: groups, kinds, upstream services, and date fields.
 
 Each of the 42 event kinds maps to one major-issue report or securities-registration service.
 The kind, its group, and its service are reviewed here; the resource, title, and date fields
-come from the generated registry, so they follow the catalog.
+come from the generated service catalog, so they follow the upstream catalog.
 
 Per-kind presentation (headline templates, key-term selections, and flags) belongs in a
 separate module keyed by EventKind, such as a Mapping[EventKind, Template]; a test comparing its
@@ -15,12 +15,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final, Literal, get_args
 
-from opendart_mcp.registry.catalog import service
+from opendart_analysis.catalog.catalog import service
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-    from opendart_mcp.registry.specs import Resource
+    from opendart_analysis.catalog.specs import Resource
 
 # Plain aliases rather than type statements, so typing.get_args() lists the values at runtime.
 EventGroup = Literal[
@@ -81,7 +81,7 @@ EventKind = Literal[
 EVENT_GROUPS: Final[tuple[EventGroup, ...]] = get_args(EventGroup)
 EVENT_KIND_NAMES: Final[tuple[EventKind, ...]] = get_args(EventKind)
 
-# Kind -> (group, SDK method), in the order of the component design's vocabulary table.
+# Kind -> (group, SDK method), in vocabulary order: groups in EVENT_GROUPS order, kinds by group.
 _VOCABULARY: Final[dict[EventKind, tuple[EventGroup, str]]] = {
     "rights_or_third_party_issue": ("capital_raise", "piic_decsn"),
     "bonus_issue": ("capital_raise", "fric_decsn"),
@@ -153,7 +153,7 @@ class EventKindSpec:
 
 
 def _kind_spec(kind: EventKind, group: EventGroup, name: str) -> EventKindSpec:
-    """Build an EventKindSpec from the registry entry of its service.
+    """Build an EventKindSpec from the catalog entry of its service.
 
     Args:
         kind (EventKind): Event kind name.
@@ -164,7 +164,7 @@ def _kind_spec(kind: EventKind, group: EventGroup, name: str) -> EventKindSpec:
         EventKindSpec: The kind with resource, title, and date fields filled in.
 
     Raises:
-        KeyError: The service is not in the registry.
+        KeyError: The service is not in the catalog.
     """
     spec = service(name)
     dates: dict[str, str] = {}
@@ -196,7 +196,7 @@ _CATEGORIES: Final[dict[str, tuple[EventKind, ...]]] = {
 
 
 def kinds_in(group: str) -> tuple[EventKind, ...]:
-    """List the kinds of one group in registry order.
+    """List the kinds of one group in catalog order.
 
     Args:
         group (str): Event group name.
@@ -214,7 +214,7 @@ def kinds_in(group: str) -> tuple[EventKind, ...]:
 
 
 def expand(categories: str | Iterable[str]) -> tuple[EventKind, ...]:
-    """Expand group and kind names into distinct kinds in registry order.
+    """Expand group and kind names into distinct kinds in catalog order.
 
     capital_reduction is both a group and a kind name; the group holds only that kind, so
     either reading selects the same kind. The kind that reports a completed overseas listing is

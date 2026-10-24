@@ -29,6 +29,9 @@ jobs:
         run: just analysis lint
       - name: Check types
         run: just analysis typecheck
+      # The generator needs only the standard library, PyYAML, and Ruff from the dev groups.
+      - name: Check the generated service catalog
+        run: just analysis generated
       - name: Run tests
         run: just analysis test
       - name: Upload test report

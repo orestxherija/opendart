@@ -18,16 +18,16 @@ from typing import TYPE_CHECKING, Final
 
 from pydantic import BaseModel
 
+from opendart_analysis.catalog import EVENT_KINDS, field_kind, field_spec, service
 from opendart_analysis.domain.identifiers import is_filing_number
 from opendart_analysis.domain.normalize import clean_text
 from opendart_mcp.events.values import normalize
-from opendart_mcp.registry import EVENT_KINDS, field_kind, field_spec, service
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
 
+    from opendart_analysis.catalog import EventKind, ServiceSpec
     from opendart_mcp.events.values import Scalar
-    from opendart_mcp.registry import EventKind, ServiceSpec
 
 COMMON_FIELDS: Final = frozenset(
     {"filing_number", "corporation_type", "corporation_code", "corporation_name"}
