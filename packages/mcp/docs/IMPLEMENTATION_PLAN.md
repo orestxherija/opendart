@@ -20,7 +20,7 @@ architecture and contracts every module codes against, and how the work is split
 | Pagination | Result paging in tools (`limit`, `page`, `has_more`, `next_call`; character offsets in `read_filing`). List pagination stays configurable and off. | 13 tools fit one page, and some hosts do not follow list cursors. |
 | Cache hints | Server-wide `cache_ttl` (default 300 s, private scope). | FastMCP 4.1 has no per-resource hints; status reads may lag by the TTL. |
 | Disambiguation | `ToolError` with candidates everywhere; elicitation (modern guard pattern and legacy `ctx.elicit`) when the host supports it, behind `tools.elicit_ambiguous_company`. | Resolves design open decision 2 without breaking hosts that lack elicitation. |
-| Directory | Background load with a disk cache (`~/.cache/opendart-mcp/corpcode.zip`), daily refresh, stale-while-refresh; corp codes work before it is ready. | A live download of the 3.6 MB archive took 233 s. |
+| Directory | Background load with a disk cache (`~/.cache/opendart-mcp/corpcode.zip`), daily refresh, stale-while-refresh; corp codes work before it is ready. Loading is `opendart_analysis.directory.DirectoryLoader`; `services/directory.py` configures it and translates failures. | A live download of the 3.6 MB archive took 233 s. |
 | Name languages | `corp_name` is Korean, `corp_eng_name` English (99%); both are indexed. | Resolves design open decision 1 from the live directory: 119,717 records, 4,001 listed, 66 alphanumeric stock codes, and stale duplicate listed names that recency breaks ties for. |
 
 ## Architecture
@@ -32,7 +32,7 @@ Imports point down the table only. The pure layers never import FastMCP.
 | Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, lifespan |
 | Services | `services/` | Business logic per component, callable from tests without MCP |
 | Infrastructure | `core/` | Gateway, cache, errors, state, runtime |
-| Pure layers | `opendart_analysis.catalog`, `opendart_analysis.domain`, `opendart_analysis.documents`, `opendart_analysis.events`, `opendart_analysis.filings`, `opendart_analysis.extracts`, `opendart_analysis.financials` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
+| Pure layers | `opendart_analysis.catalog`, `opendart_analysis.domain`, `opendart_analysis.documents`, `opendart_analysis.events`, `opendart_analysis.filings`, `opendart_analysis.extracts`, `opendart_analysis.financials`, `opendart_analysis.ownership`, `opendart_analysis.capital`, `opendart_analysis.debt`, `opendart_analysis.dividends`, `opendart_analysis.profile`, `opendart_analysis.governance` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
 | Output | `models/`, `render/` | Pydantic output models and Markdown renderers |
 
 Every handwritten file stays under 500 lines (loq). Tool modules hold the decorated function and its docstring only;
@@ -67,7 +67,9 @@ the service, model, and renderer live in their layers.
 - Workflows in `opendart-analysis` receive typed data-access callables instead of the gateway. `core.upstream` binds
   each one to `gateway.call` with unchanged arguments, and `core.ttl.lifetime` maps the call's `Volatility` hint
   (`low`, `medium`, `high`) to `DAY`, `HOUR`, or `FILINGS`.
-- Capability bindings follow the same pattern in `core.upstream_financials` and `core.upstream_filings`.
+- Capability bindings follow the same pattern in `core.upstream_financials`, `core.upstream_filings`, and
+  `core.upstream_ownership`; debt, dividends, and governance read catalog services through
+  `core.upstream.service_fetch`.
 
 ### Errors
 
@@ -115,15 +117,15 @@ deadline-based candidates; `first_available(resolved, fetch)` probes a `Resolved
 
 | Component | Module | Service | Stream |
 | --- | --- | --- | --- |
-| `find_company`, `get_company_profile` | `tools/company.py` | `services/companies.py` (messages in `services/company_messages.py`) over `opendart_analysis.domain`, `services/profile.py` | Foundation |
+| `find_company`, `get_company_profile` | `tools/company.py` | `services/companies.py` (messages in `services/company_messages.py`) over `opendart_analysis.domain`, `services/profile.py` over `opendart_analysis.profile` | Foundation |
 | `search_filings` | `tools/filings.py` | `services/filings.py` over `opendart_analysis.filings` | A |
 | `read_filing` (task) | `tools/documents.py` | `services/documents.py` over `opendart_analysis.documents` | A |
 | `get_financials` | `tools/financials.py` | `services/financials.py`, `statement_views.py` over `opendart_analysis.financials` (`preliminary` from stream A) | B |
 | `compare_companies` | `tools/compare.py` | `services/compare.py`, `peer_table.py` over `opendart_analysis.financials.compare_peers` | B |
 | `get_corporate_events` (task) | `tools/events.py` | `services/events.py` over `opendart_analysis.events` | C |
 | `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py` | C |
-| `get_ownership`, `get_capital_structure` | `tools/ownership.py`, `tools/capital.py` | `services/ownership.py`, `services/capital.py` | D1 |
-| `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services | D2 |
+| `get_ownership`, `get_capital_structure` | `tools/ownership.py`, `tools/capital.py` | `services/ownership.py`, `control.py`, `holdings.py`, `services/capital.py` over `opendart_analysis.ownership` and `opendart_analysis.capital` | D1 |
+| `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services over `opendart_analysis.debt`, `.dividends`, and `.governance` | D2 |
 | `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `opendart_analysis.catalog`, SDK binding in `services/sdk_binding.py` | E |
 | Company and filing resources | `resources/company.py`, `resources/filings.py` | streams' services | A |
 | Reference and status resources | `resources/reference.py`, `resources/status.py` | `opendart_analysis.catalog`, `opendart_analysis.domain` | E |

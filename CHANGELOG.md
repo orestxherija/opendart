@@ -23,6 +23,21 @@
   investments, preliminary earnings, and peer comparison, through typed data-access callables with explicit
   acquisition bounds. MCP's `get_financials` and `compare_companies` adapt it with unchanged requests, cache
   lifetimes, outputs, and messages.
+- `opendart_analysis.directory.DirectoryLoader`: background loading, disk caching, and scheduled refresh of the
+  corporation-code directory through a caller-supplied download, with explicit configuration, an injectable clock,
+  and `start`/`refresh`/`aclose` ownership. MCP's directory service adapts it with an unchanged cache file,
+  schedule, and messages.
+- `opendart_analysis.debt`: maturity ladders by instrument, the issuance record (ratings, coupons, redemption
+  status, subsidiary issuers), derived totals, and maturities in a window.
+- `opendart_analysis.dividends` and `opendart_analysis.profile`: dividend histories from annual reports and
+  company profiles from the overview and the latest periodic report.
+- `opendart_analysis.ownership` and `opendart_analysis.capital`: control snapshots, free-float estimates, control
+  changes, minority shareholders, 5% holder and insider reports, share counts, treasury stock, capital changes, and
+  use of proceeds.
+- `opendart_analysis.governance`: audit facts and auditor changes, board composition, executives, pay, and workforce
+  from one periodic report, with modified-opinion, going-concern, and auditor-change flags.
+- MCP's ownership, capital, debt, dividends, profile, and governance tools adapt these packages with unchanged
+  requests, cache lifetimes, outputs, and messages.
 - `opendart_analysis.extracts`: fetch periodic-report services through a caller-supplied `FetchService` with
   period-based volatility, read their all-string fields, and describe source filings. MCP's `services/extracts.py` is
   a thin adapter with unchanged signatures, requests, cache lifetimes, and messages.

@@ -42,13 +42,25 @@ Applications that download filings with the SDK install both distributions, `ope
 
 - [Filing documents](docs/documents.md): read a filing downloaded with the SDK, the documents API, archive limits, and
   the caching `DocumentStore`.
-- [Company directory](docs/directory.md): parse the corporation-code archive, search it, and resolve names and codes.
+- [Company directory](docs/directory.md): parse the corporation-code archive, search it, resolve names and codes,
+  and keep it loaded and refreshed with `DirectoryLoader`.
 - [Data access](docs/data-access.md): how workflows receive upstream data, freshness hints, record protocols,
   exceptions, and the direct-SDK recipe.
 - [Periodic reports](docs/reports.md): find a company's latest periodic report and resolve requested periods.
 - [Service catalog](docs/catalog.md): metadata for all 85 OpenDART services and the corporate-event vocabulary.
 - [Financial statements](docs/financials.md): statements over periods with restatement merging and derived metrics,
   published indicators, equity investments, preliminary earnings, and peer comparison.
+- [Company profiles](docs/profile.md): reference facts from the company overview and the latest periodic report.
+- [Dividends](docs/dividends.md): dividend history by measure, share class, and fiscal year from annual reports, with
+  units converted and earlier reports chained.
+- [Debt securities](docs/debt.md): maturity ladders of bonds, commercial paper, and hybrid securities, the issuance
+  record with coupons and ratings, and upcoming maturities.
+- [Ownership and control](docs/ownership.md): the controlling group's stake, minority shareholders, a free-float
+  estimate, changes of control, and 5% holder and insider reports.
+- [Capital structure](docs/capital.md): share counts by class, treasury stock, share issuances and reductions, and the
+  use of money raised, from one periodic report.
+- [Governance](docs/governance.md): audit opinions, fees, and auditor changes, board composition, executives, pay, and
+  workforce from one periodic report, with red flags.
 - [Periodic-report extracts](docs/extracts.md): fetch one periodic-report service for a company and period, read its
   all-string fields, and list source filings.
 - [Corporate events](docs/events.md): read a company's material events from major-issue and registration reports,

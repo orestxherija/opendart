@@ -30,14 +30,15 @@ type = "forbidden"
 source_modules = ["opendart_analysis.documents.*"]
 forbidden_modules = ["opendart_analysis.documents.store"]
 
-# Company lookup is pure and synchronous: no runtime store, no async machinery, no background work,
-# and no caller-supplied data access, which belongs to the workflows built on these primitives.
+# Company-domain primitives are pure and synchronous: no runtime store, no async machinery, no
+# background work, no directory loader, and no caller-supplied data access.
 [[tool.importlinter.contracts]]
 id = "domain-pure"
-name = "Company-domain and directory modules reach neither the document store, AnyIO, nor data access"
+name = "Company-domain modules reach neither the directory loader, the document store, AnyIO, nor data access"
 type = "forbidden"
-source_modules = ["opendart_analysis.domain", "opendart_analysis.directory"]
+source_modules = ["opendart_analysis.domain"]
 forbidden_modules = [
+    "opendart_analysis.directory",
     "opendart_analysis.documents.store",
     "anyio",
     "opendart_analysis.upstream",
@@ -46,6 +47,12 @@ forbidden_modules = [
     "opendart_analysis.events",
     "opendart_analysis.filings",
     "opendart_analysis.financials",
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
 ]
 
 # The data-access convention and failure categories are leaves every capability can import.
@@ -63,6 +70,12 @@ forbidden_modules = [
     "opendart_analysis.events",
     "opendart_analysis.filings",
     "opendart_analysis.financials",
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
     "anyio",
     "pydantic",
 ]
@@ -132,3 +145,120 @@ forbidden_modules = [
     "opendart_analysis.documents.store",
     "anyio",
 ]
+
+# The directory loader is runtime machinery over the pure directory; it reads no other capability.
+[[tool.importlinter.contracts]]
+id = "directory-loader-leaf"
+name = "The directory loader reaches no other capability, AnyIO, or Pydantic"
+type = "forbidden"
+source_modules = ["opendart_analysis.directory.loader"]
+forbidden_modules = [
+    "opendart_analysis.upstream",
+    "opendart_analysis.documents",
+    "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
+    "anyio",
+    "pydantic",
+]
+
+# Debt ladders and issuance parsing read records; fetching and period resolution sit above them.
+[[tool.importlinter.contracts]]
+id = "debt-calculations-pure"
+name = "Debt ladders and issuance parsing reach neither debt workflows, data access, nor AnyIO"
+type = "forbidden"
+source_modules = ["opendart_analysis.debt.ladders", "opendart_analysis.debt.issuance"]
+forbidden_modules = [
+    "opendart_analysis.debt.profile",
+    "opendart_analysis.debt.schedule",
+    "opendart_analysis.extracts.fetch",
+    "opendart_analysis.reports",
+    "opendart_analysis.upstream",
+    "opendart_analysis.documents.store",
+    "anyio",
+]
+
+# Dividend rows and profile facts are pure; their workflows sit above them.
+[[tool.importlinter.contracts]]
+id = "dividends-profile-calculations-pure"
+name = "Dividend rows and profile facts reach neither workflows, data access, nor AnyIO"
+type = "forbidden"
+source_modules = ["opendart_analysis.dividends.rows", "opendart_analysis.profile.facts"]
+forbidden_modules = [
+    "opendart_analysis.dividends.history",
+    "opendart_analysis.profile.latest",
+    "opendart_analysis.reports",
+    "opendart_analysis.upstream",
+    "opendart_analysis.extracts.fetch",
+    "anyio",
+]
+
+# Governance calculations read records; fetching, period resolution, and concurrency sit above them.
+[[tool.importlinter.contracts]]
+id = "governance-calculations-pure"
+name = "Governance calculations reach neither the governance workflow, period resolution, data access, nor AnyIO"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.governance.audit",
+    "opendart_analysis.governance.pay",
+    "opendart_analysis.governance.people",
+    "opendart_analysis.governance.values",
+]
+forbidden_modules = [
+    "opendart_analysis.governance.fetch",
+    "opendart_analysis.reports",
+    "opendart_analysis.upstream",
+    "opendart_analysis.extracts.fetch",
+    "opendart_analysis.documents",
+    "anyio",
+    "pydantic",
+]
+
+# Periodic-report capabilities build on extracts and reports, never on each other's unrelated layers.
+[[tool.importlinter.contracts]]
+id = "periodic-capabilities-leaf"
+name = "Periodic-report capabilities reach neither documents, the directory, events, nor filing discovery"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
+]
+forbidden_modules = [
+    "opendart_analysis.documents",
+    "opendart_analysis.directory",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+]
+
+[[tool.importlinter.contracts]]
+id = "capital-before-ownership"
+name = "Capital structure does not import ownership"
+type = "forbidden"
+source_modules = ["opendart_analysis.capital"]
+forbidden_modules = ["opendart_analysis.ownership"]
+
+[[tool.importlinter.contracts]]
+id = "capital-layers"
+name = "The capital workflow sits above table parsing, which sits above share counts"
+type = "layers"
+containers = ["opendart_analysis.capital"]
+layers = ["structure", "changes | treasury", "shares"]
+
+[[tool.importlinter.contracts]]
+id = "ownership-layers"
+name = "Ownership workflows sit above table parsing and data access"
+type = "layers"
+containers = ["opendart_analysis.ownership"]
+layers = ["report | holdings", "control", "tables | holding_access"]
