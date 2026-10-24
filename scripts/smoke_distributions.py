@@ -51,6 +51,17 @@ def smoke_distributions(dist: Path) -> None:
             for package in PACKAGES:
                 name = f"opendart_{package.name}-{version}{suffix}"
                 shutil.copy2(dist / name, links / name)
+            # URL constraints pin workspace names to these files, so a same-named package on
+            # the index can never be chosen; constraints add no requirements, so a missing
+            # dependency declaration still fails.
+            constraints = links / "constraints.txt"
+            constraints.write_text(
+                "".join(
+                    f"opendart-{package.name} @ "
+                    f"{(links / f"opendart_{package.name}-{version}{suffix}").as_uri()}\n"
+                    for package in PACKAGES
+                )
+            )
             for package in PACKAGES:
                 directory = Path(temporary) / package.name
                 directory.mkdir()
@@ -67,8 +78,8 @@ def smoke_distributions(dist: Path) -> None:
                     "--python",
                     str(python),
                     "--no-sources",
-                    "--find-links",
-                    str(links),
+                    "--constraint",
+                    str(constraints),
                     str(artifact),
                     working_directory=directory,
                 )

@@ -101,6 +101,15 @@ def check_edges(packages: dict, current: Version) -> None:
     """Require each declared workspace dependency edge and forbid every undeclared one."""
     internal = {canonicalize_name(package.distribution): package for package in PACKAGES}
     for package in PACKAGES:
+        # Extras would add an internal edge that the checks below never see.
+        for extra, values in packages[package.name].get("optional-dependencies", {}).items():
+            for value in values:
+                dependency = internal.get(canonicalize_name(Requirement(value).name))
+                if dependency is not None:
+                    raise ValueError(
+                        f"{package.label} must not require {dependency.distribution}"
+                        f" through its {extra!r} extra"
+                    )
         found: dict[str, list[Requirement]] = {}
         for value in packages[package.name]["dependencies"]:
             requirement = Requirement(value)

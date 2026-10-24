@@ -7,7 +7,6 @@ import importlib
 import os
 import subprocess
 import sys
-import time
 from importlib.metadata import PackageNotFoundError
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,8 +15,6 @@ import pytest
 
 from scripts import smoke_installed
 from scripts.check_release import ROOT
-
-ANALYSIS_DOCUMENTS = ROOT / "packages/analysis/src/opendart_analysis/documents/filing.py"
 
 
 @pytest.fixture
@@ -39,17 +36,21 @@ def dist(tmp_path: Path) -> Path:
     return directory
 
 
-def test_each_installation_choice_gets_a_fresh_environment_and_local_links(
+def test_each_installation_choice_gets_a_fresh_environment_and_local_constraints(
     runner, monkeypatch, tmp_path, dist
 ):
     calls = []
     links = {}
+    pins = {}
 
     def record(command, **kwargs):
         calls.append((command, kwargs))
         if command[:3] == ("uv", "pip", "install"):
-            directory = Path(command[command.index("--find-links") + 1])
-            links.setdefault(directory, sorted(path.name for path in directory.iterdir()))
+            constraints = Path(command[command.index("--constraint") + 1])
+            directory = constraints.parent
+            names = sorted(path.name for path in directory.iterdir() if path != constraints)
+            links.setdefault(directory, names)
+            pins.setdefault(directory, constraints.read_text().splitlines())
 
     monkeypatch.setattr(runner.subprocess, "run", record)
     monkeypatch.setenv("PYTHONPATH", str(ROOT))
@@ -73,12 +74,18 @@ def test_each_installation_choice_gets_a_fresh_environment_and_local_links(
         [f"opendart_{package}-0.1.0-py3-none-any.whl" for package in ("analysis", "mcp", "sdk")],
         [f"opendart_{package}-0.1.0.tar.gz" for package in ("analysis", "mcp", "sdk")],
     ]
+    # Every workspace name is pinned to a file in the same format's directory.
+    for directory, lines in pins.items():
+        assert sorted(lines) == sorted(
+            f"opendart-{name.split("-")[0].removeprefix("opendart_")} @ {(directory / name).as_uri()}"
+            for name in links[directory]
+        )
     installed = []
     for command in installs:
         assert "--no-sources" in command
-        assert command[-3] == "--find-links"
+        assert command[-3] == "--constraint"
         artifact = Path(command[-1])
-        assert artifact.parent == Path(command[-2])
+        assert artifact.parent == Path(command[-2]).parent
         # Only the distribution under test is named; its requirements select the others.
         assert [part for part in command if part.endswith((".whl", ".tar.gz"))] == [command[-1]]
         installed.append(artifact.name)
@@ -159,11 +166,6 @@ def test_installed_sdk_probe_uses_mocked_http():
 
 
 def test_installed_analysis_probe_parses_a_synthetic_filing():
-    # The document move into opendart_analysis may land concurrently with this test file.
-    deadline = time.monotonic() + 30
-    while not ANALYSIS_DOCUMENTS.exists() and time.monotonic() < deadline:
-        time.sleep(1)
-    assert ANALYSIS_DOCUMENTS.exists(), "opendart_analysis.documents has not been created"
     smoke_installed.check_analysis()
 
 

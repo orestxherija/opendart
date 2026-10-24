@@ -188,6 +188,22 @@ def test_undeclared_internal_dependency_edges_are_rejected(
         check_sources(release_tree)
 
 
+@pytest.mark.parametrize(
+    ("package", "dependency", "message"),
+    [
+        ("analysis", "opendart-sdk", "analysis must not require opendart-sdk through its 'sdk'"),
+        ("mcp", "opendart-analysis", "MCP must not require opendart-analysis through its 'sdk'"),
+    ],
+)
+def test_internal_edges_through_extras_are_rejected(release_tree, package, dependency, message):
+    path = release_tree / "packages" / package / "pyproject.toml"
+    path.write_text(
+        f'{path.read_text()}\n[project.optional-dependencies]\nsdk = ["{dependency}>=0.2.0,<0.3"]\n'
+    )
+    with pytest.raises(ValueError, match=message):
+        check_sources(release_tree)
+
+
 def test_commitizen_cannot_version_the_virtual_root(release_tree):
     path = release_tree / "cz.toml"
     path.write_text(

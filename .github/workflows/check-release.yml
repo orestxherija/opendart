@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       build:
-        description: Build, validate, and smoke-test both packages' distributions
+        description: Build, validate, and smoke-test every package's distributions
         type: boolean
         default: false
 

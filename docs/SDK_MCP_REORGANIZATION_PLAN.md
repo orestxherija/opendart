@@ -264,7 +264,7 @@ or `opendart_mcp`, including for annotations. A generic root `shared/` directory
 
    Keep elicitation and chooser context in MCP. Its adapters translate structured outcomes into existing instructions
    and tool responses. Move the loader only after removing its dependencies on MCP `DirectorySettings`, server errors,
-   and the SDK's `OpenDartError`, which it catches only to describe fetch failures. Give any reusable loader explicit
+   and the SDK's `OpenDARTError`, which it catches only to describe fetch failures. Give any reusable loader explicit
    configuration, fetch callback, clock, cache path, and close/refresh ownership.
 
    Preserve MCP's existing disk-cache location and format, stale-cache behavior, readiness timeout, refresh schedule,

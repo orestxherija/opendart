@@ -79,12 +79,12 @@ with the locked Twine validator.
 
 The smoke check tests each installation choice, SDK, analysis, and MCP, from each artifact
 format: six fresh virtual environments in total. For each format, it copies that format's
-three artifacts into their own temporary directory. Each environment installs only the
-distribution under test, by artifact path, with `--find-links` pointing at that directory.
-MCP therefore receives the SDK and analysis only through its declared requirements, so a
-missing requirement fails the check; installing by path also avoids the unrelated
-`opendart-mcp` project on PyPI. Each environment then runs `uv pip check` and a probe with
-`python -I` from outside the checkout:
+three artifacts into their own temporary directory, with a constraints file that pins each
+workspace name to its file there. Each environment installs only the distribution under
+test, by artifact path. MCP therefore receives the SDK and analysis only through its
+declared requirements, so a missing requirement fails the check, and same-named packages
+on PyPI, such as the unrelated `opendart-mcp` project, can never be chosen instead. Each
+environment then runs `uv pip check` and a probe with `python -I` from outside the checkout:
 
 | Choice | Probe | Must be absent |
 | --- | --- | --- |
