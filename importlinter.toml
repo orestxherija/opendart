@@ -128,7 +128,7 @@ forbidden_modules = [
     "opendart_analysis.financials.investments",
     "opendart_analysis.financials.peers",
     "opendart_analysis.financials.preliminary",
-    "opendart_analysis.reports",
+    "opendart_analysis.reports.periodic",
     "opendart_analysis.documents.store",
     "anyio",
 ]

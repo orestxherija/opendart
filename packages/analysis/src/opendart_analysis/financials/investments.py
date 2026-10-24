@@ -14,11 +14,11 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Final, Protocol
 
 from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
-from opendart_analysis.financials.access import ReportQuery
 from opendart_analysis.financials.accounts import normalize
 from opendart_analysis.financials.chain import no_progress
 from opendart_analysis.financials.statements import prior_year_end, shift
 from opendart_analysis.reports import first_available, period_volatility
+from opendart_analysis.reports.query import ReportQuery
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

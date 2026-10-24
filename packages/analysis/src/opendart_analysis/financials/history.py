@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from opendart_analysis.financials import derived
-from opendart_analysis.financials.access import ReportQuery, StatementQuery
+from opendart_analysis.financials.access import StatementQuery
 from opendart_analysis.financials.chain import Span, chain, check_reports, no_progress
 from opendart_analysis.financials.specs import SCOPES, STATEMENTS, summary_rank
 from opendart_analysis.financials.statements import (
@@ -25,6 +25,7 @@ from opendart_analysis.financials.statements import (
     summary_item,
 )
 from opendart_analysis.reports import period_volatility
+from opendart_analysis.reports.query import ReportQuery
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence

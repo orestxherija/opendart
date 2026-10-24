@@ -25,6 +25,8 @@ async def state(mcp_settings, sdk_settings, upstream, now):
         transport=upstream.transport,
         clock=lambda: now,
     ) as opened:
+        # Wait for the directory so company identity does not depend on load timing.
+        await opened.directory.wait(5)
         yield opened
 
 

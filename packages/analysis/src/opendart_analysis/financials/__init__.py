@@ -31,7 +31,6 @@ from opendart_analysis.financials.access import (
     MajorAccountRecord,
     PeerAccountRecord,
     PeerQuery,
-    ReportQuery,
     StatementQuery,
     StatementRecord,
     StatementScope,
@@ -98,6 +97,7 @@ from opendart_analysis.financials.statements import (
     StatementBasis,
     ValueKind,
 )
+from opendart_analysis.reports.query import ReportQuery
 
 __all__ = [
     "CATEGORIES",

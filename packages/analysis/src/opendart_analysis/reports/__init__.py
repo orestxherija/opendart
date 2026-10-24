@@ -30,6 +30,7 @@ from opendart_analysis.reports.periodic import (
     period_volatility,
     resolve_period,
 )
+from opendart_analysis.reports.query import ReportQuery
 
 __all__ = [
     "PROBE_ATTEMPTS",
@@ -40,6 +41,7 @@ __all__ = [
     "PeriodUnavailableError",
     "PeriodicReport",
     "PeriodicTitle",
+    "ReportQuery",
     "ResolvedPeriod",
     "first_available",
     "latest_periodic_report",
