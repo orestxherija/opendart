@@ -15,10 +15,10 @@ from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING, Any, Final
 
+from opendart_analysis.domain.dates import DateWindow, resolve_window, yyyymmdd
 from opendart_mcp.core.errors import InvalidArgumentError, QuotaExhaustedError, UpstreamError
 from opendart_mcp.core.progress import no_progress, with_heartbeat
 from opendart_mcp.core.ttl import HOUR
-from opendart_mcp.domain.dates import DateWindow, resolve_window, yyyymmdd
 from opendart_mcp.events import records_from
 from opendart_mcp.registry import EVENT_KINDS, expand, sdk_method
 from opendart_mcp.services.event_index import search_index

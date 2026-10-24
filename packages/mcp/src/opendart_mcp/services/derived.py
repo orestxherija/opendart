@@ -15,7 +15,7 @@ from opendart_mcp.services.accounts import metric_of
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-    from opendart_mcp.domain.periods import PeriodRef
+    from opendart_analysis.domain.periods import PeriodRef
     from opendart_mcp.models.financials import Number
     from opendart_mcp.services.statements import Line
 

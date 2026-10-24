@@ -26,6 +26,7 @@ from opendart import (
     ServiceUnavailableError,
     UnavailableError,
 )
+from opendart_analysis.domain.dates import KST
 from opendart_mcp.core.cache import MISSING, SingleFlight
 from opendart_mcp.core.errors import (
     MAINTENANCE,
@@ -39,7 +40,6 @@ from opendart_mcp.core.errors import (
 )
 from opendart_mcp.core.metrics import count_upstream, uncount_upstream
 from opendart_mcp.core.ttl import FILINGS
-from opendart_mcp.domain.dates import KST
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable

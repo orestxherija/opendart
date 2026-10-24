@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.normalize import clean_text
+from opendart_analysis.domain.normalize import clean_text
 from opendart_mcp.events.dates import board_date, event_dates
 from opendart_mcp.events.flags import event_flags
 from opendart_mcp.events.kinds_capital import CAPITAL

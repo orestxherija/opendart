@@ -10,7 +10,7 @@ import datetime as dt
 
 from pydantic import Field
 
-from opendart_mcp.domain.types import ConcretePeriod
+from opendart_analysis.domain.types import ConcretePeriod
 from opendart_mcp.models.common import CompanyOutput, OutputModel
 
 

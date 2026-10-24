@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Final
 
 import anyio
 
+from opendart_analysis.domain.normalize import clean_text, market_from_corp_cls, parse_date
+from opendart_analysis.domain.resolver import resolve
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.normalize import clean_text, market_from_corp_cls, parse_date
-from opendart_mcp.domain.resolver import resolve
 from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.models.company import (
     CompanyMatch,
@@ -21,11 +21,11 @@ from opendart_mcp.services.periods import latest_periodic_report
 
 if TYPE_CHECKING:
     from opendart.models import CompanyResponse
+    from opendart_analysis.domain.directory import Match
+    from opendart_analysis.domain.types import Market, MarketFilter
     from opendart_mcp.core.interaction import Chooser
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.directory import Match
-    from opendart_mcp.domain.types import Market, MarketFilter
     from opendart_mcp.services.periods import PeriodicReport
 
 _LISTED_MARKETS: Final[dict[str, Market]] = {"KOSPI": "KOSPI", "KOSDAQ": "KOSDAQ", "KONEX": "KONEX"}

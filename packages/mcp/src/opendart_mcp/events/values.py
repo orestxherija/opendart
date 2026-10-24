@@ -13,7 +13,7 @@ import re
 from datetime import date
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.normalize import (
+from opendart_analysis.domain.normalize import (
     clean_text,
     parse_amount,
     parse_date,

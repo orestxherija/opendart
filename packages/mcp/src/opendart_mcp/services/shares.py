@@ -14,8 +14,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Protocol, TypedDict
 
+from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date
 from opendart_mcp.core.ttl import DAY
-from opendart_mcp.domain.normalize import clean_text, parse_amount, parse_date
 from opendart_mcp.models.capital import ShareClassRow
 from opendart_mcp.services.periods import first_available, periodic_ttl, resolve_period
 
@@ -27,9 +27,9 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
     from opendart.models.periodic_reports import StockTotqySttusResponseListItem
+    from opendart_analysis.domain.periods import PeriodRef
+    from opendart_analysis.domain.types import Period, ReportCode
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
-    from opendart_mcp.domain.types import Period, ReportCode
     from opendart_mcp.services.companies import Company
 
 COMMON: Final = "common"

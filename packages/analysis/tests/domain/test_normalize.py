@@ -7,7 +7,7 @@ from decimal import Decimal
 
 import pytest
 
-from opendart_mcp.domain.normalize import (
+from opendart_analysis.domain.normalize import (
     clean_text,
     market_from_corp_cls,
     parse_amount,

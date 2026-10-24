@@ -12,7 +12,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from opendart_mcp.domain.types import ConcretePeriod
+from opendart_analysis.domain.types import ConcretePeriod
 from opendart_mcp.models.common import CompanyOutput, OutputModel
 
 CapitalSection = Literal["shares", "treasury_stock", "capital_changes", "use_of_proceeds"]

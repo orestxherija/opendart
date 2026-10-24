@@ -14,10 +14,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from opendart_analysis.domain.periods import FIRST_INDICATOR_YEAR, latest_candidates
 from opendart_mcp.core.errors import AmbiguousCompanyError, InvalidArgumentError
 from opendart_mcp.core.interaction import choosing, current_chooser
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.periods import FIRST_INDICATOR_YEAR, latest_candidates
 from opendart_mcp.models.compare import CompareResult, MetricColumn, MissingCompany
 from opendart_mcp.services import ratios
 from opendart_mcp.services.fanout import gather
@@ -29,10 +29,11 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping, Sequence
 
     from opendart.models.financial_statements import FnlttMultiAcntResponseListItem
+    from opendart_analysis.domain.periods import PeriodRef
+    from opendart_analysis.domain.types import Basis, Period, Unit
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
-    from opendart_mcp.domain.types import Basis, Period, ResponseFormat, Unit
+    from opendart_mcp.models.common import ResponseFormat
     from opendart_mcp.models.compare import CompareMetrics
     from opendart_mcp.services.companies import Company
     from opendart_mcp.services.ratios import IndicatorValue

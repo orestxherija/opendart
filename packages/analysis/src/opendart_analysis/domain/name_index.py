@@ -17,8 +17,8 @@ from dataclasses import dataclass
 from difflib import SequenceMatcher
 from typing import TYPE_CHECKING
 
-from opendart_mcp.domain.names import is_hangul, normalize_name
-from opendart_mcp.domain.packed import Postings
+from opendart_analysis.domain.names import is_hangul, normalize_name
+from opendart_analysis.domain.packed import Postings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

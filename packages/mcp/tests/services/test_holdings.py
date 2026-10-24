@@ -6,9 +6,9 @@ from datetime import date, timedelta
 
 import pytest
 
+from opendart_analysis.domain.dates import DateWindow
 from opendart_mcp.core.metrics import Metrics
 from opendart_mcp.core.runtime import open_state
-from opendart_mcp.domain.dates import DateWindow
 from opendart_mcp.services.holdings import holding_activity
 
 WINDOW = DateWindow(date(2026, 4, 25), date(2026, 10, 22))

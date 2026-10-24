@@ -8,9 +8,9 @@ from types import SimpleNamespace
 import anyio
 import pytest
 
+from opendart_analysis.domain.dates import DateWindow
 from opendart_mcp.core.cache import TTLCache
 from opendart_mcp.core.gateway import Gateway
-from opendart_mcp.domain.dates import DateWindow
 from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.services.companies import Company
 from opendart_mcp.services.holdings import PENDING_NOTE, holding_activity

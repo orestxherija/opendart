@@ -1,8 +1,8 @@
 """Resolve a free-text company reference to one directory record, or explain why not.
 
-Every tool accepts a company as a name, stock code, or corp code. ``resolve`` turns that
-text into a record only when one company clearly dominates; otherwise it returns ranked
-candidates and the tool raises an error built with ``ambiguity_message``.
+A company reference is a name, stock code, or corp code. ``resolve`` turns that text into
+a record only when one company clearly dominates; otherwise it returns ranked candidates
+and a reason, so callers can tell an ambiguous reference from a missing one.
 
 Selection rules, applied in order:
 
@@ -40,15 +40,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
-from opendart_mcp.domain.dates import add_months
-from opendart_mcp.domain.identifiers import parse_identifier
-from opendart_mcp.domain.names import compact_name, name_tokens
+from opendart_analysis.domain.dates import add_months
+from opendart_analysis.domain.identifiers import parse_identifier
+from opendart_analysis.domain.names import compact_name, name_tokens
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from opendart_mcp.domain.directory import Directory, Match
-    from opendart_mcp.domain.records import CorpRecord
+    from opendart_analysis.domain.directory import Directory, Match
+    from opendart_analysis.domain.records import CorpRecord
 
 ResolutionReason = Literal["code", "exact", "dominant", "ambiguous", "not_found"]
 """Why a resolution selected a company, or why it did not."""
@@ -61,7 +61,6 @@ _PARTIAL_MAX_MATCHES = 10
 _FUZZY_ACCEPT = 0.8
 _FUZZY_MARGIN = 0.05
 _RECENCY_MONTHS = 24
-_CODE_HINT = "Re-call with a stock code or corp code."
 
 
 @dataclass(frozen=True, slots=True)
@@ -123,61 +122,6 @@ def company_label(record: CorpRecord) -> str:
     stock = f"stock {record.stock_code}" if record.stock_code else "unlisted"
     modified = f", modified {record.modified.isoformat()}" if record.modified else ""
     return f"{record.display_name} ({korean}corp {record.corp_code}, {stock}{modified})"
-
-
-def ambiguity_message(query: str, candidates: Sequence[Match], limit: int = 5) -> str:
-    """Explain an ambiguous reference so the model can re-call with a code.
-
-    Args:
-        query (str): Text the caller passed.
-        candidates (Sequence[Match]): Candidates in display order.
-        limit (int): Maximum number of candidates to list.
-
-    Returns:
-        str: Error text naming up to ``limit`` candidates with codes and modification
-            dates.
-    """
-    shown = "; ".join(company_label(match.record) for match in candidates[:limit])
-    hidden = len(candidates) - min(len(candidates), limit)
-    more = f"; and {hidden} more (call find_company to list them)" if hidden > 0 else ""
-    return f"Ambiguous company {query!r}; candidates: {shown}{more}. {_CODE_HINT}"
-
-
-def not_found_message(query: str) -> str:
-    """Explain that no company matches a reference.
-
-    Args:
-        query (str): Text the caller passed.
-
-    Returns:
-        str: Error text suggesting ``find_company`` or a code.
-    """
-    identifier = parse_identifier(query)
-    if identifier is None:
-        return f"No company matches {query!r}. Call find_company with part of the English or Korean name, or pass a 6-digit stock code or 8-digit DART corp code."
-    if identifier.kind == "filing_number":
-        return f"{identifier.value} is a filing number, not a company. Pass a company name, stock code, or corp code; read_filing takes filing numbers."
-    label = "corp code" if identifier.kind == "corp_code" else "stock code"
-    return f"No company in the DART directory has {label} {identifier.value}. Check the code, or call find_company with the company name."
-
-
-def directory_not_ready_message(
-    *, elapsed_seconds: float | None = None, error: str | None = None
-) -> str:
-    """Explain that names cannot be resolved because the directory is not loaded.
-
-    Args:
-        elapsed_seconds (float | None): Seconds spent loading so far, when known.
-        error (str | None): Last load failure, when loading failed.
-
-    Returns:
-        str: Error text with a retry hint and the corp-code workaround.
-    """
-    hint = "Meanwhile, pass an 8-digit DART corp code, which works without the directory."
-    if error:
-        return f"The company directory could not be loaded ({error}); the server retries in the background. {hint}"
-    waited = f" ({int(elapsed_seconds)} s so far)" if elapsed_seconds is not None else ""
-    return f"The company directory is still loading{waited}; OpenDART can take several minutes. Retry shortly. {hint}"
 
 
 def _exact_choice(text: str, exact: list[Match], matches: Sequence[Match]) -> CorpRecord | None:

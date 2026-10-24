@@ -43,10 +43,10 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
     from opendart.models.financial_statements import FnlttSinglAcntResponseListItem
+    from opendart_analysis.domain.periods import PeriodRef
+    from opendart_analysis.domain.types import Basis
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
-    from opendart_mcp.domain.types import Basis
     from opendart_mcp.models.financials import StatementBasis
     from opendart_mcp.services.companies import Company
     from opendart_mcp.services.financials import FinancialsRequest

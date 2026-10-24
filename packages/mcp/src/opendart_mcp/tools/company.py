@@ -9,13 +9,13 @@ from fastmcp.dependencies import CurrentContext, Depends
 from fastmcp.tools import tool
 from pydantic import Field
 
+from opendart_analysis.domain.types import MarketFilter
 from opendart_mcp.app.annotations import READ_ONLY
 from opendart_mcp.app.params import CompanyArg
 from opendart_mcp.app.progress import Reporter
 from opendart_mcp.app.state import get_state
 from opendart_mcp.app.views import markdown_view
 from opendart_mcp.core.state import AppState
-from opendart_mcp.domain.types import MarketFilter
 from opendart_mcp.models.company import CompanyProfileResult, FindCompanyResult
 from opendart_mcp.render.company import render_find_company, render_profile
 from opendart_mcp.services.profile import company_profile, find_companies

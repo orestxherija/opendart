@@ -10,8 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.filings import is_amendment
-from opendart_mcp.domain.identifiers import dart_viewer_url, filing_date
+from opendart_analysis.domain.filings import is_amendment
+from opendart_analysis.domain.identifiers import dart_viewer_url, filing_date
 from opendart_mcp.events import AMENDED, POSSIBLY_AMENDED, describe, labeled_fields
 from opendart_mcp.events.titles import plain_title
 from opendart_mcp.models.common import NextCall, Pagination

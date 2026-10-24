@@ -6,7 +6,7 @@ from datetime import date
 
 import pytest
 
-from opendart_mcp.domain.identifiers import (
+from opendart_analysis.domain.identifiers import (
     Identifier,
     dart_viewer_url,
     filing_date,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from opendart_mcp.domain.units import (
+from opendart_analysis.domain.units import (
     korean_unit_multiplier,
     parse_unit_statement,
     scale_amount,

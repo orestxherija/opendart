@@ -13,8 +13,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.domain.periods import FIRST_FISCAL_YEAR, PeriodRef
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.periods import FIRST_FISCAL_YEAR, PeriodRef
 from opendart_mcp.models.debt import DebtProfileResult
 from opendart_mcp.services.debt_issuance import (
     ISSUANCE_SERVICE,
@@ -36,10 +36,11 @@ from opendart_mcp.services.periods import first_available, resolve_period
 if TYPE_CHECKING:
     from datetime import date
 
+    from opendart_analysis.domain.dates import DateWindow
+    from opendart_analysis.domain.types import Period
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.dates import DateWindow
-    from opendart_mcp.domain.types import Period, ResponseFormat
+    from opendart_mcp.models.common import ResponseFormat
     from opendart_mcp.models.debt import DebtMaturity, LadderEntry
     from opendart_mcp.services.companies import Company
     from opendart_mcp.services.debt_tables import LadderSpec

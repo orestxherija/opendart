@@ -32,7 +32,7 @@ Imports point down the table only. The pure layers never import FastMCP.
 | Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, lifespan |
 | Services | `services/` | Business logic per component, callable from tests without MCP |
 | Infrastructure | `core/` | Gateway, cache, errors, state, runtime |
-| Pure layers | `domain/`, `registry/`, `events/`; `opendart_analysis.documents` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
+| Pure layers | `registry/`, `events/`; `opendart_analysis.domain`, `opendart_analysis.documents` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
 | Output | `models/`, `render/` | Pydantic output models and Markdown renderers |
 
 Every handwritten file stays under 500 lines (loq). Tool modules hold the decorated function and its docstring only;
@@ -107,7 +107,7 @@ deadline-based candidates; `first_available(candidates, fetch)` probes candidate
 
 | Component | Module | Service | Stream |
 | --- | --- | --- | --- |
-| `find_company`, `get_company_profile` | `tools/company.py` | `services/companies.py`, `services/profile.py` | Foundation |
+| `find_company`, `get_company_profile` | `tools/company.py` | `services/companies.py` (messages in `services/company_messages.py`) over `opendart_analysis.domain`, `services/profile.py` | Foundation |
 | `search_filings` | `tools/filings.py` | `services/filings.py` | A |
 | `read_filing` (task) | `tools/documents.py` | `services/documents.py` over `opendart_analysis.documents` | A |
 | `get_financials` | `tools/financials.py` | `services/financials.py` (`preliminary` from stream A) | B |
@@ -118,7 +118,7 @@ deadline-based candidates; `first_available(candidates, fetch)` probes candidate
 | `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services | D2 |
 | `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `registry/` | E |
 | Company and filing resources | `resources/company.py`, `resources/filings.py` | streams' services | A |
-| Reference and status resources | `resources/reference.py`, `resources/status.py` | `registry/`, `domain/` | E |
+| Reference and status resources | `resources/reference.py`, `resources/status.py` | `registry/`, `opendart_analysis.domain` | E |
 | 11 prompts, completions, instructions | `prompts/`, `completions.py`, `instructions.py` | | E |
 | Middleware, manifest, CI, container | `app/middleware.py`, `manifest.py`, `scripts/` | | F |
 | Apps | `apps/` | | F, after B and C |

@@ -22,17 +22,17 @@ from typing import TYPE_CHECKING, Any, Final, Literal
 
 import anyio
 
-from opendart_mcp.core.errors import InvalidArgumentError
-from opendart_mcp.core.ttl import FILINGS
-from opendart_mcp.domain.categories import category_query
-from opendart_mcp.domain.dates import yyyymmdd
-from opendart_mcp.domain.filings import clean_title, is_amendment, parse_remarks
-from opendart_mcp.domain.identifiers import (
+from opendart_analysis.domain.categories import category_query
+from opendart_analysis.domain.dates import yyyymmdd
+from opendart_analysis.domain.filings import clean_title, is_amendment, parse_remarks
+from opendart_analysis.domain.identifiers import (
     dart_viewer_url,
     filing_date,
     is_filing_number,
 )
-from opendart_mcp.domain.normalize import clean_text, market_from_corp_cls, parse_date
+from opendart_analysis.domain.normalize import clean_text, market_from_corp_cls, parse_date
+from opendart_mcp.core.errors import InvalidArgumentError
+from opendart_mcp.core.ttl import FILINGS
 from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.models.filings import FilingItem
 from opendart_mcp.services.filing_category import infer_category
@@ -41,11 +41,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from opendart.models.disclosures import ListResponseListItem
+    from opendart_analysis.domain.categories import FilingCategory
+    from opendart_analysis.domain.dates import DateWindow
+    from opendart_analysis.domain.types import MarketFilter
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.categories import FilingCategory
-    from opendart_mcp.domain.dates import DateWindow
-    from opendart_mcp.domain.types import MarketFilter
 
     # Merge position: negated filing-day ordinal, position in the query, query order.
     type _Key = tuple[int, int, int]

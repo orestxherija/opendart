@@ -1,21 +1,13 @@
-"""Resolving company references and explaining failures."""
+"""Resolving company references."""
 
 from __future__ import annotations
 
-import re
 from datetime import UTC, date, datetime
 
 import pytest
 
-from opendart_mcp.domain.directory import CorpRecord, Directory, Match
-from opendart_mcp.domain.resolver import (
-    CANDIDATE_POOL,
-    ambiguity_message,
-    company_label,
-    directory_not_ready_message,
-    not_found_message,
-    resolve,
-)
+from opendart_analysis.domain.directory import CorpRecord, Directory
+from opendart_analysis.domain.resolver import CANDIDATE_POOL, company_label, resolve
 
 LOADED_AT = datetime(2026, 10, 22, tzinfo=UTC)
 
@@ -242,41 +234,7 @@ def test_company_label():
     )
 
 
-def test_ambiguity_message_lists_candidates_and_the_fix(directory):
+def test_ambiguous_candidates_keep_their_ranking(directory):
     candidates = resolve(directory, "Samsung").candidates
-    message = ambiguity_message("Samsung", candidates)
-    assert message.startswith(
-        "Ambiguous company 'Samsung'; candidates: SAMSUNG C&T CORPORATION (삼성물산; corp 00149655"
-    )
-    assert len(re.findall(r"corp [0-9]{8}", message)) == 5
-    assert f"and {len(candidates) - 5} more (call find_company to list them)" in message
-    assert message.endswith("Re-call with a stock code or corp code.")
-
-
-def test_ambiguity_message_without_hidden_candidates(directory):
-    match = Match(directory.get("00126380"), 1.0, "exact")
-    message = ambiguity_message("x", [match], limit=5)
-    assert "more" not in message
-    assert "modified 2025-12-01" in message
-
-
-@pytest.mark.parametrize(
-    ("text", "expected"),
-    [
-        ("Acme", "No company matches 'Acme'. Call find_company"),
-        ("999999", "No company in the DART directory has stock code 999999."),
-        ("A999999", "No company in the DART directory has stock code 999999."),
-        ("12345678", "No company in the DART directory has corp code 12345678."),
-        ("20250314000123", "20250314000123 is a filing number, not a company."),
-    ],
-)
-def test_not_found_message(text, expected):
-    assert not_found_message(text).startswith(expected)
-
-
-def test_directory_not_ready_message():
-    assert "still loading (42 s so far)" in directory_not_ready_message(elapsed_seconds=42.7)
-    assert "still loading;" in directory_not_ready_message()
-    failed = directory_not_ready_message(error="HTTP 503", elapsed_seconds=1.0)
-    assert failed.startswith("The company directory could not be loaded (HTTP 503)")
-    assert all("8-digit DART corp code" in text for text in (failed, directory_not_ready_message()))
+    assert candidates[0].record.corp_code == "00149655"
+    assert len(candidates) > 5

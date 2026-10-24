@@ -10,7 +10,8 @@ from typing import Annotated
 
 from pydantic import Field
 
-from opendart_mcp.domain.types import Basis, Period, ResponseFormat, Unit
+from opendart_analysis.domain.types import Basis, Period, Unit
+from opendart_mcp.models.common import ResponseFormat
 
 CompanyArg = Annotated[
     str,

@@ -20,13 +20,13 @@ from datetime import date, timedelta
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Literal
 
-from opendart_mcp.domain.dates import add_months, month_end
-from opendart_mcp.domain.filings import amendment_marker, clean_title
+from opendart_analysis.domain.dates import add_months, month_end
+from opendart_analysis.domain.filings import amendment_marker, clean_title
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from opendart_mcp.domain.types import ConcretePeriod, Period, ReportCode
+    from opendart_analysis.domain.types import ConcretePeriod, Period, ReportCode
 
 PeriodicKind = Literal["annual", "semiannual", "quarterly"]
 """Kind of periodic report named in a filing title."""

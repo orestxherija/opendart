@@ -9,9 +9,9 @@ from fastmcp import Client
 from fastmcp.client.elicitation import ElicitResult
 from fastmcp.client.transports import FastMCPTransport
 
+from opendart_analysis.domain.identifiers import dart_viewer_url
 from opendart_mcp.core.metrics import Metrics
 from opendart_mcp.core.runtime import open_state
-from opendart_mcp.domain.identifiers import dart_viewer_url
 from opendart_mcp.models.calendar import CalendarItem
 from opendart_mcp.services.calendar import CalendarRequest, action_calendar
 from packages.mcp.tests.events.data import merger, profile

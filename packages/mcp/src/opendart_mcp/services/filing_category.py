@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.identifiers import filing_source
-from opendart_mcp.domain.periods import parse_periodic_title
+from opendart_analysis.domain.identifiers import filing_source
+from opendart_analysis.domain.periods import parse_periodic_title
 
 if TYPE_CHECKING:
-    from opendart_mcp.domain.categories import FilingCategory
+    from opendart_analysis.domain.categories import FilingCategory
 
 _PERIODIC: Final[dict[str, FilingCategory]] = {
     "annual": "annual_report",

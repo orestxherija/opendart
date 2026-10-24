@@ -7,11 +7,15 @@ filings it was built from, and notes about fallbacks, estimates, and coverage ga
 from __future__ import annotations
 
 from datetime import date
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
-from opendart_mcp.domain.identifiers import dart_viewer_url, filing_date
-from opendart_mcp.domain.types import Market
+from opendart_analysis.domain.identifiers import dart_viewer_url, filing_date
+from opendart_analysis.domain.types import Market
+
+ResponseFormat = Literal["concise", "detailed"]
+"""Result verbosity: tools render key fields or every labeled field."""
 
 
 class OutputModel(BaseModel):

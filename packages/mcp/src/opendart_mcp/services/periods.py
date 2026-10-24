@@ -11,26 +11,26 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
-from opendart_mcp.core.errors import InvalidArgumentError
-from opendart_mcp.core.ttl import DAY, FILINGS
-from opendart_mcp.domain.dates import yyyymmdd
-from opendart_mcp.domain.filings import clean_title
-from opendart_mcp.domain.identifiers import filing_date
-from opendart_mcp.domain.periods import (
+from opendart_analysis.domain.dates import yyyymmdd
+from opendart_analysis.domain.filings import clean_title
+from opendart_analysis.domain.identifiers import filing_date
+from opendart_analysis.domain.periods import (
     FILING_DEADLINE_DAYS,
     filing_deadline,
     latest_candidates,
     parse_periodic_title,
     period_from_title,
 )
+from opendart_mcp.core.errors import InvalidArgumentError
+from opendart_mcp.core.ttl import DAY, FILINGS
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
     from opendart.models.disclosures import ListResponseListItem
+    from opendart_analysis.domain.periods import PeriodRef, PeriodicTitle
+    from opendart_analysis.domain.types import Period
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef, PeriodicTitle
-    from opendart_mcp.domain.types import Period
     from opendart_mcp.services.companies import Company
 
 # Annual reports are due 90 days after year end, so 15 months always cover the latest one.

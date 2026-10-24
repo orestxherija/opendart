@@ -11,15 +11,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.identifiers import is_filing_number
-from opendart_mcp.domain.normalize import (
+from opendart_analysis.domain.identifiers import is_filing_number
+from opendart_analysis.domain.normalize import (
     clean_text,
     market_from_corp_cls,
     parse_date,
     parse_decimal,
     parse_percent,
 )
-from opendart_mcp.domain.periods import PERIODS_BY_REPORT_CODE
+from opendart_analysis.domain.periods import PERIODS_BY_REPORT_CODE
 from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.models.services import ServiceColumn, ServiceTable
 from opendart_mcp.registry import field_spec

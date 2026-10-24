@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from opendart_mcp.domain.normalize import clean_text, parse_amount
+from opendart_analysis.domain.normalize import clean_text, parse_amount
 from opendart_mcp.models.capital import TreasuryMovement
 from opendart_mcp.services.shares import COMMON, blank, is_total, share_class, sum_known, trim
 

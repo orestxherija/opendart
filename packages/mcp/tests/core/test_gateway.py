@@ -9,6 +9,7 @@ import anyio
 import httpx2
 import pytest
 
+from opendart_analysis.domain.dates import KST
 from opendart_mcp.core.cache import TTLCache
 from opendart_mcp.core.errors import (
     MAINTENANCE,
@@ -21,7 +22,6 @@ from opendart_mcp.core.errors import (
 )
 from opendart_mcp.core.gateway import Gateway, Usage, cache_key
 from opendart_mcp.core.ttl import DAY, FILINGS
-from opendart_mcp.domain.dates import KST
 
 SAMSUNG = "00126380"
 

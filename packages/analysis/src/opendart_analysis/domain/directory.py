@@ -15,19 +15,19 @@ from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING, Literal
 
-from opendart_mcp.domain.corpcode import MAX_EXPANDED_BYTES, MEMBER_NAME, parse_directory
-from opendart_mcp.domain.identifiers import is_corp_code, parse_identifier
-from opendart_mcp.domain.name_index import NameIndex
-from opendart_mcp.domain.names import has_hangul, normalize_name
-from opendart_mcp.domain.packed import PackedStrings
-from opendart_mcp.domain.records import CorpRecord, DirectoryError
+from opendart_analysis.domain.corpcode import MAX_EXPANDED_BYTES, MEMBER_NAME, parse_directory
+from opendart_analysis.domain.identifiers import is_corp_code, parse_identifier
+from opendart_analysis.domain.name_index import NameIndex
+from opendart_analysis.domain.names import has_hangul, normalize_name
+from opendart_analysis.domain.packed import PackedStrings
+from opendart_analysis.domain.records import CorpRecord, DirectoryError
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from datetime import datetime
 
-    from opendart_mcp.domain.identifiers import Identifier
-    from opendart_mcp.domain.name_index import Hits
+    from opendart_analysis.domain.identifiers import Identifier
+    from opendart_analysis.domain.name_index import Hits
 
 __all__ = [
     "MAX_EXPANDED_BYTES",

@@ -10,6 +10,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from opendart_analysis.domain.identifiers import parse_identifier
+from opendart_analysis.domain.normalize import clean_text, market_from_corp_cls
+from opendart_analysis.domain.resolver import resolve
 from opendart_mcp.core.errors import (
     API_KEY_MISSING,
     AmbiguousCompanyError,
@@ -19,17 +22,15 @@ from opendart_mcp.core.errors import (
 )
 from opendart_mcp.core.interaction import current_chooser
 from opendart_mcp.core.ttl import DAY
-from opendart_mcp.domain.identifiers import parse_identifier
-from opendart_mcp.domain.normalize import clean_text, market_from_corp_cls
-from opendart_mcp.domain.resolver import ambiguity_message, not_found_message, resolve
 from opendart_mcp.models.common import CompanyRef
+from opendart_mcp.services.company_messages import ambiguity_message, not_found_message
 
 if TYPE_CHECKING:
     from opendart.models import CompanyResponse
+    from opendart_analysis.domain.directory import CorpRecord
     from opendart_mcp.core.gateway import Gateway
     from opendart_mcp.core.interaction import Chooser
     from opendart_mcp.core.progress import Progress
-    from opendart_mcp.domain.directory import CorpRecord
     from opendart_mcp.services.directory import DirectoryService
 
 DECEMBER = 12

@@ -11,16 +11,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.domain.identifiers import dart_viewer_url, is_filing_number
+from opendart_analysis.domain.periods import period_end
 from opendart_mcp.core.errors import QuotaExhaustedError, UpstreamError
-from opendart_mcp.domain.identifiers import dart_viewer_url, is_filing_number
-from opendart_mcp.domain.periods import period_end
 from opendart_mcp.models.calendar import CalendarItem
 from opendart_mcp.services.debt import maturity_schedule
 from opendart_mcp.services.debt_tables import derive
 
 if TYPE_CHECKING:
+    from opendart_analysis.domain.dates import DateWindow
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.dates import DateWindow
     from opendart_mcp.models.calendar import DetailValue
     from opendart_mcp.models.debt import DebtMaturity
     from opendart_mcp.services.companies import Company

@@ -12,8 +12,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.domain.periods import FIRST_FISCAL_YEAR, PeriodRef
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.periods import FIRST_FISCAL_YEAR, PeriodRef
 from opendart_mcp.models.governance import GovernanceResult
 from opendart_mcp.services.extracts import (
     checked,
@@ -39,9 +39,10 @@ from opendart_mcp.services.periods import first_available, resolve_period
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
 
+    from opendart_analysis.domain.types import Period
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.types import Period, ResponseFormat
+    from opendart_mcp.models.common import ResponseFormat
     from opendart_mcp.models.governance import (
         AuditFacts,
         AuditYear,

@@ -3,7 +3,7 @@
 Every field arrives as a string: amounts with thousands separators, blanks, ``-`` for
 "none", parentheses or a leading ``△`` or ``-`` for negatives, and dates in several
 layouts. These parsers never raise on junk; they return None instead, so a malformed cell
-becomes a missing value rather than a failed tool call.
+becomes a missing value rather than an exception.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from opendart_mcp.domain.types import Market
+    from opendart_analysis.domain.types import Market
 
 _MAX_NUMBER_CHARS = 64
 _MINUS_SIGNS = frozenset({"-", "\u2212", "\u25b3"})  # Hyphen-minus, minus sign, white triangle.

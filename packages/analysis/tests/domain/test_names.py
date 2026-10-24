@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from opendart_mcp.domain.names import (
+from opendart_analysis.domain.names import (
     compact_name,
     has_hangul,
     is_hangul,

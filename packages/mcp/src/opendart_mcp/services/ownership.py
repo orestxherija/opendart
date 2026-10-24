@@ -13,12 +13,12 @@ import asyncio
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from opendart_analysis.domain.dates import DateWindow, parse_date_arg
+from opendart_analysis.domain.identifiers import is_filing_number
+from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.core.errors import InvalidArgumentError
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.dates import DateWindow, parse_date_arg
-from opendart_mcp.domain.identifiers import is_filing_number
-from opendart_mcp.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
-from opendart_mcp.domain.periods import PeriodRef
 from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.models.ownership import ControlChange, Minority, OwnershipResult
 from opendart_mcp.services.control import build_snapshot
@@ -46,9 +46,9 @@ if TYPE_CHECKING:
         HyslrSttusResponseListItem,
         MrhlSttusResponseListItem,
     )
+    from opendart_analysis.domain.types import Period
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.types import Period
     from opendart_mcp.models.ownership import OwnershipSnapshot
     from opendart_mcp.services.companies import Company
     from opendart_mcp.services.holdings import Activity

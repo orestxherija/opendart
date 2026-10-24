@@ -7,10 +7,10 @@ from types import SimpleNamespace
 
 import pytest
 
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.core.cache import TTLCache
 from opendart_mcp.core.gateway import Gateway
 from opendart_mcp.core.ttl import DAY, FILINGS
-from opendart_mcp.domain.periods import PeriodRef
 from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.services.companies import Company
 from opendart_mcp.services.periods import latest_periodic_report, periodic_ttl, resolve_period

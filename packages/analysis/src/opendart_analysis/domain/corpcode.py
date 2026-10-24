@@ -19,7 +19,7 @@ from xml.etree.ElementTree import ParseError
 from defusedxml.ElementTree import iterparse  # type: ignore[import-untyped]
 from defusedxml.common import DefusedXmlException  # type: ignore[import-untyped]
 
-from opendart_mcp.domain.records import CorpRecord, DirectoryError
+from opendart_analysis.domain.records import CorpRecord, DirectoryError
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

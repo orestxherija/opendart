@@ -12,7 +12,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from opendart_mcp.domain.types import ConcretePeriod, Unit
+from opendart_analysis.domain.types import ConcretePeriod, Unit
 from opendart_mcp.models.common import CompanyOutput, OutputModel
 
 FinancialView = Literal[

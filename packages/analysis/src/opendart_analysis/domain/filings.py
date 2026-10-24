@@ -13,12 +13,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from opendart_mcp.domain.names import has_hangul
+from opendart_analysis.domain.names import has_hangul
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from opendart_mcp.domain.types import Market
+    from opendart_analysis.domain.types import Market
 
 TITLE_MARKERS: Mapping[str, str] = MappingProxyType(
     {

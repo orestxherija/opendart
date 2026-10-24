@@ -1,4 +1,4 @@
-"""Synthetic directory fixtures for the domain tests.
+"""Synthetic company-directory rows and archive builders shared by directory tests.
 
 Rows reuse public identifiers from the real OpenDART directory (Samsung, SK, Hyundai,
 Kakao, and others) plus invented ones in the 09xxxxxx range for edge cases. Nothing is read
@@ -9,13 +9,10 @@ from __future__ import annotations
 
 import io
 import zipfile
-from collections.abc import Callable
 from datetime import UTC, date, datetime
 from xml.sax.saxutils import escape
 
-import pytest
-
-from opendart_mcp.domain.directory import CorpRecord, Directory
+from opendart_analysis.domain.directory import CorpRecord
 
 type Row = tuple[str, str, str | None, str | None, date | None]
 
@@ -81,18 +78,6 @@ def record(row: Row) -> CorpRecord:
     return CorpRecord(code, name, english, stock, modified)
 
 
-@pytest.fixture(scope="session")
-def records() -> tuple[CorpRecord, ...]:
-    """Every synthetic record."""
-    return tuple(record(row) for row in ROWS)
-
-
-@pytest.fixture(scope="session")
-def directory(records: tuple[CorpRecord, ...]) -> Directory:
-    """A directory over the synthetic records."""
-    return Directory.build(records, loaded_at=LOADED_AT)
-
-
 def list_element(**fields: str) -> str:
     """Render one <list> record from child element texts."""
     children = "".join(f"<{tag}>{text}</{tag}>" for tag, text in fields.items())
@@ -121,20 +106,3 @@ def zip_members(members: dict[str, bytes | str]) -> bytes:
         for name, content in members.items():
             archive.writestr(name, content)
     return buffer.getvalue()
-
-
-@pytest.fixture
-def make_archive() -> Callable[..., bytes]:
-    """Return a builder for directory archives: rows, raw XML, or explicit members."""
-
-    def build(
-        rows: tuple[Row, ...] = ROWS,
-        *,
-        xml: str | bytes | None = None,
-        members: dict[str, bytes | str] | None = None,
-    ) -> bytes:
-        if members is not None:
-            return zip_members(members)
-        return zip_members({"CORPCODE.xml": directory_xml(rows) if xml is None else xml})
-
-    return build

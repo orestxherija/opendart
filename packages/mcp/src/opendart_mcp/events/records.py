@@ -18,8 +18,8 @@ from typing import TYPE_CHECKING, Final
 
 from pydantic import BaseModel
 
-from opendart_mcp.domain.identifiers import is_filing_number
-from opendart_mcp.domain.normalize import clean_text
+from opendart_analysis.domain.identifiers import is_filing_number
+from opendart_analysis.domain.normalize import clean_text
 from opendart_mcp.events.values import normalize
 from opendart_mcp.registry import EVENT_KINDS, field_kind, field_spec, service
 

@@ -10,8 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.identifiers import is_filing_number
-from opendart_mcp.domain.periods import FIRST_FISCAL_YEAR, fiscal_years_back
+from opendart_analysis.domain.identifiers import is_filing_number
+from opendart_analysis.domain.periods import FIRST_FISCAL_YEAR, fiscal_years_back
 from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.services.fanout import gather
 from opendart_mcp.services.periods import first_available
@@ -19,9 +19,9 @@ from opendart_mcp.services.periods import first_available
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Iterable, Sequence
 
+    from opendart_analysis.domain.periods import PeriodRef
+    from opendart_analysis.domain.types import Basis
     from opendart_mcp.core.progress import Progress
-    from opendart_mcp.domain.periods import PeriodRef
-    from opendart_mcp.domain.types import Basis
     from opendart_mcp.models.financials import (
         EquityInvestment,
         PeriodColumn,

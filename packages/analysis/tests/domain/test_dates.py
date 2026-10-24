@@ -7,8 +7,8 @@ from datetime import UTC, date, datetime, timedelta, timezone
 
 import pytest
 
-from opendart_mcp.domain import dates
-from opendart_mcp.domain.dates import (
+from opendart_analysis.domain import dates
+from opendart_analysis.domain.dates import (
     KST,
     DateWindow,
     add_months,

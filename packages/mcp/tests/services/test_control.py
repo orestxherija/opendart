@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from opendart.models.periodic_reports import HyslrSttusResponseListItem
-from opendart_mcp.domain.periods import PeriodRef
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.models.capital import ShareClassRow
 from opendart_mcp.models.ownership import Minority
 from opendart_mcp.services.control import build_snapshot, free_float, relation

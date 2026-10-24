@@ -7,8 +7,8 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.domain.dates import KST
 from opendart_mcp.core.ttl import DAY, FILINGS, HOUR
-from opendart_mcp.domain.dates import KST
 from opendart_mcp.models.status import (
     CacheStatus,
     ComponentUsage,

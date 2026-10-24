@@ -32,7 +32,7 @@ from opendart_mcp.services.catalog_records import (
 if TYPE_CHECKING:
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.types import ResponseFormat
+    from opendart_mcp.models.common import ResponseFormat
     from opendart_mcp.models.services import ParamValue
     from opendart_mcp.registry import ServiceSpec
 

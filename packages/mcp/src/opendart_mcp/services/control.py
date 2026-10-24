@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.normalize import clean_text, parse_amount, parse_percent
+from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_percent
 from opendart_mcp.models.capital import ShareClassRow
 from opendart_mcp.models.ownership import Holder, OwnershipSnapshot
 from opendart_mcp.services.shares import COMMON, is_total, share_class, sum_known, trim

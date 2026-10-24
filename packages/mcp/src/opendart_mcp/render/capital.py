@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.periods import PeriodRef
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.render.markdown import (
     MISSING_VALUE,
     amount,
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
     from datetime import date
 
-    from opendart_mcp.domain.types import ConcretePeriod, Unit
+    from opendart_analysis.domain.types import ConcretePeriod, Unit
     from opendart_mcp.models.capital import (
         CapitalChange,
         CapitalStructureResult,

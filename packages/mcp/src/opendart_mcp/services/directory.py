@@ -16,6 +16,7 @@ import anyio
 import anyio.to_thread
 
 from opendart import OpenDARTError
+from opendart_analysis.domain.directory import Directory, DirectoryError, parse_directory
 from opendart_mcp.core.errors import (
     API_KEY_MISSING,
     ConfigurationError,
@@ -23,7 +24,6 @@ from opendart_mcp.core.errors import (
     ServerError,
 )
 from opendart_mcp.core.gateway import translate
-from opendart_mcp.domain.directory import Directory, DirectoryError, parse_directory
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable

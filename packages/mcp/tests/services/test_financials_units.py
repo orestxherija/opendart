@@ -11,8 +11,8 @@ from opendart.models.financial_statements import (
     FnlttSinglAcntAllResponseListItem,
 )
 from opendart_analysis.documents.preliminary import PreliminaryEarnings, PreliminaryPeriod
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.core.errors import UpstreamError
-from opendart_mcp.domain.periods import PeriodRef
 from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.models.financials import EquityInvestment
 from opendart_mcp.models.preliminary import PreliminaryResult

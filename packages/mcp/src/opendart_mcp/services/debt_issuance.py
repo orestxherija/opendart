@@ -13,7 +13,7 @@ import datetime as dt
 import re
 from typing import TYPE_CHECKING, Final, Literal
 
-from opendart_mcp.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
+from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
 from opendart_mcp.models.debt import DebtMaturity, Issuance
 from opendart_mcp.services.debt_tables import offering
 from opendart_mcp.services.extracts import fold, is_total, text

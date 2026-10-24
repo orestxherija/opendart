@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from opendart_analysis.domain.dates import KST
 from opendart_mcp.core.errors import API_KEY_MISSING, ConfigurationError
-from opendart_mcp.domain.dates import KST
 
 if TYPE_CHECKING:
     from collections.abc import Callable

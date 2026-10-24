@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime
 
 import pytest
 
-from opendart_mcp.domain.directory import TIER_ORDER, CorpRecord, Directory, Match
+from opendart_analysis.domain.directory import TIER_ORDER, CorpRecord, Directory, Match
 
 LOADED_AT = datetime(2026, 10, 22, 6, 0, tzinfo=UTC)
 

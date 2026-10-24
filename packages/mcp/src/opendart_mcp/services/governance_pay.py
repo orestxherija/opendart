@@ -15,7 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from opendart_mcp.domain.normalize import clean_text, parse_amount
+from opendart_analysis.domain.normalize import clean_text, parse_amount
 from opendart_mcp.models.governance import Compensation, PayGroup, PersonPay
 from opendart_mcp.services.extracts import filed_text, is_total, term_ages, text
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from opendart_mcp.domain.filings import (
+from opendart_analysis.domain.filings import (
     RESUBMISSION_MARKERS,
     TITLE_MARKERS,
     RemarkFlags,

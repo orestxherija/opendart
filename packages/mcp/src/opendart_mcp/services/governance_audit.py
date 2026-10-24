@@ -15,7 +15,7 @@ import math
 import re
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.normalize import clean_text, parse_amount
+from opendart_analysis.domain.normalize import clean_text, parse_amount
 from opendart_mcp.models.governance import (
     AuditFacts,
     AuditFee,

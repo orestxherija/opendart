@@ -14,8 +14,8 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final, Literal
 
+from opendart_analysis.domain.normalize import clean_text, parse_percent
 from opendart_mcp.core.ttl import DAY
-from opendart_mcp.domain.normalize import clean_text, parse_percent
 from opendart_mcp.services.fanout import gather
 from opendart_mcp.services.periods import periodic_ttl
 from opendart_mcp.services.statements import Line, Report
@@ -29,9 +29,9 @@ if TYPE_CHECKING:
         FnlttSinglIndxResponse,
         FnlttSinglIndxResponseListItem,
     )
+    from opendart_analysis.domain.periods import PeriodRef
     from opendart_mcp.core.gateway import Gateway
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
     from opendart_mcp.services.companies import Company
 
     type Category = Literal["M210000", "M220000", "M230000", "M240000"]

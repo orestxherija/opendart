@@ -17,7 +17,7 @@ from opendart_mcp.render.markdown import (
 )
 
 if TYPE_CHECKING:
-    from opendart_mcp.domain.types import Unit
+    from opendart_analysis.domain.types import Unit
     from opendart_mcp.models.governance import (
         AuditFacts,
         BoardFacts,

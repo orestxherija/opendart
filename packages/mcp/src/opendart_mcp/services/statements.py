@@ -16,9 +16,9 @@ from dataclasses import dataclass, field, replace
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.dates import add_months, month_end
-from opendart_mcp.domain.normalize import clean_text, parse_amount, parse_decimal
-from opendart_mcp.domain.periods import PeriodRef, period_end
+from opendart_analysis.domain.dates import add_months, month_end
+from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_decimal
+from opendart_analysis.domain.periods import PeriodRef, period_end
 from opendart_mcp.models.financials import PeriodColumn, StatementRow
 from opendart_mcp.services.accounts import component, is_per_share, normalize, standard_id
 

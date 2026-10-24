@@ -15,9 +15,9 @@ import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.domain.identifiers import is_filing_number
+from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.identifiers import is_filing_number
-from opendart_mcp.domain.normalize import clean_text, parse_amount, parse_date
 from opendart_mcp.models.capital import (
     CapitalChange,
     CapitalStructureResult,
@@ -48,10 +48,10 @@ if TYPE_CHECKING:
         PrvsrpCptalUseDtlsResponseListItem,
         PssrpCptalUseDtlsResponseListItem,
     )
+    from opendart_analysis.domain.periods import PeriodRef
+    from opendart_analysis.domain.types import Period
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
-    from opendart_mcp.domain.types import Period
     from opendart_mcp.models.capital import CapitalSection, ShareClassRow
     from opendart_mcp.services.companies import Company
     from opendart_mcp.services.periods import ResolvedPeriod

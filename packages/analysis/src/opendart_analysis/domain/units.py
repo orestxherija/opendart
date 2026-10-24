@@ -1,7 +1,7 @@
 """Monetary display units and the Korean unit statements found in filings.
 
-Tool results show amounts in million won by default, rounded to one decimal place, while
-detailed results keep exact won. Filing tables state their own unit in Korean, such as
+``scale_amount`` converts exact won to million or billion won, rounded to one decimal
+place, or keeps exact won. Filing tables state their own unit in Korean, such as
 ``(단위 : 백만원)``; the document parser reads it with ``parse_unit_statement``.
 """
 
@@ -13,7 +13,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from opendart_mcp.domain.types import Unit
+    from opendart_analysis.domain.types import Unit
 
 _DIVISORS: dict[Unit, int] = {"krw": 1, "million_krw": 10**6, "billion_krw": 10**9}
 _LABELS: dict[Unit, str] = {

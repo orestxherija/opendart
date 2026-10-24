@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from opendart_mcp.domain.types import ConcretePeriod, Market
+from opendart_analysis.domain.types import ConcretePeriod, Market
 from opendart_mcp.models.common import CompanyOutput, OutputModel, ToolOutput
 
 MatchKind = Literal["code", "exact", "prefix", "token", "fuzzy"]

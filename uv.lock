@@ -1531,12 +1531,14 @@ version = "0.1.0"
 source = { editable = "packages/analysis" }
 dependencies = [
     { name = "anyio" },
+    { name = "defusedxml" },
     { name = "pydantic" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "anyio", specifier = ">=4,<5" },
+    { name = "defusedxml", specifier = ">=0.7.1,<1" },
     { name = "pydantic", specifier = ">=2.12,<3" },
 ]
 
@@ -1546,7 +1548,6 @@ version = "0.1.0"
 source = { editable = "packages/mcp" }
 dependencies = [
     { name = "anyio" },
-    { name = "defusedxml" },
     { name = "fastmcp", extra = ["tasks"] },
     { name = "mcp" },
     { name = "mcp-types" },
@@ -1560,7 +1561,6 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "anyio", specifier = ">=4,<5" },
-    { name = "defusedxml", specifier = ">=0.7.1,<1" },
     { name = "fastmcp", extras = ["tasks"], specifier = ">=4.1.2,<5" },
     { name = "mcp", specifier = ">=2.3,<3" },
     { name = "mcp-types", specifier = ">=2.3,<3" },

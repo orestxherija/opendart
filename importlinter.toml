@@ -20,7 +20,7 @@ id = "sdk-independent"
 name = "The SDK imports neither analysis, MCP, nor server frameworks"
 type = "forbidden"
 source_modules = ["opendart"]
-forbidden_modules = ["opendart_analysis", "opendart_mcp", "fastmcp", "mcp"]
+forbidden_modules = ["opendart_analysis", "opendart_mcp", "fastmcp", "mcp", "mcp_types", "opentelemetry"]
 
 # Parsing, search, and rendering stay pure; only the package exports reach the runtime store.
 [[tool.importlinter.contracts]]
@@ -29,3 +29,11 @@ name = "Pure document modules do not reach the runtime store"
 type = "forbidden"
 source_modules = ["opendart_analysis.documents.*"]
 forbidden_modules = ["opendart_analysis.documents.store"]
+
+# Company lookup is pure and synchronous: no runtime store, no async machinery, no background work.
+[[tool.importlinter.contracts]]
+id = "domain-pure"
+name = "Company-domain and directory modules reach neither the document store nor AnyIO"
+type = "forbidden"
+source_modules = ["opendart_analysis.domain", "opendart_analysis.directory"]
+forbidden_modules = ["opendart_analysis.documents.store", "anyio"]

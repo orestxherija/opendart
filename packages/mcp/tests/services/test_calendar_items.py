@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import datetime as dt
 
-from opendart_mcp.domain.dates import DateWindow
-from opendart_mcp.domain.identifiers import dart_viewer_url
+from opendart_analysis.domain.dates import DateWindow
+from opendart_analysis.domain.identifiers import dart_viewer_url
 from opendart_mcp.events import EventRecord, Row
 from opendart_mcp.models.calendar import CalendarItem
 from opendart_mcp.models.common import CompanyRef

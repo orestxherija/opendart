@@ -113,7 +113,8 @@ one shared gateway.
   five requests at once, retries a transient failure once (never quota or maintenance errors), and counts requests per
   KST day.
 - **Company directory**: the corporation-code archive loads in the background, from a disk cache that is refreshed
-  daily. Corp codes work while it loads.
+  daily. Corp codes work while it loads. [opendart-analysis](../analysis/README.md#company-directory) parses, searches,
+  and resolves it; the server adds the loader, elicitation, and model-facing messages.
 - **Slow calls** report progress at least every five seconds and stop waiting at a deadline while the work continues,
   so repeating the call a minute later returns the cached result.
 

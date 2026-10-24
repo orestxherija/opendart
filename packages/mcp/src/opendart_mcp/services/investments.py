@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
+from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
 from opendart_mcp.models.financials import EquityInvestment, StatementRow
 from opendart_mcp.services.accounts import normalize
 from opendart_mcp.services.periods import periodic_ttl
@@ -20,8 +20,8 @@ from opendart_mcp.services.statements import column, prior_year_end, shift
 
 if TYPE_CHECKING:
     from opendart.models.periodic_reports import OtrCprInvstmntSttusResponseListItem
+    from opendart_analysis.domain.periods import PeriodRef
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
     from opendart_mcp.models.financials import PeriodColumn
     from opendart_mcp.services.companies import Company
 

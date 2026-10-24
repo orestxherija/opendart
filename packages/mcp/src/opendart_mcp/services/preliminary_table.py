@@ -12,9 +12,9 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.dates import add_months, month_end
-from opendart_mcp.domain.normalize import parse_date
-from opendart_mcp.domain.periods import PeriodRef
+from opendart_analysis.domain.dates import add_months, month_end
+from opendart_analysis.domain.normalize import parse_date
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.models.financials import PeriodColumn
 from opendart_mcp.services import derived
 from opendart_mcp.services.statements import Line, select, to_rows
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from datetime import date
 
     from opendart_analysis.documents.preliminary import PreliminaryEarnings, PreliminaryRow
-    from opendart_mcp.domain.types import ConcretePeriod
+    from opendart_analysis.domain.types import ConcretePeriod
     from opendart_mcp.models.preliminary import PreliminaryResult
 
 _LABELS: Final = MappingProxyType(

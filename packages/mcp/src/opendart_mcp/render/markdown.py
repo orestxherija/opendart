@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.units import scale_amount, unit_label
+from opendart_analysis.domain.units import scale_amount, unit_label
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from datetime import date
 
-    from opendart_mcp.domain.types import Unit
+    from opendart_analysis.domain.types import Unit
     from opendart_mcp.models.common import CompanyRef, ToolOutput
 
 MISSING_VALUE: Final = "-"

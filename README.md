@@ -11,12 +11,12 @@ This is a uv workspace with independently installable packages and one `uv.lock`
 | Package | Python import | Status |
 | --- | --- | --- |
 | [`packages/sdk`](packages/sdk) (`opendart-sdk`) | `opendart` | Async client for all 85 documented services |
-| [`packages/analysis`](packages/analysis) (`opendart-analysis`) | `opendart_analysis` | Filing parsing, outlines, paged Markdown, tables, and search over caller-supplied data |
+| [`packages/analysis`](packages/analysis) (`opendart-analysis`) | `opendart_analysis` | Filing parsing, outlines, paged Markdown, tables, search, and company lookup over caller-supplied data |
 | [`packages/mcp`](packages/mcp) (`opendart-mcp`) | `opendart_mcp` | Local Streamable HTTP server with 13 read-only analyst tools, resources, and prompts |
 
 Install only what you need. The SDK alone calls the API and returns its raw models. Analysis
-alone needs no SDK: it works on bytes and records from any source, with AnyIO and Pydantic as its
-only dependencies. The MCP server installs both and binds them together. Applications that download
+alone needs no SDK: it works on bytes and records from any source, with AnyIO, defusedxml, and
+Pydantic as its only dependencies. The MCP server installs both and binds them together. Applications that download
 with the SDK and then analyze the results install both `opendart-sdk` and `opendart-analysis`.
 From a checkout, `uv sync --locked --package <name>` installs one package with its dependencies;
 repeat `--package` to combine them.

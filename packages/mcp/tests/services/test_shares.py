@@ -8,11 +8,11 @@ from types import SimpleNamespace
 import pytest
 
 from opendart.models.periodic_reports import StockTotqySttusResponseListItem
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.core.cache import TTLCache
 from opendart_mcp.core.gateway import Gateway
 from opendart_mcp.core.metrics import Metrics
 from opendart_mcp.core.runtime import open_state
-from opendart_mcp.domain.periods import PeriodRef
 from opendart_mcp.models.capital import ShareClassRow
 from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.services.companies import Company

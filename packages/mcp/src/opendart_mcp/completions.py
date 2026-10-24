@@ -13,11 +13,11 @@ from fastmcp.server.completions import MAX_COMPLETION_VALUES
 from fastmcp.server.dependencies import get_context
 from mcp.types import PromptReference
 
+from opendart_analysis.domain.categories import FILING_CATEGORIES
+from opendart_analysis.domain.names import has_hangul
+from opendart_analysis.domain.types import Period
 from opendart_mcp.app.state import STATE_KEY
 from opendart_mcp.core.state import AppState
-from opendart_mcp.domain.categories import FILING_CATEGORIES
-from opendart_mcp.domain.names import has_hangul
-from opendart_mcp.domain.types import Period
 from opendart_mcp.prompts.events import DIRECTIONS, GROUP_OF
 from opendart_mcp.prompts.market import MARKETS, PEER_FOCUS, SCREEN_FOCUS
 
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from fastmcp.server.completions import CompletionHandler
     from mcp.types import CompletionArgument, CompletionContext, ResourceTemplateReference
 
-    from opendart_mcp.domain.directory import Directory
+    from opendart_analysis.domain.directory import Directory
 
 _VOCABULARIES: Final[dict[tuple[str, str], tuple[str, ...]]] = {
     ("earnings_review", "period"): get_args(Period),

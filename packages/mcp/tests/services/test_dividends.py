@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from opendart_mcp.domain.periods import PeriodRef
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.services.dividends import basis, measure, merge, share_class, unit, value
 
 

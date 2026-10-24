@@ -17,8 +17,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.dates import DateWindow, add_months
-from opendart_mcp.domain.identifiers import filing_date
+from opendart_analysis.domain.dates import DateWindow, add_months
+from opendart_analysis.domain.identifiers import filing_date
 from opendart_mcp.events import CALENDAR_KINDS
 from opendart_mcp.registry import EVENT_KINDS, kinds_in
 from opendart_mcp.services.event_index import GROUP_RESOURCES, search_index

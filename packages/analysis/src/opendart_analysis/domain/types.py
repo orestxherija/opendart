@@ -1,7 +1,7 @@
-"""Shared vocabulary types for tool arguments and results.
+"""Shared business vocabulary for OpenDART queries and results.
 
 Each alias is a plain ``Literal`` so that ``typing.get_args`` lists its values at runtime,
-for example when a reference resource documents the vocabulary.
+for example to document or validate the vocabulary.
 """
 
 from __future__ import annotations
@@ -28,6 +28,3 @@ Unit = Literal["million_krw", "billion_krw", "krw"]
 
 Basis = Literal["auto", "consolidated", "separate"]
 """Financial statement basis; ``auto`` prefers consolidated statements."""
-
-ResponseFormat = Literal["concise", "detailed"]
-"""Result verbosity."""

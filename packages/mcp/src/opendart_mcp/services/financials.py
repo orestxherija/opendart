@@ -11,9 +11,9 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final, Protocol
 
+from opendart_analysis.domain.periods import FIRST_INDICATOR_YEAR
 from opendart_mcp.core.errors import InvalidArgumentError
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.periods import FIRST_INDICATOR_YEAR
 from opendart_mcp.models.financials import FinancialsResult
 from opendart_mcp.services.investments import fetch_holdings, holdings_table
 from opendart_mcp.services.periods import first_available, resolve_period
@@ -27,10 +27,11 @@ from opendart_mcp.services.tables import Span, Table, chain, fallback_note, no_d
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Mapping
 
+    from opendart_analysis.domain.periods import PeriodRef
+    from opendart_analysis.domain.types import Basis, Period, Unit
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
-    from opendart_mcp.domain.types import Basis, Period, ResponseFormat, Unit
+    from opendart_mcp.models.common import ResponseFormat
     from opendart_mcp.models.financials import FinancialView
     from opendart_mcp.services.companies import Company
     from opendart_mcp.services.investments import Holdings

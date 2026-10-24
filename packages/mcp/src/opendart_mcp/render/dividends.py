@@ -15,7 +15,7 @@ from opendart_mcp.render.markdown import (
 )
 
 if TYPE_CHECKING:
-    from opendart_mcp.domain.types import Unit
+    from opendart_analysis.domain.types import Unit
     from opendart_mcp.models.dividends import DividendRow, DividendsResult
 
 UNIT: Final[Unit] = "million_krw"

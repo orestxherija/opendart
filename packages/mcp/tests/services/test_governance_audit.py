@@ -6,8 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from opendart_analysis.domain.periods import PeriodRef
 from opendart_mcp.core.errors import UpstreamError
-from opendart_mcp.domain.periods import PeriodRef
 from opendart_mcp.services.extracts import (
     checked,
     filed_text,

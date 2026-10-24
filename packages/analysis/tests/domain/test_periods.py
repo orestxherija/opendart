@@ -6,7 +6,7 @@ from datetime import date
 
 import pytest
 
-from opendart_mcp.domain.periods import (
+from opendart_analysis.domain.periods import (
     FILING_DEADLINE_DAYS,
     FIRST_FISCAL_YEAR,
     FIRST_INDICATOR_YEAR,

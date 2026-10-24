@@ -13,12 +13,12 @@ import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Protocol
 
+from opendart_analysis.domain.dates import add_months
+from opendart_analysis.domain.identifiers import filing_date, is_filing_number
+from opendart_analysis.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
 from opendart_mcp.core.errors import StillRunningError
 from opendart_mcp.core.progress import no_progress, with_heartbeat
 from opendart_mcp.core.ttl import HOUR
-from opendart_mcp.domain.dates import add_months
-from opendart_mcp.domain.identifiers import filing_date, is_filing_number
-from opendart_mcp.domain.normalize import clean_text, parse_amount, parse_date, parse_percent
 from opendart_mcp.models.ownership import InsiderReport, MajorHolderReport, ReportActivity
 from opendart_mcp.services.shares import items_of, trim
 
@@ -32,9 +32,9 @@ if TYPE_CHECKING:
         ElestockResponseListItem,
         MajorstockResponseListItem,
     )
+    from opendart_analysis.domain.dates import DateWindow
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.dates import DateWindow
     from opendart_mcp.services.companies import Company
 
 MAJOR_LIMIT: Final = 10

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     import datetime as dt
     from collections.abc import Callable
 
-    from opendart_mcp.domain.types import Unit
+    from opendart_analysis.domain.types import Unit
     from opendart_mcp.models.debt import (
         DebtProfileResult,
         Issuance,

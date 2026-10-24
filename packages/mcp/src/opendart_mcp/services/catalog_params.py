@@ -21,11 +21,11 @@ from opendart.resources.financial_statements import FinancialStatements
 from opendart.resources.major_issues import MajorIssues
 from opendart.resources.periodic_reports import PeriodicReports
 from opendart.resources.securities_registration import SecuritiesRegistration
+from opendart_analysis.domain.dates import parse_date_arg, yyyymmdd
+from opendart_analysis.domain.identifiers import is_corp_code
+from opendart_analysis.domain.names import split_names
+from opendart_analysis.domain.periods import FIRST_FISCAL_YEAR, REPORT_CODES
 from opendart_mcp.core.errors import InvalidArgumentError
-from opendart_mcp.domain.dates import parse_date_arg, yyyymmdd
-from opendart_mcp.domain.identifiers import is_corp_code
-from opendart_mcp.domain.names import split_names
-from opendart_mcp.domain.periods import FIRST_FISCAL_YEAR, REPORT_CODES
 from opendart_mcp.registry import service
 
 if TYPE_CHECKING:

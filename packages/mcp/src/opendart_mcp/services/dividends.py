@@ -16,9 +16,9 @@ import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Final
 
+from opendart_analysis.domain.normalize import clean_text, parse_decimal
+from opendart_analysis.domain.periods import fiscal_years_back
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.normalize import clean_text, parse_decimal
-from opendart_mcp.domain.periods import fiscal_years_back
 from opendart_mcp.models.dividends import DividendRow, DividendsResult
 from opendart_mcp.services.extracts import (
     checked,
@@ -34,10 +34,10 @@ from opendart_mcp.services.periods import first_available, resolve_period
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from opendart_analysis.domain.periods import PeriodRef
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
-    from opendart_mcp.domain.types import ResponseFormat
+    from opendart_mcp.models.common import ResponseFormat
     from opendart_mcp.models.dividends import DividendMeasure, EarningsBasis, ValueUnit
     from opendart_mcp.services.companies import Company
 
