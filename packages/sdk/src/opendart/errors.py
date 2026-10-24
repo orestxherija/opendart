@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-class OpenDartError(Exception):
+class OpenDARTError(Exception):
     """Base SDK failure with safe, structured operation context.
 
     Subclasses inherit the same constructor and context attributes.
@@ -36,19 +36,19 @@ class OpenDartError(Exception):
         self.status = status
 
 
-class UnavailableError(OpenDartError):
+class UnavailableError(OpenDARTError):
     """No usable answer: transport failure, HTTP 429/5xx, or API maintenance/quota."""
 
 
-class RejectedError(OpenDartError):
+class RejectedError(OpenDARTError):
     """The upstream rejected the parameters, credentials, or permissions."""
 
 
-class ContractError(OpenDartError):
+class ContractError(OpenDARTError):
     """The upstream returned an unexpected status, encoding, or response shape."""
 
 
-class APIError(OpenDartError):
+class APIError(OpenDARTError):
     """A non-success application status, including unknown future three-digit codes."""
 
 

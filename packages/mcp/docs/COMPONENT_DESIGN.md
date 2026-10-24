@@ -440,7 +440,7 @@ All 85 services are reachable; 84 through the abstractions and `fnltt_xbrl` defe
 - **Text view**: to return Markdown tables to the model and typed JSON to the host, tools return
   `Annotated[CallToolResult, Model]` with a text block and `structured_content`; this is the one place the SDK's
   default JSON rendering is overridden.
-- **Lifespan state**: one `OpenDart` client; the directory index (both names, stock codes, suffix stripping,
+- **Lifespan state**: one `OpenDART` client; the directory index (both names, stock codes, suffix stripping,
   optional fuzzy scorer); a response cache keyed by SDK method and arguments (24 h for periodic data and profiles,
   15–60 min for filings and events); a "latest period" cache per company; a daily upstream call counter; a
   concurrency semaphore (about five in flight) and a single retry for `UnavailableError`, never for quota.

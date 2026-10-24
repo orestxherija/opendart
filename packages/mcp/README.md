@@ -10,7 +10,7 @@
 
 A local [Model Context Protocol](https://modelcontextprotocol.io/) server for the regulatory filings of Korean
 companies, served over Streamable HTTP on the loopback interface. It is built on [FastMCP](https://gofastmcp.com/) and
-reads [OpenDART](https://opendart.fss.or.kr/) through the async `OpenDart` client from `opendart-sdk`. Thirteen
+reads [OpenDART](https://opendart.fss.or.kr/) through the async `OpenDART` client from `opendart-sdk`. Thirteen
 read-only tools answer analyst questions: company identity, filings and their original documents, financial
 statements, peer tables, material events, ownership, share capital, debt, dividends, governance, and upcoming corporate
 actions. Resources add browsable context, and prompts package multi-step workflows. Every tool accepts a company by

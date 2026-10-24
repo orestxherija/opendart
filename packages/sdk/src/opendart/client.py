@@ -18,10 +18,10 @@ if TYPE_CHECKING:
 
     import httpx2
 
-    from opendart.settings import OpenDartSettings
+    from opendart.settings import OpenDARTSettings
 
 
-class OpenDart:
+class OpenDART:
     """Asynchronous English OpenDART client with an owned HTTP pool.
 
     Use as an async context manager or await aclose() to release connections.
@@ -39,14 +39,14 @@ class OpenDart:
 
     def __init__(
         self,
-        settings: OpenDartSettings | None = None,
+        settings: OpenDARTSettings | None = None,
         *,
         transport: httpx2.AsyncBaseTransport | None = None,
     ) -> None:
         """Create the shared HTTP pool and bind every API resource.
 
         Args:
-            settings (OpenDartSettings | None): Explicit upstream configuration. None uses
+            settings (OpenDARTSettings | None): Explicit upstream configuration. None uses
                 get_settings().api.
             transport (httpx2.AsyncBaseTransport | None): Optional HTTP transport, typically a
                 mock for tests. None uses the default transport. The client owns and closes it.

@@ -24,7 +24,7 @@ async def check_sdk() -> None:
     """Import the SDK's generated resources and perform one request using a mock transport."""
     import httpx2
 
-    from opendart import OpenDart, OpenDartSettings
+    from opendart import OpenDART, OpenDARTSettings
 
     requests = []
 
@@ -32,8 +32,8 @@ async def check_sdk() -> None:
         requests.append(request)
         return httpx2.Response(200, json={"status": "000", "message": "OK"})
 
-    settings = OpenDartSettings(api_key="0" * 40)
-    async with OpenDart(settings, transport=httpx2.MockTransport(respond)) as client:
+    settings = OpenDARTSettings(api_key="0" * 40)
+    async with OpenDART(settings, transport=httpx2.MockTransport(respond)) as client:
         response = await client.disclosures.search()
         require(response.status == "000", "SDK did not parse the synthetic response")
     require(len(requests) == 1 and client.is_closed, "SDK request or cleanup failed")

@@ -58,11 +58,11 @@ uv run --package opendart-sdk python
 
 ```python
 import asyncio
-from opendart import OpenDart
+from opendart import OpenDART
 
 
 async def main():
-    async with OpenDart() as client:
+    async with OpenDART() as client:
         company = await client.disclosures.company(corporation_code="00126380")
         print(company.corporation_name)
 

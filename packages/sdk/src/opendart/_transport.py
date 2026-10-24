@@ -38,10 +38,10 @@ if TYPE_CHECKING:
     from collections.abc import Generator, Iterator
 
     from opendart.errors import (
-        OpenDartError,
+        OpenDARTError,
     )
     from opendart.models._base import RequestModel
-    from opendart.settings import OpenDartSettings
+    from opendart.settings import OpenDARTSettings
 
 Status = Annotated[str, Field(pattern=r"^[0-9]{3}$")]
 _KEY_PARAM = "crtfc_key"
@@ -68,11 +68,11 @@ class _Envelope(BaseModel):
 class _QueryKeyAuth(httpx2.Auth):
     """FSS requires crtfc_key in the query; it has no header-auth alternative."""
 
-    def __init__(self, settings: OpenDartSettings) -> None:
+    def __init__(self, settings: OpenDARTSettings) -> None:
         """Retain the configured API key for query authentication.
 
         Args:
-            settings (OpenDartSettings): Configuration holding the secret API key.
+            settings (OpenDARTSettings): Configuration holding the secret API key.
         """
         self._key = settings.api_key
 
@@ -257,7 +257,7 @@ def _application_status(envelope: _Envelope, operation: str) -> None:
     status = envelope.status
     if status == "000":
         return
-    kind: type[OpenDartError]
+    kind: type[OpenDARTError]
     if status == "013":
         kind = NoDataError
     elif status == "014":
@@ -353,20 +353,20 @@ class Transport:
     """Own a reusable asynchronous HTTP client and enforce response limits.
 
     Attributes:
-        settings (OpenDartSettings): Immutable upstream configuration.
+        settings (OpenDARTSettings): Immutable upstream configuration.
         http (httpx2.AsyncClient): Owned HTTP client, closed by the parent SDK client.
     """
 
     def __init__(
         self,
-        settings: OpenDartSettings,
+        settings: OpenDARTSettings,
         *,
         transport: httpx2.AsyncBaseTransport | None = None,
     ) -> None:
         """Build the HTTP client with explicit authentication, timeouts, and pool limits.
 
         Args:
-            settings (OpenDartSettings): Validated upstream configuration.
+            settings (OpenDARTSettings): Validated upstream configuration.
             transport (httpx2.AsyncBaseTransport | None): Optional injected transport, owned by
                 the HTTP client. Defaults to the standard transport.
         """

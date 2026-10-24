@@ -19,7 +19,7 @@ from fastmcp import Client
 from fastmcp.client.transports import FastMCPTransport
 from pydantic import SecretStr
 
-from opendart import OpenDart, OpenDartSettings, get_settings
+from opendart import OpenDART, OpenDARTSettings, get_settings
 from opendart_mcp.server import create_server
 from opendart_mcp.settings import DirectorySettings, HttpSettings, Settings, TaskSettings
 
@@ -158,9 +158,9 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture
-def sdk_settings() -> OpenDartSettings:
+def sdk_settings() -> OpenDARTSettings:
     """Valid upstream settings with a synthetic 40-character key."""
-    return OpenDartSettings(api_key=SecretStr("synthetic-test-key".ljust(40, "x")))
+    return OpenDARTSettings(api_key=SecretStr("synthetic-test-key".ljust(40, "x")))
 
 
 @pytest.fixture
@@ -170,9 +170,9 @@ def upstream() -> FakeUpstream:
 
 
 @pytest.fixture
-def sdk(sdk_settings: OpenDartSettings, upstream: FakeUpstream) -> OpenDart:
+def sdk(sdk_settings: OpenDARTSettings, upstream: FakeUpstream) -> OpenDART:
     """An SDK client wired to the fake upstream."""
-    return OpenDart(sdk_settings, transport=upstream.transport())
+    return OpenDART(sdk_settings, transport=upstream.transport())
 
 
 @pytest.fixture(autouse=True)

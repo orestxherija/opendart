@@ -19,7 +19,7 @@ from opendart_mcp.registry.specs import RESOURCES
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from opendart import OpenDart
+    from opendart import OpenDART
     from opendart_mcp.registry.specs import FieldKind, FieldSpec, ServiceSpec
 
 _STOPWORDS: Final = frozenset(
@@ -322,11 +322,11 @@ def search_services(query: str, *, limit: int = 10) -> tuple[ServiceSpec, ...]:
     return tuple(spec for _, spec in ranked[: max(limit, 0)])
 
 
-def sdk_method(client: OpenDart, spec: str | ServiceSpec) -> Callable[..., Awaitable[Any]]:
+def sdk_method(client: OpenDART, spec: str | ServiceSpec) -> Callable[..., Awaitable[Any]]:
     """Return the bound SDK coroutine function for a service.
 
     Args:
-        client (OpenDart): Open SDK client.
+        client (OpenDART): Open SDK client.
         spec (str | ServiceSpec): Service name or spec.
 
     Returns:

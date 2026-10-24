@@ -241,7 +241,7 @@ financial-sector templates were not sampled, so an alias falls back to heading m
 
 ### Download, parsing, and caching
 
-- Use a dedicated `OpenDart` client for documents, with a 10 s connect timeout, a 90 s read timeout, and a 120 s
+- Use a dedicated `OpenDART` client for documents, with a 10 s connect timeout, a 90 s read timeout, and a 120 s
   overall deadline. The default client keeps its 5 s timeouts for JSON services.
 - Downloads are single-flight: concurrent calls for one filing share one task. The task outlives a cancelled tool
   call, so a retry finds the result cached. The tool reports progress while it waits.

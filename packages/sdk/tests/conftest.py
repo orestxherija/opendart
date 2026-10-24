@@ -8,7 +8,7 @@ import httpx2
 import pytest
 from pydantic import SecretStr
 
-from opendart import OpenDartSettings, get_settings
+from opendart import OpenDARTSettings, get_settings
 
 
 @pytest.fixture
@@ -22,13 +22,13 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture
-def settings() -> OpenDartSettings:
+def settings() -> OpenDARTSettings:
     """Create valid upstream settings with a synthetic credential.
 
     Returns:
-        OpenDartSettings: Configuration suitable for mock-transport tests.
+        OpenDARTSettings: Configuration suitable for mock-transport tests.
     """
-    return OpenDartSettings(api_key=SecretStr("synthetic-test-key".ljust(40, "x")))
+    return OpenDARTSettings(api_key=SecretStr("synthetic-test-key".ljust(40, "x")))
 
 
 @pytest.fixture(autouse=True)

@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Literal
 import anyio
 import anyio.to_thread
 
-from opendart import OpenDartError
+from opendart import OpenDARTError
 from opendart_mcp.core.errors import (
     API_KEY_MISSING,
     ConfigurationError,
@@ -212,7 +212,7 @@ class DirectoryService:
             with anyio.fail_after(self._settings.deadline):
                 archive = await self._fetch()
             await self._install(archive, self._clock(), "download", cache=True)
-        except (OpenDartError, ServerError, DirectoryError, TimeoutError) as error:
+        except (OpenDARTError, ServerError, DirectoryError, TimeoutError) as error:
             return self._failed(_reason(error))
         except Exception as error:
             # A bug must not leave the directory "loading" forever with nothing logged.
@@ -339,7 +339,7 @@ def _reason(error: Exception) -> str:
     Returns:
         str: Message for the status resource and tool errors.
     """
-    if isinstance(error, OpenDartError):
+    if isinstance(error, OpenDARTError):
         return str(translate(error))
     return str(error) or type(error).__name__
 

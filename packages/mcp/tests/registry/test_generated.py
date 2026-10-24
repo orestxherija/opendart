@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from opendart import OpenDartError
+from opendart import OpenDARTError
 from opendart_mcp.registry import (
     FIELD_KINDS,
     RESOURCES,
@@ -163,7 +163,7 @@ async def test_calls_reach_the_registered_path_with_wire_names(spec, sdk, upstre
         for param in spec.params
         if param.required
     }
-    with pytest.raises(OpenDartError):  # The fake upstream answers 013 (no data).
+    with pytest.raises(OpenDARTError):  # The fake upstream answers 013 (no data).
         await sdk_method(sdk, spec)(**arguments)
     assert upstream.count(spec.path) == 1
     assert upstream.params(spec.path) == [

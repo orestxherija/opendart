@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Final
 
 import anyio.to_thread
 
-from opendart import FileUnavailableError, NoDataError, OpenDartError, ResponseTooLargeError
+from opendart import FileUnavailableError, NoDataError, OpenDARTError, ResponseTooLargeError
 from opendart_mcp.core.errors import (
     InvalidArgumentError,
     StillRunningError,
@@ -172,7 +172,7 @@ def _failure(error: Exception, filing_number: str) -> ServerError:
         if isinstance(error, source):
             url = dart_viewer_url(filing_number)
             return target(template.format(number=filing_number, url=url, error=error))
-    if isinstance(error, OpenDartError):
+    if isinstance(error, OpenDARTError):
         return translate(error)
     url = dart_viewer_url(filing_number)
     return DocumentUnavailableError(
@@ -206,7 +206,7 @@ async def load_filing(
     store = state.require_documents()
     try:
         return await store.get(filing_number, wait_s=wait_s, on_progress=progress)
-    except (DocumentError, OpenDartError, TimeoutError) as error:
+    except (DocumentError, OpenDARTError, TimeoutError) as error:
         raise _failure(error, filing_number) from error
 
 
