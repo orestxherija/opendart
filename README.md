@@ -6,20 +6,16 @@ Python SDK, analysis library, and MCP server for Korean corporate disclosures th
 Official OpenDART API websites: [English](https://engopendart.fss.or.kr/) and
 [Korean](https://opendart.fss.or.kr/).
 
-This is a uv workspace with independently installable packages and one `uv.lock`:
+This is a uv workspace with three independently installable packages and one `uv.lock`:
 
-| Package | Python import | Status |
-| --- | --- | --- |
-| [`packages/sdk`](packages/sdk) (`opendart-sdk`) | `opendart` | Async client for all 85 documented services |
-| [`packages/analysis`](packages/analysis) (`opendart-analysis`) | `opendart_analysis` | Filing parsing, outlines, paged Markdown, tables, search, and company lookup over caller-supplied data |
-| [`packages/mcp`](packages/mcp) (`opendart-mcp`) | `opendart_mcp` | Local Streamable HTTP server with 13 read-only analyst tools, resources, and prompts |
+| Package | Python import | Contents | Depends on |
+| --- | --- | --- | --- |
+| [`packages/sdk`](packages/sdk) (`opendart-sdk`) | `opendart` | Async client for all 85 documented services, returning the API's raw models and ZIP bytes | httpx2, Pydantic, pydantic-settings, defusedxml |
+| [`packages/analysis`](packages/analysis) (`opendart-analysis`) | `opendart_analysis` | Filing parsing, company resolution, the service catalog, and analysis workflows (financials, events, filings, ownership, capital, debt, dividends, governance, and calendars) over caller-supplied data | AnyIO, defusedxml, Pydantic |
+| [`packages/mcp`](packages/mcp) (`opendart-mcp`) | `opendart_mcp` | Local Streamable HTTP server with 13 read-only analyst tools, resources, prompts, and MCP Apps | `opendart-sdk`, `opendart-analysis`, FastMCP, MCP, OpenTelemetry API |
 
-Install only what you need. The SDK alone calls the API and returns its raw models. Analysis
-alone needs no SDK: it works on bytes and records from any source, with AnyIO, defusedxml, and
-Pydantic as its only dependencies. The MCP server installs both and binds them together. Applications that download
-with the SDK and then analyze the results install both `opendart-sdk` and `opendart-analysis`.
-From a checkout, `uv sync --locked --package <name>` installs one package with its dependencies;
-repeat `--package` to combine them.
+The SDK and analysis are independent: neither imports the other or MCP, and
+[`importlinter.toml`](importlinter.toml) enforces it. The three packages share one version and are released together.
 
 The SDK supports the 82 JSON services and three ZIP downloads in the
 [published API reference](https://orestxherija.github.io/opendart/); its source
@@ -29,11 +25,53 @@ The Korean-language API is a separate service and is not supported by this SDK.
 
 ## Table of contents
 
+- [Choose a package](#choose-a-package)
 - [Get an API key](#get-an-api-key)
 - [Get started](#get-started)
 - [MCP container](#mcp-container)
 - [Develop](#develop)
 - [Precedent implementations](#precedent-implementations)
+
+## Choose a package
+
+Install only what you need:
+
+| You want to | Install | Guide |
+| --- | --- | --- |
+| Call the OpenDART API and work with its raw responses | `opendart-sdk` | [SDK guide](packages/sdk/README.md) |
+| Parse filings, resolve companies, or analyze data you already have, without the SDK | `opendart-analysis` | [Analysis guide](packages/analysis/README.md) |
+| Download with the SDK, then analyze the results in Python | `opendart-sdk` and `opendart-analysis`, at the same version | [Data access recipe](packages/analysis/docs/data-access.md) |
+| Give an MCP client tools for Korean filings | `opendart-mcp`, which installs both libraries | [MCP guide](packages/mcp/README.md) |
+
+The packages are not yet published to a package index. From a checkout, `uv sync --locked --package <name>` installs
+one package with its dependencies; repeat `--package` to combine them, or use `--all-packages` for the whole
+workspace. Outside uv, install from the repository root with pip, listing every workspace package the choice needs so
+that pip does not look for them on PyPI, where an unrelated project owns the name `opendart-mcp`:
+
+```sh
+python -m pip install ./packages/sdk                                      # SDK only
+python -m pip install ./packages/analysis                                 # analysis only
+python -m pip install ./packages/sdk ./packages/analysis                  # SDK and analysis
+python -m pip install ./packages/sdk ./packages/analysis ./packages/mcp   # MCP server
+```
+
+Wheels built with `uv build --all-packages` install the same way: list their paths in `dist/` instead of the
+package directories. Each choice is tested in a fresh environment from both wheels and source archives; see the
+[release guide](docs/RELEASING.md).
+
+Start with these guides:
+
+- [Raw SDK access](packages/sdk/README.md#use-the-client): the client, settings, downloads, and errors.
+- [Standalone filing parsing](packages/analysis/docs/documents.md): read a filing archive into an outline, sections,
+  tables, and search results, with or without the SDK.
+- [Company resolution](packages/analysis/docs/directory.md): parse the corporation-code directory and resolve names
+  and codes to structured outcomes.
+- [Analysis workflows](packages/analysis/docs/data-access.md): bind workflows to the SDK or any data source, then use
+  [periodic reports](packages/analysis/docs/reports.md), [financial statements](packages/analysis/docs/financials.md),
+  [corporate events](packages/analysis/docs/events.md), and the other capabilities in the
+  [analysis guide](packages/analysis/README.md#guides).
+- [Analysis contracts](packages/analysis/docs/contracts.md): units, missing data, provenance, ambiguity, task
+  ownership, configuration, and exceptions.
 
 ## Get an API key
 

@@ -3,6 +3,10 @@
 Status: findings from live samples taken on 2026-10-22, and the `read_filing` specification they support. Companion to
 [COMPONENT_DESIGN.md](COMPONENT_DESIGN.md).
 
+This is a historical design record. Since 2026-10-24 the parser, archive limits, and document store it specifies live
+in [`opendart_analysis.documents`](../../analysis/docs/documents.md); MCP keeps `read_filing`, the filing resources,
+and their deadlines.
+
 ## Method
 
 Seventeen filings were chosen from `disclosures.search` to cover the document families analysts read:

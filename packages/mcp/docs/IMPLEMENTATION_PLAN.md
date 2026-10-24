@@ -4,6 +4,11 @@ Status: implemented (2026-10-22). This plan implements [COMPONENT_DESIGN.md](COM
 [FILING_DOCUMENTS.md](FILING_DOCUMENTS.md) on FastMCP 4. It records the decisions taken while researching FastMCP, the
 architecture and contracts every module codes against, and how the work is split between parallel streams.
 
+Since 2026-10-24 the reusable logic lives in [opendart-analysis](../../analysis/README.md), and MCP services are
+adapters over it; the [reorganization plan](../../../docs/SDK_MCP_REORGANIZATION_PLAN.md) records the move. The
+architecture and contracts below describe the current code. The execution waves and the deviations record how the
+server was first built, when today's analysis modules were still MCP subpackages.
+
 ## Decisions
 
 | Topic | Decision | Why |
@@ -25,15 +30,17 @@ architecture and contracts every module codes against, and how the work is split
 
 ## Architecture
 
-Imports point down the table only. The pure layers never import FastMCP.
+Imports point down the table, except that the composition root (`core/runtime.py`) builds services and
+`core/upstream.py` uses `core/sdk_binding.py`. `opendart-analysis` imports neither FastMCP, the SDK, nor
+`opendart_mcp`; [`importlinter.toml`](../../../importlinter.toml) enforces it.
 
 | Layer | Packages | Role |
 | --- | --- | --- |
-| Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, lifespan |
-| Services | `services/` | Business logic per component, callable from tests without MCP |
-| Infrastructure | `core/` | Gateway, cache, errors, state, runtime |
-| Pure layers | `opendart_analysis.catalog`, `opendart_analysis.domain`, `opendart_analysis.documents`, `opendart_analysis.events`, `opendart_analysis.filings`, `opendart_analysis.extracts`, `opendart_analysis.financials`, `opendart_analysis.ownership`, `opendart_analysis.capital`, `opendart_analysis.debt`, `opendart_analysis.dividends`, `opendart_analysis.profile`, `opendart_analysis.governance`, `opendart_analysis.calendar` (moved to `packages/analysis`) | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
-| Output | `models/`, `render/` | Pydantic output models and Markdown renderers |
+| Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, elicitation, progress, deadlines, lifespan |
+| Services | `services/` | Adapters per component: resolve the company, call an analysis workflow, translate its exceptions, and project its result into output models with concise or detailed selection; callable from tests without MCP |
+| Infrastructure | `core/` | Gateway, cache lifetimes, errors, state, runtime, and the SDK binding of analysis data access (`core/upstream*.py`) |
+| Output | `models/`, `render/` | Pydantic output models and Markdown renderers, including display units |
+| Library | `opendart_analysis` in `packages/analysis`: `documents`, `directory`, `domain`, `catalog`, `reports`, `extracts`, `financials`, `events`, `filings`, `ownership`, `capital`, `debt`, `dividends`, `profile`, `governance`, `calendar` | Parsing, resolution, normalization, service metadata, and analysis workflows over caller-supplied data access |
 
 Every handwritten file stays under 500 lines (loq). Tool modules hold the decorated function and its docstring only;
 the service, model, and renderer live in their layers.
@@ -43,8 +50,8 @@ the service, model, and renderer live in their layers.
 1. FastMCP validates arguments against the input schema (`additionalProperties: false`).
 2. Middleware: structured access log, rate limit, usage metrics, error translation.
 3. The tool resolves dependencies: `state: AppState = Depends(get_state)` and `ctx: Context = CurrentContext()`.
-4. The service resolves the company (`state.companies.resolve`), the period (`services.periods`), calls the gateway,
-   normalizes values, and returns an output model.
+4. The service resolves the company (`state.companies.resolve`), calls an analysis workflow with data access bound to
+   the gateway (`core.upstream*`), and projects the result into an output model.
 5. `markdown_view` renders text and returns `ToolResult(content=markdown, structured_content=model)`.
 
 ## Contracts
@@ -100,10 +107,11 @@ explained once in `opendart://reference/vocabulary` and the server instructions.
 
 ### Periods
 
-`opendart_analysis.reports` holds the period logic; `services.periods` adapts it with unchanged signatures.
+`opendart_analysis.reports` holds the period logic, and `services.periods` adapts only `resolve_period`.
 `services.periods.resolve_period(state, company, period, fiscal_year)` returns the fiscal year, report code, period end,
 and the periodic report that defines `latest`. It searches the company's periodic reports first and falls back to
-deadline-based candidates; `first_available(resolved, fetch)` probes a `ResolvedPeriod`'s candidates until one has data.
+deadline-based candidates; services call `opendart_analysis.reports.first_available(resolved, fetch)` to probe a
+`ResolvedPeriod`'s candidates until one has data.
 
 ### Progress and deadlines
 
@@ -123,10 +131,10 @@ deadline-based candidates; `first_available(resolved, fetch)` probes a `Resolved
 | `get_financials` | `tools/financials.py` | `services/financials.py`, `statement_views.py` over `opendart_analysis.financials` (`preliminary` from stream A) | B |
 | `compare_companies` | `tools/compare.py` | `services/compare.py`, `peer_table.py` over `opendart_analysis.financials.compare_peers` | B |
 | `get_corporate_events` (task) | `tools/events.py` | `services/events.py` over `opendart_analysis.events` | C |
-| `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py`, `calendar_items.py`, `calendar_reads.py`, `calendar_debt.py` over `opendart_analysis.calendar` | C |
+| `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py`, `calendar_items.py`, `calendar_debt.py` over `opendart_analysis.calendar` | C |
 | `get_ownership`, `get_capital_structure` | `tools/ownership.py`, `tools/capital.py` | `services/ownership.py`, `control.py`, `holdings.py`, `services/capital.py` over `opendart_analysis.ownership` and `opendart_analysis.capital` | D1 |
 | `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services over `opendart_analysis.debt`, `.dividends`, and `.governance` | D2 |
-| `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `opendart_analysis.catalog`, SDK binding in `services/sdk_binding.py` | E |
+| `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `opendart_analysis.catalog`, SDK binding in `core/sdk_binding.py` | E |
 | Company and filing resources | `resources/company.py`, `resources/filings.py` | streams' services | A |
 | Reference and status resources | `resources/reference.py`, `resources/status.py` | `opendart_analysis.catalog`, `opendart_analysis.domain` | E |
 | 11 prompts, completions, instructions | `prompts/`, `completions.py`, `instructions.py` | | E |

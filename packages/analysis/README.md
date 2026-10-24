@@ -17,29 +17,52 @@ Filing parsing, company lookup, and analysis for English OpenDART data. Requires
 
 ## Design
 
+![opendart-analysis design: callers bind data access to the SDK, a cache, or test data; capability packages build on
+the domain, the service catalog, periodic reports, and extracts; the upstream and errors conventions are leaves; the
+MCP server and Python applications bind the SDK](docs/architecture.svg)
+
 The package works on bytes, records, and callbacks supplied by the caller. It needs neither the OpenDART SDK
 (`opendart-sdk`) nor the MCP server (`opendart-mcp`), and it never imports either one, so it works with any data
 source. Its only dependencies are AnyIO, defusedxml, and Pydantic. The MCP server depends on this package and on the
-SDK, and binds the two together.
+SDK, and binds the two together; Python applications that download with the SDK do the same with a few lines of code.
 
-Capabilities live in subpackages; importing `opendart_analysis` itself loads nothing else.
-`opendart_analysis.documents` turns the ZIP archive returned by `disclosures.document` into an outline, paged
-Markdown, typed tables, and search results, using the filing's own English headings and labels.
-`opendart_analysis.directory` parses the corporation-code archive returned by `disclosures.corporation_codes` and
-resolves company names and codes. `opendart_analysis.reports` finds a company's latest periodic report and resolves
-requested periods, reading filings through caller-supplied [data access](docs/data-access.md). Modules under
-`opendart_analysis.domain` are internal.
+Capabilities live in subpackages; importing `opendart_analysis` itself loads nothing else:
+
+| Subpackage | Capability |
+| --- | --- |
+| `documents` | Parse the filing archive from `disclosures.document` into an outline, paged Markdown, tables, and search results; `DocumentStore` downloads, parses, and caches filings. |
+| `directory` | Parse the corporation-code archive, search it, and resolve names and codes to a structured `Resolution`; `DirectoryLoader` keeps it loaded and refreshed. |
+| `catalog` | Metadata for all 85 OpenDART services, value kinds of their fields, and the corporate-event vocabulary. |
+| `reports` | Find a company's latest periodic report and resolve requested periods. |
+| `extracts` | Fetch one periodic-report service for a company and period and read its fields. |
+| `financials` | Statements over periods, derived metrics, indicators, equity investments, preliminary earnings, and peers. |
+| `events`, `filings` | Interpret material-event reports, and search the filing index within page budgets. |
+| `ownership`, `capital`, `debt`, `dividends`, `profile`, `governance` | Periodic-report analysis of control, share capital, debt securities, dividends, company facts, and governance. |
+| `calendar` | Forward corporate-action dates and debt maturities for one company or a watchlist. |
+
+Two conventions are shared by every workflow. `opendart_analysis.upstream` defines how workflows receive upstream data:
+typed async callables, the catalog-keyed `FetchService`, record protocols that name only the fields a calculation
+reads, and `Volatility` freshness hints for the caller's cache. `opendart_analysis.errors` defines the failure
+categories. Modules under `opendart_analysis.domain` are internal. Pure parsing and calculation sit below the workflows
+that fetch, and [`importlinter.toml`](../../importlinter.toml) enforces that layering.
+
+Edit the [draw.io source](docs/architecture.drawio), then export it as SVG to update
+[the README diagram](docs/architecture.svg). Keep the source and SVG together.
 
 ## Install
 
-From a checkout, run `uv sync --locked --all-packages`. The package can also be installed directly with
-`python -m pip install ./packages/analysis` from the repository root. Its distribution name is `opendart-analysis`
-and its import name is `opendart_analysis`.
+The distribution name is `opendart-analysis` and the import name is `opendart_analysis`. From a checkout, run
+`uv sync --locked --package opendart-analysis` for this package alone, or `uv sync --locked --all-packages` for the
+whole workspace. Outside uv, run `python -m pip install ./packages/analysis` from the repository root.
 
-Applications that download filings with the SDK install both distributions, `opendart-sdk` and `opendart-analysis`.
+Applications that download filings with the SDK install both distributions, `opendart-sdk` and `opendart-analysis`,
+at the same version: `python -m pip install ./packages/sdk ./packages/analysis`. The root README compares the
+[installation choices](../../README.md#choose-a-package).
 
 ## Guides
 
+- [Contracts](docs/contracts.md): data units, missing data, provenance, structured ambiguity, task ownership,
+  configuration, exceptions, and versioning, which hold across every capability.
 - [Filing documents](docs/documents.md): read a filing downloaded with the SDK, the documents API, archive limits, and
   the caching `DocumentStore`.
 - [Company directory](docs/directory.md): parse the corporation-code archive, search it, resolve names and codes,

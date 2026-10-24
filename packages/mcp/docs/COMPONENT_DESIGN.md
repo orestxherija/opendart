@@ -1,7 +1,9 @@
 # OpenDART MCP server: component design
 
-Status: implemented (2026-10-22) on FastMCP 4. [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) records the
-implementation decisions and where the implementation deviates from this design.
+Status: implemented (2026-10-22) on FastMCP 4; kept as the historical design record.
+[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) records the implementation decisions and deviations. Since 2026-10-24
+the parsing, catalog, and analysis logic this design places in MCP modules lives in
+[opendart-analysis](../../analysis/README.md), and MCP services adapt it; the components below are unchanged.
 
 This document proposes the tools, resources, and prompts for an MCP server built on `opendart-sdk`, aimed at
 discretionary traders, trading and financial analysts, and portfolio managers who follow Korean listed companies. It is

@@ -227,6 +227,12 @@ before consuming their bodies. Actual bytes, rather than `Content-Length`, enfor
 the budget. The response closes on success, failures, size-limit errors, and async
 cancellation.
 
+The separate `opendart-analysis` package reads these archives:
+[filing documents](../analysis/docs/documents.md) parses `disclosures.document` archives, and the
+[company directory](../analysis/docs/directory.md) parses `disclosures.corporation_codes` and resolves company names.
+It never imports the SDK; install both at the same version to combine them, as the
+[data access recipe](../analysis/docs/data-access.md) shows for analysis workflows.
+
 ## Failures and requests
 
 ```python

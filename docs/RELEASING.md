@@ -64,13 +64,14 @@ the wheel and source archive of every distribution with:
 just release-build
 ```
 
-The recipe runs release checks and the following artifact checks:
+The recipe runs release checks and the following artifact checks; the smoke script reads `dist/` by default and
+accepts `--dist` for another directory:
 
 ```bash
 uv build --all-packages --no-sources
 uv run --no-sync python scripts/check_release.py --dist dist
 uv run --no-sync twine check --strict dist/*
-.venv/bin/python scripts/smoke_distributions.py --dist dist
+.venv/bin/python scripts/smoke_distributions.py
 ```
 
 Disabling workspace source overrides verifies the dependencies that consumers will
@@ -117,10 +118,16 @@ manually on the release commit with **release** and **distributions** selected. 
 create tags.
 
 After reviewing the artifacts, choose the registry and configure package ownership and
-publisher credentials before publishing. Publish the SDK and analysis before MCP because
-MCP depends on both; the SDK and analysis do not depend on each other. Create an annotated
-or signed version tag on the validated release commit as a separate release step; do not
-move a tag that has already been distributed.
+publisher credentials before publishing. Settle the distribution names first: on PyPI an
+unrelated project owns `opendart-mcp`, and the unrelated `OpenDart` distribution installs an
+`opendart` import package that collides with the SDK's.
+
+Publish dependencies before their consumers, uploading both artifacts of each distribution
+together: first `opendart-sdk` and `opendart-analysis`, in either order because neither
+depends on the other, then `opendart-mcp` once both are available from the registry. A
+consumer published first would be uninstallable until its dependencies arrive. Create an
+annotated or signed version tag on the validated release commit as a separate release step;
+do not move a tag that has already been distributed.
 
 Pushing the version tag also releases the MCP container image. For tags matching `vX.Y.Z`,
 the **Release MCP image** workflow checks that the tag matches the `opendart-mcp` version and
