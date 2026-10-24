@@ -105,3 +105,28 @@ class SearchFilings(Protocol):
                 source has none.
         """
         ...
+
+
+class FetchService(Protocol):
+    """Call one catalog service by its SDK method name; bound by the caller to a data source.
+
+    Workflows that read many services with one shape, such as periodic-report extracts and
+    event reports, take this instead of one Protocol per service. ``service`` and the parameter
+    names come from ``opendart_analysis.catalog``; the response is read through the catalog's
+    record container and field names.
+    """
+
+    async def __call__(
+        self, service: str, /, *, volatility: Volatility, **params: str | None
+    ) -> object | None:
+        """Return one service's response.
+
+        Args:
+            service (str): SDK method name, such as ``alot_matter``.
+            volatility (Volatility): How quickly the answer can change, for the source's cache.
+            **params (str | None): Request parameters by SDK name; None omits one.
+
+        Returns:
+            object | None: The response, or None when the source has no data.
+        """
+        ...

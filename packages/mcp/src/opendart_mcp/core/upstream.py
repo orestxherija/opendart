@@ -13,11 +13,18 @@ from typing import TYPE_CHECKING
 
 from opendart_analysis.domain.dates import yyyymmdd
 from opendart_mcp.core.ttl import lifetime
+from opendart_mcp.services.sdk_binding import sdk_method
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
-    from opendart_analysis.upstream import FilingQuery, FilingRecord, SearchFilings, Volatility
+    from opendart_analysis.upstream import (
+        FetchService,
+        FilingQuery,
+        FilingRecord,
+        SearchFilings,
+        Volatility,
+    )
     from opendart_mcp.core.gateway import Gateway
 
 
@@ -58,3 +65,35 @@ def filing_search(gateway: Callable[[], Gateway]) -> SearchFilings:
         return None if response is None else response.list
 
     return search_filings
+
+
+def service_fetch(gateway: Callable[[], Gateway]) -> FetchService:
+    """Call catalog services by SDK method name through the gateway.
+
+    Args:
+        gateway (Callable[[], Gateway]): Returns the gateway or raises the configuration
+            error, such as ``state.require_gateway``.
+
+    Returns:
+        FetchService: Service calls for analysis workflows.
+    """
+
+    async def fetch_service(
+        service: str, /, *, volatility: Volatility, **params: str | None
+    ) -> object | None:
+        """Call one service.
+
+        Args:
+            service (str): SDK method name, such as ``alot_matter``.
+            volatility (Volatility): How quickly the answer can change.
+            **params (str | None): Request parameters by SDK name.
+
+        Returns:
+            object | None: The SDK response model, or None for OpenDART status 013.
+        """
+        upstream = gateway()
+        return await upstream.call(
+            lifetime(volatility), sdk_method(upstream.sdk, service), **params
+        )
+
+    return fetch_service
