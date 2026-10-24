@@ -65,6 +65,7 @@ def selected(event: Event, *paths: str) -> set[str]:
         ),
         ("packages/analysis/README.md", {"analysis", "mcp", "distributions", "release"}),
         ("packages/analysis/tests/documents/test_store.py", {"analysis"}),
+        ("tests/support/events.py", {"analysis", "mcp"}),
         (
             "packages/analysis/src/opendart_analysis/catalog/_generated.py",
             {"analysis", "mcp", "image", "distributions", "release"},

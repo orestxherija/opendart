@@ -99,6 +99,8 @@ paths = [
     "importlinter.toml",
     ".github/workflows/check-analysis.yml",
     "packages/analysis/**",
+    # Shared test data and fakes used by this suite.
+    "tests/support/**",
     "!packages/analysis/docs/**",
     "scripts/generate_mcp_registry.py",
     "scripts/generate_sdk.py",
@@ -117,6 +119,8 @@ paths = [
     ".hadolint.yaml",
     ".github/workflows/check-mcp.yml",
     "packages/mcp/**",
+    # Shared test data and fakes used by this suite.
+    "tests/support/**",
     "!packages/mcp/docs/**",
     "packages/mcp/docs/COMPONENT_DESIGN.md",
     "scripts/check_mcp.py",

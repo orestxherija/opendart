@@ -603,6 +603,8 @@ language = "system"
 # the catalog generator on its inputs, which include the SDK generator's naming rules.
 files = { glob = [
     "packages/analysis/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
+    # Shared test data and fakes.
+    "tests/support/**",
     "scripts/generate_{mcp_registry,sdk}.py",
     "api_reference/{sources/catalog.json,paths/**}",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
@@ -622,6 +624,8 @@ entry = "uv run --locked --no-progress --no-sync pytest packages/mcp/tests --cov
 language = "system"
 files = { glob = [
     "packages/mcp/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
+    # Shared test data and fakes.
+    "tests/support/**",
     # MCP runs on the installed SDK and analysis packages.
     "packages/{sdk,analysis}/{src/**,pyproject.toml}",
     # The event-vocabulary test parses the component design; manifest tests run the
