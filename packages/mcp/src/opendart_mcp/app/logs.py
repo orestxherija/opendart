@@ -1,10 +1,10 @@
 """Server logging: redacted output, and expected errors without tracebacks.
 
-Redaction of the API key lives in ``core.redaction``; ``configure_logging`` applies it to
-the server process's root handlers. Components raise MCP errors for expected situations
-(an ambiguous company, a missing key) at INFO level, but FastMCP logs resource and prompt
-errors with their traceback whatever the level; ``QuietExpectedErrors`` drops the
-traceback for records below ERROR.
+Redaction of the API key lives in the SDK's ``opendart.redaction``, extended to other HTTP
+client loggers by ``core.redaction``; ``configure_logging`` applies it to the server process's
+root handlers. Components raise MCP errors for expected situations (an ambiguous company, a
+missing key) at INFO level, but FastMCP logs resource and prompt errors with their traceback
+whatever the level; ``QuietExpectedErrors`` drops the traceback for records below ERROR.
 """
 
 from __future__ import annotations
@@ -12,12 +12,8 @@ from __future__ import annotations
 import logging
 from typing import Final, override
 
-from opendart_mcp.core.redaction import (
-    HTTP_LOGGERS,
-    RedactSecrets,
-    RedactingFormatter,
-    protect_secrets,
-)
+from opendart.redaction import RedactSecrets, RedactingFormatter
+from opendart_mcp.core.redaction import HTTP_LOGGERS, protect_secrets
 
 FASTMCP_SERVER_LOGGER: Final = "fastmcp.server.server"
 QUIET_LOGGERS: Final = ("docket.worker",)

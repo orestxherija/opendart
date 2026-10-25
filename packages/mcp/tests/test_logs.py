@@ -8,7 +8,8 @@ import sys
 import pytest
 from pydantic import SecretStr
 
-from opendart import OpenDartSettings
+from opendart import OpenDARTSettings
+from opendart.redaction import RedactingFormatter, redact
 from opendart_mcp.app.logs import (
     FASTMCP_SERVER_LOGGER,
     QuietExpectedErrors,
@@ -16,7 +17,7 @@ from opendart_mcp.app.logs import (
     quiet_expected_errors,
 )
 from opendart_mcp.core.metrics import Metrics
-from opendart_mcp.core.redaction import RedactingFormatter, protect_secrets, redact
+from opendart_mcp.core.redaction import protect_secrets
 from opendart_mcp.core.runtime import open_state
 
 
@@ -75,7 +76,7 @@ async def test_upstream_request_logs_never_contain_the_key(caplog, mcp_settings,
     caplog.set_level(logging.INFO)
     caplog.set_level(logging.INFO, logger="httpx2")  # another test may have quieted it
     upstream.route("/company.json", upstream.ok(corp_name="x"))
-    api = OpenDartSettings(api_key=SecretStr(KEY))
+    api = OpenDARTSettings(api_key=SecretStr(KEY))
     async with open_state(
         mcp_settings, metrics=Metrics(), api=api, transport=upstream.transport
     ) as state:

@@ -21,14 +21,17 @@ WORKDIR /app
 # Source edits reuse this dependency layer; all workspace manifests validate the lock.
 COPY pyproject.toml uv.toml uv.lock ./
 COPY packages/sdk/pyproject.toml packages/sdk/pyproject.toml
+COPY packages/analysis/pyproject.toml packages/analysis/pyproject.toml
 COPY packages/mcp/pyproject.toml packages/mcp/pyproject.toml
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --package opendart-mcp --no-default-groups --no-editable --no-install-workspace
 
 COPY README.md ./
 COPY packages/sdk/README.md packages/sdk/README.md
+COPY packages/analysis/README.md packages/analysis/README.md
 COPY packages/mcp/README.md packages/mcp/README.md
 COPY packages/sdk/src/ packages/sdk/src/
+COPY packages/analysis/src/ packages/analysis/src/
 COPY packages/mcp/src/ packages/mcp/src/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --package opendart-mcp --no-default-groups --no-editable

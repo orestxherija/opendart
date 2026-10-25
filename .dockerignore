@@ -13,6 +13,12 @@ packages/sdk/*
 !packages/sdk/README.md
 !packages/sdk/src/
 !packages/sdk/src/**
+!packages/analysis/
+packages/analysis/*
+!packages/analysis/pyproject.toml
+!packages/analysis/README.md
+!packages/analysis/src/
+!packages/analysis/src/**
 !packages/mcp/
 packages/mcp/*
 !packages/mcp/Dockerfile

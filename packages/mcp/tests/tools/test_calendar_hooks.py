@@ -9,12 +9,12 @@ from fastmcp import Client
 from fastmcp.client.elicitation import ElicitResult
 from fastmcp.client.transports import FastMCPTransport
 
+from opendart_analysis.domain.identifiers import dart_viewer_url
 from opendart_mcp.core.metrics import Metrics
 from opendart_mcp.core.runtime import open_state
-from opendart_mcp.domain.identifiers import dart_viewer_url
 from opendart_mcp.models.calendar import CalendarItem
 from opendart_mcp.services.calendar import CalendarRequest, action_calendar
-from packages.mcp.tests.events.data import merger, profile
+from tests.support.events import merger, profile
 
 BOND = "20260314000100"
 
@@ -59,6 +59,7 @@ async def test_a_maturity_provider_merges_items_within_the_window(
         transport=upstream.transport,
         clock=lambda: now,
     ) as state:
+        await state.directory.wait(5)
         result = await action_calendar(state, ["00126380"], request=request, maturities=maturities)
         without = await action_calendar(
             state, ["00126380"], request=CalendarRequest(kinds=("merger",)), maturities=maturities
@@ -87,6 +88,7 @@ async def test_debt_maturities_without_a_provider_are_noted(
         transport=upstream.transport,
         clock=lambda: now,
     ) as state:
+        await state.directory.wait(5)
         result = await action_calendar(
             state, ["00126380"], request=CalendarRequest(kinds=("debt_maturity",))
         )

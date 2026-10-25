@@ -12,8 +12,8 @@ from fastmcp.apps import UI_EXTENSION_ID, UI_MIME_TYPE
 from fastmcp.client.transports import FastMCPTransport
 from mcp.client.extension import advertise
 
-from packages.mcp.tests.events.data import HYNIX, buyback, filing, profile
 from packages.mcp.tests.tools.financials_data import HYNIX as HYNIX_CODE, by_params, summary_rows
+from tests.support.events import HYNIX, buyback, filing, profile
 
 pytestmark = pytest.mark.anyio
 

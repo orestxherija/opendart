@@ -16,14 +16,14 @@ from typing import TYPE_CHECKING
 from pydantic import ValidationError
 from pydantic_settings import SettingsError
 
-from opendart import OpenDart, OpenDartSettings, get_settings
+from opendart import OpenDART, OpenDARTSettings, get_settings
+from opendart_analysis.documents.store import DocumentStore
+from opendart_analysis.domain.dates import KST
 from opendart_mcp.core.cache import TTLCache
 from opendart_mcp.core.gateway import Gateway
 from opendart_mcp.core.metrics import count_upstream
 from opendart_mcp.core.redaction import protect_secrets
 from opendart_mcp.core.state import AppState
-from opendart_mcp.documents.store import DocumentStore
-from opendart_mcp.domain.dates import KST
 from opendart_mcp.services.companies import Companies
 from opendart_mcp.services.directory import DirectoryService
 
@@ -44,11 +44,11 @@ type TransportFactory = Callable[[], httpx2.AsyncBaseTransport]
 DOCUMENT_DOWNLOAD_LIMIT = 32 * 1024 * 1024
 
 
-def load_api_settings() -> OpenDartSettings | None:
+def load_api_settings() -> OpenDARTSettings | None:
     """Read the SDK's upstream settings, tolerating a missing or invalid key.
 
     Returns:
-        OpenDartSettings | None: Upstream settings, or None when no usable key is set.
+        OpenDARTSettings | None: Upstream settings, or None when no usable key is set.
     """
     try:
         return get_settings().api
@@ -58,20 +58,20 @@ def load_api_settings() -> OpenDartSettings | None:
 
 
 def _client(
-    api: OpenDartSettings, transport: TransportFactory | None, **overrides: float
-) -> OpenDart:
+    api: OpenDARTSettings, transport: TransportFactory | None, **overrides: float
+) -> OpenDART:
     """Create an SDK client with adjusted timeouts or limits.
 
     Args:
-        api (OpenDartSettings): Base upstream settings, including the key.
+        api (OpenDARTSettings): Base upstream settings, including the key.
         transport (TransportFactory | None): Optional transport factory for tests.
-        **overrides (float): OpenDartSettings fields to replace.
+        **overrides (float): OpenDARTSettings fields to replace.
 
     Returns:
-        OpenDart: Client owning its connection pool.
+        OpenDART: Client owning its connection pool.
     """
-    settings = OpenDartSettings.model_validate(api.model_dump() | overrides)
-    return OpenDart(settings, transport=transport() if transport else None)
+    settings = OpenDARTSettings.model_validate(api.model_dump() | overrides)
+    return OpenDART(settings, transport=transport() if transport else None)
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,7 +87,7 @@ async def _open_upstream(
     stack: AsyncExitStack,
     settings: Settings,
     *,
-    api: OpenDartSettings,
+    api: OpenDARTSettings,
     transport: TransportFactory | None,
     cache: TTLCache[CacheKey, object],
     clock: Callable[[], datetime],
@@ -100,7 +100,7 @@ async def _open_upstream(
     Args:
         stack (AsyncExitStack): Exit stack that closes the clients and the document store.
         settings (Settings): Server configuration.
-        api (OpenDartSettings): Upstream settings, including the key.
+        api (OpenDARTSettings): Upstream settings, including the key.
         transport (TransportFactory | None): Transport factory for tests.
         cache (TTLCache[CacheKey, object]): Response cache for the gateway.
         clock (Callable[[], datetime]): Aware clock.
@@ -176,7 +176,7 @@ async def open_state(
     settings: Settings,
     *,
     metrics: Metrics,
-    api: OpenDartSettings | None = None,
+    api: OpenDARTSettings | None = None,
     transport: TransportFactory | None = None,
     clock: Callable[[], datetime] = lambda: datetime.now(KST),
 ) -> AsyncIterator[AppState]:
@@ -185,7 +185,7 @@ async def open_state(
     Args:
         settings (Settings): Server configuration.
         metrics (Metrics): Usage counters shared with the middleware.
-        api (OpenDartSettings | None): Upstream settings; None reads the SDK environment.
+        api (OpenDARTSettings | None): Upstream settings; None reads the SDK environment.
         transport (TransportFactory | None): Transport factory used by every SDK client.
         clock (Callable[[], datetime]): Aware clock for dates and ages.
 

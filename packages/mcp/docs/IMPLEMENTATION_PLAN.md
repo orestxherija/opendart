@@ -4,6 +4,11 @@ Status: implemented (2026-10-22). This plan implements [COMPONENT_DESIGN.md](COM
 [FILING_DOCUMENTS.md](FILING_DOCUMENTS.md) on FastMCP 4. It records the decisions taken while researching FastMCP, the
 architecture and contracts every module codes against, and how the work is split between parallel streams.
 
+Since 2026-10-24 the reusable logic lives in [opendart-analysis](../../analysis/README.md), and MCP services are
+adapters over it; the [reorganization plan](../../../docs/SDK_MCP_REORGANIZATION_PLAN.md) records the move. The
+architecture and contracts below describe the current code. The execution waves and the deviations record how the
+server was first built, when today's analysis modules were still MCP subpackages.
+
 ## Decisions
 
 | Topic | Decision | Why |
@@ -20,20 +25,22 @@ architecture and contracts every module codes against, and how the work is split
 | Pagination | Result paging in tools (`limit`, `page`, `has_more`, `next_call`; character offsets in `read_filing`). List pagination stays configurable and off. | 13 tools fit one page, and some hosts do not follow list cursors. |
 | Cache hints | Server-wide `cache_ttl` (default 300 s, private scope). | FastMCP 4.1 has no per-resource hints; status reads may lag by the TTL. |
 | Disambiguation | `ToolError` with candidates everywhere; elicitation (modern guard pattern and legacy `ctx.elicit`) when the host supports it, behind `tools.elicit_ambiguous_company`. | Resolves design open decision 2 without breaking hosts that lack elicitation. |
-| Directory | Background load with a disk cache (`~/.cache/opendart-mcp/corpcode.zip`), daily refresh, stale-while-refresh; corp codes work before it is ready. | A live download of the 3.6 MB archive took 233 s. |
+| Directory | Background load with a disk cache (`~/.cache/opendart-mcp/corpcode.zip`), daily refresh, stale-while-refresh; corp codes work before it is ready. Loading is `opendart_analysis.directory.DirectoryLoader`; `services/directory.py` configures it and translates failures. | A live download of the 3.6 MB archive took 233 s. |
 | Name languages | `corp_name` is Korean, `corp_eng_name` English (99%); both are indexed. | Resolves design open decision 1 from the live directory: 119,717 records, 4,001 listed, 66 alphanumeric stock codes, and stale duplicate listed names that recency breaks ties for. |
 
 ## Architecture
 
-Imports point down the table only. The pure layers never import FastMCP.
+Imports point down the table, except that the composition root (`core/runtime.py`) builds services and
+`core/upstream.py` uses `core/sdk_binding.py`. `opendart-analysis` imports neither FastMCP, the SDK, nor
+`opendart_mcp`; [`importlinter.toml`](../../../importlinter.toml) enforces it.
 
 | Layer | Packages | Role |
 | --- | --- | --- |
-| Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, lifespan |
-| Services | `services/` | Business logic per component, callable from tests without MCP |
-| Infrastructure | `core/` | Gateway, cache, errors, state, runtime |
-| Pure layers | `domain/`, `documents/`, `registry/`, `events/` | Resolution, dates, periods, normalization, document parsing, service metadata, event semantics |
-| Output | `models/`, `render/` | Pydantic output models and Markdown renderers |
+| Wiring | `server.py`, `app/`, `tools/`, `resources/`, `prompts/`, `apps/`, `completions.py`, `instructions.py` | FastMCP decorators, schemas, descriptions, versions, middleware, elicitation, progress, deadlines, lifespan |
+| Services | `services/` | Adapters per component: resolve the company, call an analysis workflow, translate its exceptions, and project its result into output models with concise or detailed selection; callable from tests without MCP |
+| Infrastructure | `core/` | Gateway, cache lifetimes, errors, state, runtime, and the SDK binding of analysis data access (`core/upstream*.py`) |
+| Output | `models/`, `render/` | Pydantic output models and Markdown renderers, including display units |
+| Library | `opendart_analysis` in `packages/analysis`: `documents`, `directory`, `domain`, `catalog`, `reports`, `extracts`, `financials`, `events`, `filings`, `ownership`, `capital`, `debt`, `dividends`, `profile`, `governance`, `calendar` | Parsing, resolution, normalization, service metadata, and analysis workflows over caller-supplied data access |
 
 Every handwritten file stays under 500 lines (loq). Tool modules hold the decorated function and its docstring only;
 the service, model, and renderer live in their layers.
@@ -43,8 +50,8 @@ the service, model, and renderer live in their layers.
 1. FastMCP validates arguments against the input schema (`additionalProperties: false`).
 2. Middleware: structured access log, rate limit, usage metrics, error translation.
 3. The tool resolves dependencies: `state: AppState = Depends(get_state)` and `ctx: Context = CurrentContext()`.
-4. The service resolves the company (`state.companies.resolve`), the period (`services.periods`), calls the gateway,
-   normalizes values, and returns an output model.
+4. The service resolves the company (`state.companies.resolve`), calls an analysis workflow with data access bound to
+   the gateway (`core.upstream*`), and projects the result into an output model.
 5. `markdown_view` renders text and returns `ToolResult(content=markdown, structured_content=model)`.
 
 ## Contracts
@@ -64,6 +71,12 @@ the service, model, and renderer live in their layers.
   concurrency (5), retries transient failures once, never retries quota (020) or maintenance (800), and counts calls
   per KST day.
 - Never call the SDK directly from services; never retry in services.
+- Workflows in `opendart-analysis` receive typed data-access callables instead of the gateway. `core.upstream` binds
+  each one to `gateway.call` with unchanged arguments, and `core.ttl.lifetime` maps the call's `Volatility` hint
+  (`low`, `medium`, `high`) to `DAY`, `HOUR`, or `FILINGS`.
+- Capability bindings follow the same pattern in `core.upstream_financials`, `core.upstream_filings`, and
+  `core.upstream_ownership`; debt, dividends, and governance read catalog services through
+  `core.upstream.service_fetch`.
 
 ### Errors
 
@@ -72,6 +85,9 @@ the service, model, and renderer live in their layers.
   `QuotaExhaustedError`). `ServerErrorMiddleware` converts them; the text always reaches the model.
 - Raise from a `message` variable (`message = f"..."; raise X(message)`) to satisfy ruff's EM and TRY rules.
 - Unexpected exceptions are masked (`mask_error_details=True`) and logged.
+- Adapters translate `opendart_analysis.errors.AnalysisError` with `core.errors.from_analysis`, which keeps the
+  message: `DataSourceError` becomes `UpstreamError`, `NotConfiguredError` becomes `ConfigurationError`, and other
+  analysis errors become `InvalidArgumentError`.
 
 ### Arguments
 
@@ -91,9 +107,11 @@ explained once in `opendart://reference/vocabulary` and the server instructions.
 
 ### Periods
 
+`opendart_analysis.reports` holds the period logic, and `services.periods` adapts only `resolve_period`.
 `services.periods.resolve_period(state, company, period, fiscal_year)` returns the fiscal year, report code, period end,
 and the periodic report that defines `latest`. It searches the company's periodic reports first and falls back to
-deadline-based candidates; `first_available(candidates, fetch)` probes candidates until one has data.
+deadline-based candidates; services call `opendart_analysis.reports.first_available(resolved, fetch)` to probe a
+`ResolvedPeriod`'s candidates until one has data.
 
 ### Progress and deadlines
 
@@ -107,18 +125,18 @@ deadline-based candidates; `first_available(candidates, fetch)` probes candidate
 
 | Component | Module | Service | Stream |
 | --- | --- | --- | --- |
-| `find_company`, `get_company_profile` | `tools/company.py` | `services/companies.py`, `services/profile.py` | Foundation |
-| `search_filings` | `tools/filings.py` | `services/filings.py` | A |
-| `read_filing` (task) | `tools/documents.py` | `services/documents.py` over `documents/` | A |
-| `get_financials` | `tools/financials.py` | `services/financials.py` (`preliminary` from stream A) | B |
-| `compare_companies` | `tools/compare.py` | `services/compare.py` | B |
-| `get_corporate_events` (task) | `tools/events.py` | `services/events.py`, `events/` | C |
-| `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py` | C |
-| `get_ownership`, `get_capital_structure` | `tools/ownership.py`, `tools/capital.py` | `services/ownership.py`, `services/capital.py` | D1 |
-| `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services | D2 |
-| `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `registry/` | E |
+| `find_company`, `get_company_profile` | `tools/company.py` | `services/companies.py` (messages in `services/company_messages.py`) over `opendart_analysis.domain`, `services/profile.py` over `opendart_analysis.profile` | Foundation |
+| `search_filings` | `tools/filings.py` | `services/filings.py` over `opendart_analysis.filings` | A |
+| `read_filing` (task) | `tools/documents.py` | `services/documents.py` over `opendart_analysis.documents` | A |
+| `get_financials` | `tools/financials.py` | `services/financials.py`, `statement_views.py` over `opendart_analysis.financials` (`preliminary` from stream A) | B |
+| `compare_companies` | `tools/compare.py` | `services/compare.py`, `peer_table.py` over `opendart_analysis.financials.compare_peers` | B |
+| `get_corporate_events` (task) | `tools/events.py` | `services/events.py` over `opendart_analysis.events` | C |
+| `get_corporate_action_calendar` (task) | `tools/calendar.py` | `services/calendar.py`, `calendar_items.py`, `calendar_debt.py` over `opendart_analysis.calendar` | C |
+| `get_ownership`, `get_capital_structure` | `tools/ownership.py`, `tools/capital.py` | `services/ownership.py`, `control.py`, `holdings.py`, `services/capital.py` over `opendart_analysis.ownership` and `opendart_analysis.capital` | D1 |
+| `get_debt_profile`, `get_dividends`, `get_governance` | `tools/debt.py`, `tools/dividends.py`, `tools/governance.py` | matching services over `opendart_analysis.debt`, `.dividends`, and `.governance` | D2 |
+| `list_services`, `call_service` (off by default) | `tools/services.py` | `services/catalog.py` over `opendart_analysis.catalog`, SDK binding in `core/sdk_binding.py` | E |
 | Company and filing resources | `resources/company.py`, `resources/filings.py` | streams' services | A |
-| Reference and status resources | `resources/reference.py`, `resources/status.py` | `registry/`, `domain/` | E |
+| Reference and status resources | `resources/reference.py`, `resources/status.py` | `opendart_analysis.catalog`, `opendart_analysis.domain` | E |
 | 11 prompts, completions, instructions | `prompts/`, `completions.py`, `instructions.py` | | E |
 | Middleware, manifest, CI, container | `app/middleware.py`, `manifest.py`, `scripts/` | | F |
 | Apps | `apps/` | | F, after B and C |
@@ -154,7 +172,8 @@ a `title`, tags (`identity`, `filings`, `documents`, `financials`, `events`, `ow
 
 ## CI and tooling
 
-- `scripts/generate_mcp_registry.py --check` keeps the generated registry in sync with the catalog.
+- `scripts/generate_mcp_registry.py --check` (`just analysis generated`) keeps the generated service catalog in
+  `opendart_analysis.catalog` in sync with the API catalog; the analysis workflow and a pre-push hook run it.
 - `scripts/check_mcp_components.py` checks versions, fingerprints, and token budgets against the lock; `--update`
   rewrites the lock after an intentional change.
 - `scripts/check_mcp.py` checks both protocol eras, the tool list, `/health`, a reference resource, and the

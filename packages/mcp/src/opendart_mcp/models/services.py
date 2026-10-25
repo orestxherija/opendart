@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pydantic import Field
 
+from opendart_analysis.catalog.specs import FieldKind
 from opendart_mcp.models.common import OutputModel, Pagination, ToolOutput
-from opendart_mcp.registry.specs import FieldKind
 
 type Cell = str | int | float | None
 """A normalized value: exact won and counts as integers, percentages as floats, ISO dates."""

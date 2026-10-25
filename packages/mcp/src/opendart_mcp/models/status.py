@@ -10,7 +10,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from opendart_mcp.documents.models import DocumentStoreStats
+from opendart_analysis.documents.models import DocumentStoreStats
 from opendart_mcp.models.common import OutputModel
 
 

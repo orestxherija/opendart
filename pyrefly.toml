@@ -1,9 +1,9 @@
-project-includes = ["packages/sdk/src", "packages/mcp/src"]
+project-includes = ["packages/sdk/src", "packages/analysis/src", "packages/mcp/src"]
 project-excludes = ["**/node_modules", "**/__pycache__", "**/*venv/**", "**/.[!/.]*/**"]
 # Editable workspace installs must not cause src/ trees to be excluded.
 disable-project-excludes-heuristics = true
 use-ignore-files = true
-search-path = ["packages/sdk/src", "packages/mcp/src"]
+search-path = ["packages/sdk/src", "packages/analysis/src", "packages/mcp/src"]
 disable-search-path-heuristics = true
 enable-fallback-search-path = false
 skip-interpreter-query = false

@@ -6,17 +6,17 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from opendart_analysis.domain.dates import KST
 from opendart_mcp.core.errors import API_KEY_MISSING, ConfigurationError
-from opendart_mcp.domain.dates import KST
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from datetime import date
 
+    from opendart_analysis.documents.store import DocumentStore
     from opendart_mcp.core.cache import TTLCache
     from opendart_mcp.core.gateway import CacheKey, Gateway
     from opendart_mcp.core.metrics import Metrics
-    from opendart_mcp.documents.store import DocumentStore
     from opendart_mcp.services.companies import Companies
     from opendart_mcp.services.directory import DirectoryService
     from opendart_mcp.settings import Settings

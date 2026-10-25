@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from fastmcp import Context, FastMCP
 
-    from opendart import OpenDartSettings
+    from opendart import OpenDARTSettings
     from opendart_mcp.core.metrics import Metrics
     from opendart_mcp.core.runtime import TransportFactory
     from opendart_mcp.settings import Settings
@@ -31,7 +31,7 @@ def make_lifespan(
     settings: Settings,
     metrics: Metrics,
     *,
-    api: OpenDartSettings | None = None,
+    api: OpenDARTSettings | None = None,
     transport: TransportFactory | None = None,
     clock: Callable[[], datetime] | None = None,
 ) -> Lifespan:
@@ -42,7 +42,7 @@ def make_lifespan(
     Args:
         settings (Settings): Server configuration.
         metrics (Metrics): Usage counters shared with the middleware.
-        api (OpenDartSettings | None): Upstream settings; None reads the SDK environment.
+        api (OpenDARTSettings | None): Upstream settings; None reads the SDK environment.
         transport (TransportFactory | None): Transport factory for every SDK client.
         clock (Callable[[], datetime] | None): Aware clock; None uses the system clock.
 

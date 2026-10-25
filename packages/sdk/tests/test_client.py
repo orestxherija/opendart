@@ -15,7 +15,7 @@ from opendart import (
     ContractError,
     FileUnavailableError,
     NoDataError,
-    OpenDart,
+    OpenDART,
     QuotaExceededError,
     RejectedError,
     ResponseTooLargeError,
@@ -56,11 +56,11 @@ async def test_client_owns_transport_and_rejects_calls_after_close(settings, con
     """Verify shared transport ownership and both supported cleanup paths.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         context_manager (bool): Close through async context exit instead of explicit aclose.
     """
     transport = TrackedTransport()
-    client = OpenDart(settings, transport=transport)
+    client = OpenDART(settings, transport=transport)
     if context_manager:
         with pytest.raises(ValueError, match="context failure"):
             async with client:
@@ -85,7 +85,7 @@ async def test_shared_client_allows_concurrent_requests(settings):
     """Verify requests on separate resources can make progress concurrently.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
     """
     requests = []
     both_started = asyncio.Event()
@@ -105,7 +105,7 @@ async def test_shared_client_allows_concurrent_requests(settings):
         await both_started.wait()
         return httpx2.Response(200, json={"status": "000", "message": "OK"})
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         async with asyncio.timeout(2):
             results = await asyncio.gather(
                 client.disclosures.search(),
@@ -141,9 +141,9 @@ async def test_application_errors(settings, status, kind, archive):
     """Verify application status translation, credential redaction, and one attempt.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         status (str): Synthetic three-digit application status.
-        kind (type[OpenDartError]): Expected SDK exception class.
+        kind (type[OpenDARTError]): Expected SDK exception class.
         archive (bool): Whether to exercise the archive endpoint instead of JSON.
     """
     calls = []
@@ -166,7 +166,7 @@ async def test_application_errors(settings, status, kind, archive):
             )
         return httpx2.Response(200, json={"status": status, "message": key})
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(kind) as caught:
             if archive:
                 await client.disclosures.corporation_codes()
@@ -195,9 +195,9 @@ async def test_http_failures_do_not_follow_redirects_or_retry(settings, status, 
     """Verify HTTP error translation without redirects or repeated requests.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         status (int): Synthetic HTTP response status.
-        kind (type[OpenDartError]): Expected SDK exception class.
+        kind (type[OpenDARTError]): Expected SDK exception class.
     """
     calls = []
 
@@ -213,7 +213,7 @@ async def test_http_failures_do_not_follow_redirects_or_retry(settings, status, 
         calls.append(request)
         return httpx2.Response(status, headers={"Location": "https://elsewhere.example/"})
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(kind) as caught:
             await client.disclosures.search()
     assert caught.value.http_status == status
@@ -228,7 +228,7 @@ async def test_transport_failures(settings, failure):
     """Verify transport failures retain their cause behind a safe SDK exception.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         failure (type[httpx2.RequestError]): HTTP exception class raised by the mock
             handler.
     """
@@ -244,7 +244,7 @@ async def test_transport_failures(settings, failure):
         """
         raise failure("Synthetic failure", request=request)
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(UnavailableError) as caught:
             await client.disclosures.search()
     assert isinstance(caught.value.__cause__, failure)
@@ -266,10 +266,10 @@ async def test_unexpected_json_is_contract_failure(settings, body):
     """Verify malformed JSON or response shapes raise ContractError.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         body (bytes): Invalid synthetic JSON response body.
     """
-    async with OpenDart(
+    async with OpenDART(
         settings, transport=httpx2.MockTransport(lambda _: httpx2.Response(200, content=body))
     ) as client:
         with pytest.raises(ContractError):
@@ -289,10 +289,10 @@ async def test_unexpected_downloads_and_xml_entities(settings, body):
     """Verify invalid archives and unsafe XML are rejected as contract failures.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         body (bytes): Malformed archive or unsafe XML response body.
     """
-    async with OpenDart(
+    async with OpenDART(
         settings, transport=httpx2.MockTransport(lambda _: httpx2.Response(200, content=body))
     ) as client:
         with pytest.raises(ContractError):
@@ -316,7 +316,7 @@ async def test_invalid_requests_never_reach_transport(settings, params):
     """Verify invalid query fields fail validation before any HTTP call.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         params (dict[str, object]): Invalid query fields to pass to disclosure search.
     """
 
@@ -331,7 +331,7 @@ async def test_invalid_requests_never_reach_transport(settings, params):
         """
         pytest.fail("Invalid parameters reached the transport")
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(ValidationError):
             await client.disclosures.search(**params)
 
@@ -341,7 +341,7 @@ async def test_batch_bounds(settings, codes):
     """Verify empty, oversized, and malformed corporation-code batches are rejected.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         codes (list[str]): Invalid corporation-code batch.
     """
 
@@ -356,7 +356,7 @@ async def test_batch_bounds(settings, codes):
         """
         pytest.fail("Invalid batch reached the transport")
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(ValidationError):
             await client.financial_statements.fnltt_multi_acnt(
                 corporation_codes=codes, fiscal_year="2025", report_period="11011"
@@ -367,7 +367,7 @@ async def test_missing_optional_fields_unknown_fields_and_raw_amounts(settings):
     """Verify optional omissions, upstream extensions, and financial text survive parsing.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
     """
     body = {
         "status": "000",
@@ -375,7 +375,7 @@ async def test_missing_optional_fields_unknown_fields_and_raw_amounts(settings):
         "new_root": True,
         "list": [{"thstrm_amount": "1,234", "new_field": "-"}],
     }
-    async with OpenDart(
+    async with OpenDART(
         settings, transport=httpx2.MockTransport(lambda _: httpx2.Response(200, json=body))
     ) as client:
         result = await client.financial_statements.fnltt_singl_acnt(
@@ -389,10 +389,10 @@ async def test_encoded_body_rejected_before_consuming(settings):
     """Verify non-identity encoding is rejected before reading the response body.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
     """
     stream = FiniteStream(False)
-    async with OpenDart(
+    async with OpenDART(
         settings,
         transport=httpx2.MockTransport(
             lambda _: httpx2.Response(200, stream=stream, headers={"Content-Encoding": "gzip"})
@@ -449,7 +449,7 @@ async def test_stream_failure_and_size_limit(settings, failure, archive):
     """Verify async JSON and archive streams close on read failures and size limits.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         failure (bool): Whether the synthetic stream should fail after its first chunk.
         archive (bool): Whether to exercise the archive endpoint instead of JSON.
     """
@@ -457,7 +457,7 @@ async def test_stream_failure_and_size_limit(settings, failure, archive):
     configured = settings.model_copy(
         update={"max_response_bytes": 100000, "max_download_bytes": 100000}
     )
-    async with OpenDart(
+    async with OpenDART(
         configured, transport=httpx2.MockTransport(lambda _: httpx2.Response(200, stream=stream))
     ) as client:
         with pytest.raises(UnavailableError if failure else ResponseTooLargeError):
@@ -505,11 +505,11 @@ async def test_cancellation_propagates_and_closes_response(settings, archive):
     """Verify cancellation propagates while closing both response and SDK client.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         archive (bool): Whether to exercise the archive endpoint instead of JSON.
     """
     stream = TrackedStream()
-    async with OpenDart(
+    async with OpenDART(
         settings, transport=httpx2.MockTransport(lambda _: httpx2.Response(200, stream=stream))
     ) as client:
         operation = (

@@ -8,7 +8,7 @@ import traceback
 import httpx2
 import pytest
 
-from opendart import ContractError, OpenDart, UnavailableError
+from opendart import ContractError, OpenDART, UnavailableError
 from opendart.redaction import (
     HTTP_LOGGERS,
     REDACTED,
@@ -66,7 +66,7 @@ async def test_request_logs_never_contain_the_key(settings, caplog):
     key = settings.api_key.get_secret_value()
     caplog.set_level(logging.DEBUG)
     caplog.set_level(logging.INFO, logger="httpx2")
-    async with OpenDart(settings, transport=httpx2.MockTransport(ok)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(ok)) as client:
         await client.disclosures.search()
     assert "HTTP Request: GET" in caplog.text
     assert "list.json" in caplog.text
@@ -77,7 +77,7 @@ async def test_request_logs_never_contain_the_key(settings, caplog):
 @pytest.mark.parametrize("name", HTTP_LOGGERS)
 def test_client_protects_every_http_logger(settings, caplog, name):
     key = settings.api_key.get_secret_value()
-    OpenDart(settings, transport=httpx2.MockTransport(ok))
+    OpenDART(settings, transport=httpx2.MockTransport(ok))
     caplog.set_level(logging.DEBUG, logger=name)
     url = httpx2.URL(f"https://x/list.json?crtfc_key={key}")
     logging.getLogger(name).debug("send_request_headers.started request=%r", url)
@@ -90,8 +90,8 @@ def test_protection_is_idempotent_and_keeps_user_configuration(settings, monkeyp
     mine = logging.Filter("httpx2")
     monkeypatch.setattr(logger, "filters", [mine])
     monkeypatch.setattr(logger, "level", logging.ERROR)
-    OpenDart(settings, transport=httpx2.MockTransport(ok))
-    OpenDart(settings, transport=httpx2.MockTransport(ok))
+    OpenDART(settings, transport=httpx2.MockTransport(ok))
+    OpenDART(settings, transport=httpx2.MockTransport(ok))
     protect_loggers()
     assert logger.filters[0] is mine
     assert sum(isinstance(item, RedactSecrets) for item in logger.filters) == 1
@@ -126,7 +126,7 @@ async def test_http_failure_causes_are_redacted(settings, failure, kind):
         outer = failure(f"Request failed for url '{request.url}'", request=request)
         raise_chained(outer, OSError(f"low-level failure for {request.url}"))
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(kind) as caught:
             await client.disclosures.search()
     cause = caught.value.__cause__
@@ -149,7 +149,7 @@ async def test_body_echo_never_reaches_validation_causes(settings, archive):
             body = f"<html>Rejected {request.url}</html>"
         return httpx2.Response(200, content=body.encode())
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(ContractError) as caught:
             if archive:
                 await client.disclosures.corporation_codes()
@@ -170,7 +170,7 @@ async def test_unrecognized_cause_text_is_dropped(settings):
     def handler(request):
         raise_chained(httpx2.ConnectError("connect failed", request=request), OpaqueError())
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(UnavailableError) as caught:
             await client.disclosures.search()
     assert caught.value.__cause__ is None
@@ -185,7 +185,7 @@ async def test_other_propagating_failures_are_redacted(settings):
         message = f"{request.url} not mocked"
         raise AssertionError(message)
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(AssertionError) as caught:
             await client.disclosures.search()
     assert "not mocked" in str(caught.value)
@@ -194,7 +194,7 @@ async def test_other_propagating_failures_are_redacted(settings):
 
 async def test_reprs_never_contain_the_key(settings):
     key = settings.api_key.get_secret_value()
-    async with OpenDart(settings, transport=httpx2.MockTransport(ok)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(ok)) as client:
         transport = client._transport
         texts = [
             repr(client),
@@ -224,7 +224,7 @@ async def test_exception_groups_notes_and_requestless_errors_are_redacted(settin
         group.add_note(f"while fetching {request.url}")
         raise group
 
-    async with OpenDart(settings, transport=httpx2.MockTransport(handler)) as client:
+    async with OpenDART(settings, transport=httpx2.MockTransport(handler)) as client:
         with pytest.raises(ExceptionGroup) as caught:
             await client.disclosures.search()
     assert key not in rendered(caught.value)

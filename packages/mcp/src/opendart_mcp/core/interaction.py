@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Iterator
 
-    from opendart_mcp.domain.directory import CorpRecord, Match
+    from opendart_analysis.domain.directory import CorpRecord, Match
 
     type Chooser = Callable[[str, tuple[Match, ...]], Awaitable[CorpRecord | None]]
 

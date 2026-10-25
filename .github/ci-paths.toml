@@ -42,6 +42,7 @@ paths = [
     ".github/workflows/check-release.yml",
     "cz.toml",
     "packages/sdk/pyproject.toml",
+    "packages/analysis/pyproject.toml",
     "packages/mcp/pyproject.toml",
     "scripts/check_release.py",
     "scripts/smoke_distributions.py",
@@ -56,6 +57,7 @@ paths = [
     ".github/workflows/check-release.yml",
     "cz.toml",
     "packages/sdk/**",
+    "packages/analysis/**",
     "packages/mcp/**",
     "!packages/*/tests/**",
     "!packages/*/docs/**",
@@ -85,7 +87,29 @@ paths = [
     "scripts/api_reference/snapshot.py",
 ]
 
-# A registry test parses COMPONENT_DESIGN.md; MCP runs on the installed SDK.
+# Analysis never uses the SDK, so SDK changes do not select it. Its job checks that the
+# generated service catalog matches the catalog generator's inputs, which include the SDK
+# generator's naming rules but not the SDK package.
+[analysis]
+include = ["shared", "python"]
+paths = [
+    "prek.toml",
+    "pyrefly.toml",
+    "codecov.yml",
+    "importlinter.toml",
+    ".github/workflows/check-analysis.yml",
+    "packages/analysis/**",
+    # Shared test data and fakes used by this suite.
+    "tests/support/**",
+    "!packages/analysis/docs/**",
+    "scripts/generate_mcp_registry.py",
+    "scripts/generate_sdk.py",
+    "api_reference/sources/catalog.json",
+    "api_reference/paths/**",
+]
+
+# An event-vocabulary test parses COMPONENT_DESIGN.md; MCP runs on the installed SDK and
+# analysis packages, and its job runs the import-boundary check.
 [mcp]
 include = ["shared", "python"]
 paths = [
@@ -95,19 +119,21 @@ paths = [
     ".hadolint.yaml",
     ".github/workflows/check-mcp.yml",
     "packages/mcp/**",
+    # Shared test data and fakes used by this suite.
+    "tests/support/**",
     "!packages/mcp/docs/**",
     "packages/mcp/docs/COMPONENT_DESIGN.md",
     "scripts/check_mcp.py",
     "scripts/check_mcp_runtime.py",
     "scripts/check_mcp_components.py",
     "scripts/check_mcp_conformance.py",
-    "scripts/generate_mcp_registry.py",
-    "scripts/generate_sdk.py",
-    "api_reference/sources/catalog.json",
-    "api_reference/paths/**",
     "packages/sdk/src/**",
     "packages/sdk/pyproject.toml",
     "packages/sdk/README.md",
+    "packages/analysis/src/**",
+    "packages/analysis/pyproject.toml",
+    "packages/analysis/README.md",
+    "importlinter.toml",
 ]
 
 # The image's build inputs mirror the .dockerignore allowlist, without READMEs.
@@ -128,6 +154,8 @@ paths = [
     "packages/mcp/components.lock.json",
     "packages/sdk/pyproject.toml",
     "packages/sdk/src/**",
+    "packages/analysis/pyproject.toml",
+    "packages/analysis/src/**",
     "scripts/check_mcp.py",
     "scripts/check_mcp_runtime.py",
 ]

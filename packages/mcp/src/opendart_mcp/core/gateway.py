@@ -20,12 +20,13 @@ from pydantic import ValidationError
 from opendart import (
     APIRejectedError,
     NoDataError,
-    OpenDartError,
+    OpenDARTError,
     QuotaExceededError,
     RejectedError,
     ServiceUnavailableError,
     UnavailableError,
 )
+from opendart_analysis.domain.dates import KST
 from opendart_mcp.core.cache import MISSING, SingleFlight
 from opendart_mcp.core.errors import (
     MAINTENANCE,
@@ -39,12 +40,11 @@ from opendart_mcp.core.errors import (
 )
 from opendart_mcp.core.metrics import count_upstream, uncount_upstream
 from opendart_mcp.core.ttl import FILINGS
-from opendart_mcp.domain.dates import KST
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from opendart import OpenDart
+    from opendart import OpenDART
     from opendart_mcp.core.cache import TTLCache
 
 type CacheKey = tuple[str, tuple[Hashable, ...], tuple[tuple[str, Hashable], ...]]
@@ -53,7 +53,7 @@ type CacheKey = tuple[str, tuple[Hashable, ...], tuple[tuple[str, Hashable], ...
 # disallowed IP address, or expired.
 _KEY_STATUSES = frozenset({"010", "011", "012", "901"})
 _TRACER = trace.get_tracer("opendart_mcp.gateway")
-_TRANSLATIONS: tuple[tuple[type[OpenDartError], type[ServerError], str], ...] = (
+_TRANSLATIONS: tuple[tuple[type[OpenDARTError], type[ServerError], str], ...] = (
     (QuotaExceededError, QuotaExhaustedError, QUOTA_EXHAUSTED),
     (ServiceUnavailableError, UpstreamError, MAINTENANCE),
     (UnavailableError, UpstreamError, UNAVAILABLE),
@@ -91,11 +91,11 @@ def cache_key(
     return (function.__qualname__, tuple(_freeze(arg) for arg in args), frozen)
 
 
-def translate(error: OpenDartError) -> ServerError:
+def translate(error: OpenDARTError) -> ServerError:
     """Map an SDK failure to an actionable server error.
 
     Args:
-        error (OpenDartError): Failure raised by the SDK.
+        error (OpenDARTError): Failure raised by the SDK.
 
     Returns:
         ServerError: Error whose message tells the model what to do next.
@@ -180,7 +180,7 @@ class Gateway:
 
     def __init__(
         self,
-        sdk: OpenDart,
+        sdk: OpenDART,
         *,
         cache: TTLCache[CacheKey, object],
         concurrency: int,
@@ -190,7 +190,7 @@ class Gateway:
         """Wrap an SDK client; the gateway does not own or close it.
 
         Args:
-            sdk (OpenDart): Authenticated SDK client.
+            sdk (OpenDART): Authenticated SDK client.
             cache (TTLCache[CacheKey, object]): Shared response cache.
             concurrency (int): Maximum simultaneous upstream requests.
             retry_delay (float): Seconds to wait before the single retry.
@@ -291,7 +291,7 @@ class Gateway:
         """
         try:
             return await self._attempt(operation, call)
-        except OpenDartError as error:
+        except OpenDARTError as error:
             if not isinstance(error, UnavailableError) or isinstance(
                 error, QuotaExceededError | ServiceUnavailableError
             ):
@@ -299,7 +299,7 @@ class Gateway:
         await anyio.sleep(self._retry_delay)
         try:
             return await self._attempt(operation, call)
-        except OpenDartError as error:
+        except OpenDARTError as error:
             raise translate(error) from error
 
     async def _attempt(self, operation: str, call: Callable[[], Awaitable[object]]) -> object:

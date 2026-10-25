@@ -1,17 +1,21 @@
 # OpenDART
 
-Python SDK and MCP server for Korean corporate disclosures through the
+Python SDK, analysis library, and MCP server for Korean corporate disclosures through the
 **English OpenDART API** operated by Korea's Financial Supervisory Service.
 
 Official OpenDART API websites: [English](https://engopendart.fss.or.kr/) and
 [Korean](https://opendart.fss.or.kr/).
 
-This is a uv workspace with independently installable packages and one `uv.lock`:
+This is a uv workspace with three independently installable packages and one `uv.lock`:
 
-| Package | Python import | Status |
-| --- | --- | --- |
-| [`packages/sdk`](packages/sdk) (`opendart-sdk`) | `opendart` | Async client for all 85 documented services |
-| [`packages/mcp`](packages/mcp) (`opendart-mcp`) | `opendart_mcp` | Local HTTP server with a `ping` tool for deployment tests |
+| Package | Python import | Contents | Depends on |
+| --- | --- | --- | --- |
+| [`packages/sdk`](packages/sdk) (`opendart-sdk`) | `opendart` | Async client for all 85 documented services, returning the API's raw models and ZIP bytes | httpx2, Pydantic, pydantic-settings, defusedxml |
+| [`packages/analysis`](packages/analysis) (`opendart-analysis`) | `opendart_analysis` | Filing parsing, company resolution, the service catalog, and analysis workflows (financials, events, filings, ownership, capital, debt, dividends, governance, and calendars) over caller-supplied data | AnyIO, defusedxml, Pydantic |
+| [`packages/mcp`](packages/mcp) (`opendart-mcp`) | `opendart_mcp` | Local Streamable HTTP server with 13 read-only analyst tools, resources, prompts, and MCP Apps | `opendart-sdk`, `opendart-analysis`, FastMCP, MCP, OpenTelemetry API |
+
+The SDK and analysis are independent: neither imports the other or MCP, and
+[`importlinter.toml`](importlinter.toml) enforces it. The three packages share one version and are released together.
 
 The SDK supports the 82 JSON services and three ZIP downloads in the
 [published API reference](https://orestxherija.github.io/opendart/); its source
@@ -21,11 +25,53 @@ The Korean-language API is a separate service and is not supported by this SDK.
 
 ## Table of contents
 
+- [Choose a package](#choose-a-package)
 - [Get an API key](#get-an-api-key)
 - [Get started](#get-started)
 - [MCP container](#mcp-container)
 - [Develop](#develop)
 - [Precedent implementations](#precedent-implementations)
+
+## Choose a package
+
+Install only what you need:
+
+| You want to | Install | Guide |
+| --- | --- | --- |
+| Call the OpenDART API and work with its raw responses | `opendart-sdk` | [SDK guide](packages/sdk/README.md) |
+| Parse filings, resolve companies, or analyze data you already have, without the SDK | `opendart-analysis` | [Analysis guide](packages/analysis/README.md) |
+| Download with the SDK, then analyze the results in Python | `opendart-sdk` and `opendart-analysis`, at the same version | [Data access recipe](packages/analysis/docs/data-access.md) |
+| Give an MCP client tools for Korean filings | `opendart-mcp`, which installs both libraries | [MCP guide](packages/mcp/README.md) |
+
+The packages are not yet published to a package index. From a checkout, `uv sync --locked --package <name>` installs
+one package with its dependencies; repeat `--package` to combine them, or use `--all-packages` for the whole
+workspace. Outside uv, install from the repository root with pip, listing every workspace package the choice needs so
+that pip does not look for them on PyPI, where an unrelated project owns the name `opendart-mcp`:
+
+```sh
+python -m pip install ./packages/sdk                                      # SDK only
+python -m pip install ./packages/analysis                                 # analysis only
+python -m pip install ./packages/sdk ./packages/analysis                  # SDK and analysis
+python -m pip install ./packages/sdk ./packages/analysis ./packages/mcp   # MCP server
+```
+
+Wheels built with `uv build --all-packages` install the same way: list their paths in `dist/` instead of the
+package directories. Each choice is tested in a fresh environment from both wheels and source archives; see the
+[release guide](docs/RELEASING.md).
+
+Start with these guides:
+
+- [Raw SDK access](packages/sdk/README.md#use-the-client): the client, settings, downloads, and errors.
+- [Standalone filing parsing](packages/analysis/docs/documents.md): read a filing archive into an outline, sections,
+  tables, and search results, with or without the SDK.
+- [Company resolution](packages/analysis/docs/directory.md): parse the corporation-code directory and resolve names
+  and codes to structured outcomes.
+- [Analysis workflows](packages/analysis/docs/data-access.md): bind workflows to the SDK or any data source, then use
+  [periodic reports](packages/analysis/docs/reports.md), [financial statements](packages/analysis/docs/financials.md),
+  [corporate events](packages/analysis/docs/events.md), and the other capabilities in the
+  [analysis guide](packages/analysis/README.md#guides).
+- [Analysis contracts](packages/analysis/docs/contracts.md): units, missing data, provenance, ambiguity, task
+  ownership, configuration, and exceptions.
 
 ## Get an API key
 
@@ -58,11 +104,11 @@ uv run --package opendart-sdk python
 
 ```python
 import asyncio
-from opendart import OpenDart
+from opendart import OpenDART
 
 
 async def main():
-    async with OpenDart() as client:
+    async with OpenDART() as client:
         company = await client.disclosures.company(corporation_code="00126380")
         print(company.corporation_name)
 
@@ -100,7 +146,8 @@ docker compose -f packages/mcp/docker-compose.yml up --detach --wait mcp
 ```
 
 This starts a Streamable HTTP MCP server at `http://127.0.0.1:8000/mcp`, published
-only on localhost, with a `ping` tool that returns `pong` without an API key.
+only on localhost. Without an API key it still lists every component, and tool calls
+explain how to configure one.
 The root [`.mcp.json`](.mcp.json) configures that connection for compatible MCP
 clients. Start the server before connecting. To run without Docker,
 use `uv run --no-sync opendart-mcp` after syncing the workspace.
@@ -120,7 +167,7 @@ explicit and matches the repository's file formats and formatter settings.
 through the activated environment, direnv as described below, or `uv run just`. Run `just`
 to list commands, `just sync` to install the Python workspace and offline test
 dependencies, and `just reference sync` to install documentation dependencies.
-Use `just sdk test`, `just mcp run`, or `just reference build` from the root, or
+Use `just sdk test`, `just analysis test`, `just mcp run`, or `just reference build` from the root, or
 run `just test` inside a package. `just check` runs repository quality checks and
 all offline component checks. `just quality` runs repository checks, including
 actionlint and ShellCheck. `just audit` runs Zizmor against workflows and shared
@@ -150,15 +197,20 @@ uv run --no-sync ruff format --check packages scripts tests
 uv run --no-sync python scripts/generate_sdk.py --check
 uv run --no-sync python scripts/api_reference/check.py
 uv build --package opendart-sdk
+uv build --package opendart-analysis
 uv build --package opendart-mcp
+uv run --no-sync lint-imports --config importlinter.toml
 ```
 
-[`pytest.toml`](pytest.toml) configures all three offline suites with strict
+[`pytest.toml`](pytest.toml) configures all four offline suites with strict
 configuration and marker checks, randomized order, up to eight parallel workers,
 timeouts, blocked network sockets, and HTML reports. The existing AnyIO tests use
 their explicit markers. Run `uv run --no-sync pytest -n 0` for a serial run.
-[`pyrefly.toml`](pyrefly.toml) applies strict type checking to both packages' source
-trees, including generated SDK code.
+[`pyrefly.toml`](pyrefly.toml) applies strict type checking to every package's source
+tree, including generated SDK code. [`importlinter.toml`](importlinter.toml) keeps analysis and
+the SDK independent: neither imports the other, MCP, or server frameworks, including in
+annotations. `just boundaries` checks it against the synced workspace, before each commit
+that changes package sources, and in the MCP CI job.
 
 After syncing, run `uv run --no-sync prek install` to install the configured Git
 hooks. Commitizen validates new commit messages at the `commit-msg` stage using
@@ -166,23 +218,24 @@ Conventional Commits, such as `fix(sdk): handle an empty response`.
 Pre-commit hooks are quick and offline: they normalize text and JSON, check file
 integrity and syntax, scan staged changes for secrets, audit workflow security, and
 check Ruff, Markdown, YAML, TOML formatting, spelling, and the changed files' lengths.
-Pyrefly type-checks both packages when a commit changes their source or configuration.
+Pyrefly type-checks every package when a commit changes package sources or configuration.
 Direct commits to `main` are blocked locally.
 Slower checks run before pushes, and only when the pushed commits change their
 inputs: Hadolint for the Dockerfile, Taplo schema validation for TOML, Lychee for
-Markdown links, pip-audit for `uv.lock`, and the SDK, MCP, and offline contract
+Markdown links, pip-audit for `uv.lock`, and the SDK, analysis, MCP, and offline contract
 tests for each suite's sources, tests, contract files, and shared test configuration.
 Run every pre-push hook manually with `uv run --no-sync prek run --all-files --stage pre-push`.
 Python hooks use the installed environment without syncing it. Taplo, Markdownlint,
 Lychee, and Betterleaks install pinned tools on first use. Betterleaks verifies
 download checksums and always redacts findings in the configured commands.
 `just sdk test`,
-`just mcp test`, `just reference test`, and CI use the same test hooks. Their HTML
-reports are written to `.cache/pytest/`, with separate SDK and MCP coverage data
-and XML reports in `.cache/coverage/`. Branch coverage is configured in the
-[SDK `.coveragerc.toml`](packages/sdk/.coveragerc.toml) and
+`just analysis test`, `just mcp test`, `just reference test`, and CI use the same test hooks.
+Their HTML reports are written to `.cache/pytest/`, with separate SDK, analysis, and MCP
+coverage data and XML reports in `.cache/coverage/`. Branch coverage is configured in the
+[SDK `.coveragerc.toml`](packages/sdk/.coveragerc.toml),
+[analysis `.coveragerc.toml`](packages/analysis/.coveragerc.toml), and
 [MCP `.coveragerc.toml`](packages/mcp/.coveragerc.toml). The package workflows upload
-those XML reports to Codecov with separate `sdk` and `mcp` flags, configured in
+those XML reports to Codecov with separate `sdk`, `analysis`, and `mcp` flags, configured in
 [`codecov.yml`](codecov.yml).
 
 The quality configs exclude generated API/SDK files where appropriate and the

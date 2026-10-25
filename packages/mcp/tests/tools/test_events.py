@@ -8,7 +8,7 @@ from fastmcp import Client
 
 from opendart_mcp.server import create_server
 from opendart_mcp.settings import Settings, UpstreamSettings
-from packages.mcp.tests.events.data import (
+from tests.support.events import (
     convertible_bond,
     debt_registration,
     equity_registration,

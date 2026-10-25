@@ -10,7 +10,7 @@
 
 A local [Model Context Protocol](https://modelcontextprotocol.io/) server for the regulatory filings of Korean
 companies, served over Streamable HTTP on the loopback interface. It is built on [FastMCP](https://gofastmcp.com/) and
-reads [OpenDART](https://opendart.fss.or.kr/) through the async `OpenDart` client from `opendart-sdk`. Thirteen
+reads [OpenDART](https://opendart.fss.or.kr/) through the async `OpenDART` client from `opendart-sdk`. Thirteen
 read-only tools answer analyst questions: company identity, filings and their original documents, financial
 statements, peer tables, material events, ownership, share capital, debt, dividends, governance, and upcoming corporate
 actions. Resources add browsable context, and prompts package multi-step workflows. Every tool accepts a company by
@@ -96,12 +96,32 @@ filters, and view switches for hosts that render apps. Other hosts get the same 
 
 ## Design
 
-![MCP server design: an MCP client calls /mcp over Streamable HTTP; middleware, then tools, resources, and prompts; services; one caching gateway; opendart-sdk; the FSS English API. Server state and checked-in generated files sit alongside](docs/architecture.svg)
+![MCP server design: an MCP client calls /mcp over Streamable HTTP; middleware, then tools, resources, and prompts;
+services adapt them to opendart-analysis workflows; the core/upstream bindings route data access through one caching
+gateway to opendart-sdk and the FSS English API. Server state, including the directory loader and document store from
+opendart-analysis, sits alongside; checked-in generated files sit below](docs/architecture.svg)
 
 MCP clients connect to `/mcp` over Streamable HTTP in either protocol era: 2026-07-28 discovery or the 2025-11-25
 initialize handshake. Each request passes through access logging, rate limiting, usage metrics, and error recovery,
-then reaches a component. Components call services, which resolve the company and the period and read OpenDART through
-one shared gateway.
+then reaches a component. Components call services, which are adapters over
+[opendart-analysis](../analysis/README.md): they resolve the company, call an analysis workflow with data access bound
+to the gateway, and project its result into the tool's output model.
+
+Analysis owns the interpretation: filing parsing, company resolution, the service catalog, period resolution, and the
+financial, event, filing, ownership, capital, debt, dividend, governance, and calendar workflows. The server owns
+everything specific to MCP and to its deployment:
+
+- tools, resources, prompts, MCP Apps, completions, elicitation, background tasks and their deadlines, progress
+  reporting, and middleware;
+- output models (`models/`), Markdown rendering (`render/`), concise or detailed selection, and display units;
+- model-facing messages, including ambiguity and recovery instructions, built from analysis's structured outcomes
+  and exceptions (`core.errors.from_analysis`);
+- the binding of analysis to the SDK: `core/upstream.py` and its `upstream_*.py` companions bind each data-access
+  callable to the gateway and map its `Volatility` hint to a cache lifetime, and `core/sdk_binding.py` maps catalog
+  services to SDK methods for `FetchService` and the escape-hatch tools;
+- settings, which it translates into analysis's explicit options, such as the directory loader's configuration.
+
+What clients observe:
 
 - **Results**: tools return compact Markdown tables as text and the typed result as `structuredContent`. Some hosts,
   Claude Code among them, give the model the structured JSON instead of the text, so concise results stay small.
@@ -113,14 +133,18 @@ one shared gateway.
   five requests at once, retries a transient failure once (never quota or maintenance errors), and counts requests per
   KST day.
 - **Company directory**: the corporation-code archive loads in the background, from a disk cache that is refreshed
-  daily. Corp codes work while it loads.
+  daily. Corp codes work while it loads. [opendart-analysis](../analysis/docs/directory.md) parses, searches,
+  resolves, and loads it with `DirectoryLoader`; the server configures the loader from its settings and adds
+  elicitation and model-facing messages.
 - **Slow calls** report progress at least every five seconds and stop waiting at a deadline while the work continues,
   so repeating the call a minute later returns the cached result.
 
-[IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) records the architecture and decisions,
-[COMPONENT_DESIGN.md](docs/COMPONENT_DESIGN.md) specifies each component, and [FILING_DOCUMENTS.md](docs/FILING_DOCUMENTS.md)
-covers filing documents. Edit the [draw.io source](docs/architecture.drawio), then export it as SVG to update
-[the README diagram](docs/architecture.svg). Keep the source and SVG together.
+[IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) records the architecture and decisions. The design records
+[COMPONENT_DESIGN.md](docs/COMPONENT_DESIGN.md), which specifies each component, and
+[FILING_DOCUMENTS.md](docs/FILING_DOCUMENTS.md), which covers filing documents, predate the move of their
+implementation into [opendart-analysis](../analysis/README.md). Edit the
+[draw.io source](docs/architecture.drawio), then export it as SVG to update [the README diagram](docs/architecture.svg).
+Keep the source and SVG together.
 
 ## Run locally
 

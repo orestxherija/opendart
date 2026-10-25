@@ -35,8 +35,9 @@ jobs:
         run: just mcp lint
       - name: Check types
         run: just mcp typecheck
-      - name: Check the generated registry
-        run: just mcp generated
+      # This job installs the SDK, analysis, and MCP packages that Import Linter analyzes.
+      - name: Check package import boundaries
+        run: just boundaries
       - name: Check component versions, fingerprints, and token budget
         run: just mcp components
       - name: Run tests

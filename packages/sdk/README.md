@@ -22,7 +22,7 @@ at `https://engopendart.fss.or.kr/engapi`. Requires Python 3.14+.
 
 ## Design
 
-![SDK design: application requests through OpenDart and its shared HTTP transport, response handling, settings, and offline code generation](docs/architecture.svg)
+![SDK design: application requests through OpenDART and its shared HTTP transport, response handling, settings, and offline code generation](docs/architecture.svg)
 
 The six generated resource groups share one async HTTP transport. Settings are
 validated before use, and responses become typed models, ZIP bytes, or SDK errors.
@@ -41,12 +41,12 @@ Its distribution name is `opendart-sdk` and its import name is `opendart`.
 import asyncio
 from getpass import getpass
 from pydantic import SecretStr
-from opendart import OpenDart, OpenDartSettings
+from opendart import OpenDART, OpenDARTSettings
 
 
 async def main():
-    settings = OpenDartSettings(api_key=SecretStr(getpass("OpenDART API key: ")))
-    async with OpenDart(settings) as client:
+    settings = OpenDARTSettings(api_key=SecretStr(getpass("OpenDART API key: ")))
+    async with OpenDART(settings) as client:
         company = await client.disclosures.company(corporation_code="00126380")
         print(company.corporation_name)
 
@@ -55,7 +55,7 @@ asyncio.run(main())
 ```
 
 Alternatively, set `OPENDART_API__API_KEY` in the environment and construct
-`OpenDart()` without arguments. Environment overrides such as
+`OpenDART()` without arguments. Environment overrides such as
 `OPENDART_API__TIMEOUT=15` and `OPENDART_API__MAX_RESPONSE_BYTES=33554432`
 are validated when settings load. Groups are immutable. After deliberately
 changing environment variables in a long-running process, call
@@ -65,12 +65,12 @@ To load a dotenv file explicitly:
 
 ```python
 import asyncio
-from opendart import OpenDart, Settings
+from opendart import OpenDART, Settings
 
 
 async def main():
     settings = Settings(_env_file=".env")
-    async with OpenDart(settings.api) as client:
+    async with OpenDART(settings.api) as client:
         company = await client.disclosures.company(corporation_code="00126380")
         print(company.corporation_name)
 
@@ -92,11 +92,11 @@ clients still require a valid key. For another directory, construct
 
 ```python
 import asyncio
-from opendart import OpenDart
+from opendart import OpenDART
 
 
 async def main():
-    async with OpenDart() as client:
+    async with OpenDART() as client:
         accounts = await client.financial_statements.fnltt_singl_acnt(
             corporation_code="00126380",
             fiscal_year="2025",
@@ -109,7 +109,7 @@ async def main():
 asyncio.run(main())
 ```
 
-`OpenDart` is asynchronous. Await every endpoint call and use `async with` or
+`OpenDART` is asynchronous. Await every endpoint call and use `async with` or
 `await client.aclose()` to close its reusable HTTP pool. Keep the client for the
 calling application's lifetime and on its owning event loop.
 
@@ -170,11 +170,11 @@ sending a request. Multi-company inputs use a list of corporation codes:
 
 ```python
 import asyncio
-from opendart import OpenDart
+from opendart import OpenDART
 
 
 async def main():
-    async with OpenDart() as client:
+    async with OpenDART() as client:
         accounts = await client.financial_statements.fnltt_multi_acnt(
             corporation_codes=["00126380", "00164779"],
             fiscal_year="2025",
@@ -200,11 +200,11 @@ search intervals to three months.
 ```python
 import asyncio
 from pathlib import Path
-from opendart import OpenDart
+from opendart import OpenDART
 
 
 async def main():
-    async with OpenDart() as client:
+    async with OpenDART() as client:
         archive = await client.disclosures.corporation_codes()
         await asyncio.to_thread(Path("corporations.zip").write_bytes, archive)
 
@@ -227,15 +227,21 @@ before consuming their bodies. Actual bytes, rather than `Content-Length`, enfor
 the budget. The response closes on success, failures, size-limit errors, and async
 cancellation.
 
+The separate `opendart-analysis` package reads these archives:
+[filing documents](../analysis/docs/documents.md) parses `disclosures.document` archives, and the
+[company directory](../analysis/docs/directory.md) parses `disclosures.corporation_codes` and resolves company names.
+It never imports the SDK; install both at the same version to combine them, as the
+[data access recipe](../analysis/docs/data-access.md) shows for analysis workflows.
+
 ## Failures and requests
 
 ```python
 import asyncio
-from opendart import OpenDart, NoDataError, QuotaExceededError
+from opendart import OpenDART, NoDataError, QuotaExceededError
 
 
 async def main():
-    async with OpenDart() as client:
+    async with OpenDART() as client:
         try:
             page = await client.disclosures.search(corporation_code="00126380")
             print(page.total_count)
@@ -260,7 +266,7 @@ asyncio.run(main())
 | Response byte limit exceeded | `ResponseTooLargeError` (also `ContractError`) |
 | Invalid caller input | Pydantic `ValidationError` |
 
-All SDK failures inherit `OpenDartError` and expose `operation`, `status` (the
+All SDK failures inherit `OpenDARTError` and expose `operation`, `status` (the
 application code, if present), and `http_status` (if relevant). Unknown three-digit
 API failure codes remain errors. Cancellation and programming errors propagate.
 

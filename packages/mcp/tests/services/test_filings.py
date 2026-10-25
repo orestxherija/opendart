@@ -1,23 +1,16 @@
-"""find_filings internals: category codes, merging category queries, paging limits."""
+"""The find_filings adapter: categories, paging, budgets, and notes through the gateway.
+
+Merge order and paging rules over synthetic pages are tested in the analysis suite.
+"""
 
 from __future__ import annotations
-
-from dataclasses import replace
 
 import pytest
 
 from opendart_mcp.core.errors import InvalidArgumentError
 from opendart_mcp.core.metrics import Metrics
 from opendart_mcp.core.runtime import open_state
-from opendart_mcp.services import filing_scan
-from opendart_mcp.services.filing_category import infer_category
-from opendart_mcp.services.filing_scan import category_codes
-from opendart_mcp.services.filings import (
-    FilingSearch,
-    category_named,
-    disjoint_categories,
-    find_filings,
-)
+from opendart_mcp.services.filings import FilingSearch, category_named, find_filings
 
 
 def row(number, title="Report on Major Issues", **fields):
@@ -45,49 +38,9 @@ async def state(mcp_settings, sdk_settings, upstream, now):
         transport=upstream.transport,
         clock=lambda: now,
     ) as opened:
+        # Wait for the directory so company identity does not depend on load timing.
+        await opened.directory.wait(5)
         yield opened
-
-
-def test_subtypes_covered_by_a_requested_group_are_dropped():
-    assert disjoint_categories(()) == (None,)
-    assert disjoint_categories(
-        ("fair_disclosure", "exchange_disclosures", "annual_report", "annual_report")
-    ) == ("exchange_disclosures", "annual_report")
-
-
-def test_subtypes_are_sent_without_their_group():
-    assert category_codes(None) == (None, None)
-    assert category_codes("major_issues") == ("B", None)
-    assert category_codes("fair_disclosure") == (None, "I002")
-
-
-@pytest.mark.parametrize(
-    ("title", "number", "category"),
-    [
-        ("Quarterly Report (2026.03)", "20260515002181", "quarterly_report"),
-        ("Organization of Investor Relations Event", "20261008800028", "exchange_disclosures"),
-        ("Contract for Sales or Supply", "20261022900740", "exchange_disclosures"),
-        (
-            "Report on significant holdings of stocks, etc. (General)",
-            "20261016000505",
-            "major_holding_report",
-        ),
-        (
-            "Report on status of specific securities, etc. owned by executives and major shareholders",
-            "20261019000318",
-            "insider_ownership_report",
-        ),
-        (
-            "Report on trading plan of specific securities, etc. by executive officers and major shareholders",
-            "20261013000379",
-            "insider_trading_plan",
-        ),
-        ("[Revision of statements]Audit Report (2025.12)", "20260320000111", "audit_reports"),
-        ("Treasury Stock Acquisition Result Report", "20261012000421", None),
-    ],
-)
-def test_categories_are_inferred_from_titles_and_numbers(title, number, category):
-    assert infer_category(title, number) == category
 
 
 def test_category_names_are_validated():
@@ -181,136 +134,6 @@ async def test_title_filters_stop_once_the_page_is_full(state, upstream):
     assert result.pagination.has_more is True
     assert result.notes == []
     assert upstream.count("/list.json") == 1
-
-
-def serve_pages(upstream, streams):
-    """Serve each group's rows in the given (upstream) order, honoring page_no and page_count."""
-
-    def pages(request):
-        params = request.url.params
-        records = streams[params.get("pblntf_ty", "")]
-        size, number = int(params["page_count"]), int(params["page_no"])
-        chunk = records[(number - 1) * size : number * size]
-        if not chunk:
-            return upstream.status("013")
-        count = len(records)
-        return upstream.rows(*chunk, total_count=count, total_page=-(-count // size))
-
-    upstream.route("/list.json", pages)
-
-
-async def every_page(state, search):
-    """Follow has_more from page 1 and return the filing numbers of each page."""
-    pages, page = [], 1
-    while True:
-        result = await find_filings(state, search)
-        pages.append([f.filing_number for f in result.filings])
-        if not result.pagination.has_more:
-            return pages, result
-        page += 1
-        search = replace(search, page=page)
-
-
-# Real upstream order on one day: newest first by time, numbers out of order within the day.
-# 20261021000442 was filed on 2026-10-22 (rcept_dt), after the date in its number.
-MAJOR = (
-    "20261022000505",
-    "20261022000508",
-    "20261022000506",
-    "20261022000492",
-    "20261022000488",
-    "20261021000442",
-)
-EXCHANGE = (
-    "20261022900774",
-    "20261022900751",
-    "20261022900773",
-    "20261022800778",
-    "20261022900767",
-    "20261022800765",
-)
-
-
-@pytest.mark.anyio
-async def test_merged_pages_follow_filing_dates_and_upstream_order(state, upstream, monkeypatch):
-    monkeypatch.setattr(filing_scan, "UPSTREAM_PAGE", 4)
-    major = [row(n, rcept_dt="20261022") for n in MAJOR] + [
-        row(n) for n in ("20261021000431", "20261021000422")
-    ]
-    exchange = [row(n, "Contract for Sales or Supply") for n in EXCHANGE] + [
-        row("20261021900500", "Contract for Sales or Supply")
-    ]
-    serve_pages(upstream, {"B": major, "I": exchange})
-    search = FilingSearch(categories=("major_issues", "exchange_disclosures"), since="2d", limit=3)
-    pages, last = await every_page(state, search)
-    flat = [number for page in pages for number in page]
-    # One day at a time, newest first; within a day the queries interleave by position.
-    expected = [n for pair in zip(MAJOR, EXCHANGE, strict=True) for n in pair]
-    assert flat == [*expected, "20261021000431", "20261021900500", "20261021000422"]
-    assert len(set(flat)) == len(flat) == 15
-    assert last.pagination.total == 15
-    assert [len(page) for page in pages] == [3, 3, 3, 3, 3]
-
-
-@pytest.mark.anyio
-async def test_title_filters_keep_the_upstream_order(state, upstream, monkeypatch):
-    monkeypatch.setattr(filing_scan, "UPSTREAM_PAGE", 4)
-    # The last page holds a match numbered above matches on earlier pages.
-    numbers = (
-        *("20261022900774", "20261022800778", "20261022900773", "20261022800765"),
-        *("20261022900767", "20261022800729", "20261022900726", "20261022800686"),
-        "20261022900751",
-    )
-    titles = ["Disclosure", "Notice"] * 5
-    serve_pages(upstream, {"": [row(n, t) for n, t in zip(numbers, titles, strict=False)]})
-    search = FilingSearch(since="1d", title_contains="DISCLOSURE", limit=2)
-    pages, last = await every_page(state, search)
-    assert pages == [
-        ["20261022900774", "20261022900773"],
-        ["20261022900767", "20261022900726"],
-        ["20261022900751"],
-    ]
-    assert last.pagination.total == 5
-
-
-@pytest.mark.anyio
-async def test_queries_already_further_back_are_not_read_again(state, upstream, monkeypatch):
-    monkeypatch.setattr(filing_scan, "UPSTREAM_PAGE", 4)
-    busy = [row(f"20261022{800100 - n:06d}", "Contract") for n in range(12)]
-    days = ["22", "20", "18", "16", "14", "12", "10", "08"]
-    quiet = [row(f"202610{day}000100") for day in days]
-    serve_pages(upstream, {"I": busy, "B": quiet})
-    search = FilingSearch(
-        categories=("exchange_disclosures", "major_issues"), since="1m", limit=5, page=2
-    )
-    result = await find_filings(state, search)
-    assert [f.filing_number for f in result.filings] == [
-        f"20261022{800100 - n:06d}" for n in range(4, 9)
-    ]
-    assert (result.pagination.total, result.pagination.has_more) == (20, True)
-    groups = [query["pblntf_ty"] for query in upstream.params("/list.json")]
-    assert sorted(groups) == ["B", "I", "I", "I"]
-
-
-@pytest.mark.anyio
-async def test_exhausted_merges_count_distinct_filings(state, upstream, monkeypatch):
-    monkeypatch.setattr(filing_scan, "UPSTREAM_PAGE", 2)
-    # A filing arrived between two page reads, so one row repeats on the next page; the
-    # undated row (invalid date, no rcept_dt) sorts first.
-    shifted = [row(n) for n in ("20261022000003", "20261022000002", "20261022000002")]
-    undated = row("20261399000001", rcept_dt="")
-    serve_pages(upstream, {"B": [*shifted, row("20261022000001")], "I": [undated]})
-    result = await find_filings(
-        state, FilingSearch(categories=("major_issues", "exchange_disclosures"), since="1d")
-    )
-    assert [f.filing_number for f in result.filings] == [
-        "20261399000001",
-        "20261022000003",
-        "20261022000002",
-        "20261022000001",
-    ]
-    assert result.filings[0].filed is None
-    assert (result.pagination.total, result.pagination.has_more) == (4, False)
 
 
 @pytest.mark.anyio

@@ -22,7 +22,16 @@ from select_components import (
 )
 
 FILTER_SET = load_filters()
-COMPONENTS = ("audit", "release", "distributions", "sdk", "mcp", "image", "reference")
+COMPONENTS = (
+    "audit",
+    "release",
+    "distributions",
+    "sdk",
+    "analysis",
+    "mcp",
+    "image",
+    "reference",
+)
 READY = Event(name="pull_request")
 DRAFT = Event(name="pull_request", draft=True)
 PUSH = Event(name="push", ref="refs/heads/main")
@@ -46,22 +55,45 @@ def selected(event: Event, *paths: str) -> set[str]:
             {"sdk", "mcp", "image", "distributions", "release"},
         ),
         ("packages/sdk/tests/test_client.py", {"sdk"}),
+        (
+            "packages/analysis/src/opendart_analysis/documents/store.py",
+            {"analysis", "mcp", "image", "distributions", "release"},
+        ),
+        (
+            "packages/analysis/pyproject.toml",
+            {"analysis", "mcp", "image", "distributions", "release"},
+        ),
+        ("packages/analysis/README.md", {"analysis", "mcp", "distributions", "release"}),
+        ("packages/analysis/tests/documents/test_store.py", {"analysis"}),
+        ("tests/support/events.py", {"analysis", "mcp"}),
+        (
+            "packages/analysis/src/opendart_analysis/catalog/_generated.py",
+            {"analysis", "mcp", "image", "distributions", "release"},
+        ),
+        ("packages/analysis/tests/catalog/test_generated.py", {"analysis"}),
+        ("scripts/generate_mcp_registry.py", {"analysis"}),
+        ("api_reference/sources/catalog.json", {"sdk", "analysis", "reference"}),
+        ("importlinter.toml", {"analysis", "mcp"}),
+        (".github/workflows/check-analysis.yml", {"analysis", "audit"}),
         ("packages/sdk/docs/architecture.svg", set()),
-        ("scripts/generate_sdk.py", {"sdk", "mcp"}),
+        ("scripts/generate_sdk.py", {"sdk", "analysis"}),
         ("scripts/check_mcp_conformance.py", {"mcp"}),
-        ("codecov.yml", {"sdk", "mcp"}),
-        ("pyrefly.toml", {"sdk", "mcp"}),
-        ("api_reference/paths/company.yaml", {"sdk", "mcp", "reference"}),
+        ("codecov.yml", {"sdk", "analysis", "mcp"}),
+        ("pyrefly.toml", {"sdk", "analysis", "mcp"}),
+        ("api_reference/paths/company.yaml", {"sdk", "analysis", "reference"}),
         ("api_reference/schemas/company.yaml", {"sdk", "reference"}),
         ("api_reference/README.md", set()),
         ("scripts/api_reference/package.json", {"reference"}),
         ("tests/contracts/run.py", {"reference"}),
         ("cz.toml", {"release", "distributions"}),
         ("tests/release/test_release.py", {"release"}),
-        ("ruff.toml", {"sdk", "mcp", "reference", "release"}),
-        ("prek.toml", {"sdk", "mcp", "reference", "audit"}),
+        ("ruff.toml", {"sdk", "analysis", "mcp", "reference", "release"}),
+        ("prek.toml", {"sdk", "analysis", "mcp", "reference", "audit"}),
         ("uv.lock", set(COMPONENTS)),
-        ("justfile", {"sdk", "mcp", "image", "reference", "release", "distributions"}),
+        (
+            "justfile",
+            {"sdk", "analysis", "mcp", "image", "reference", "release", "distributions"},
+        ),
         (".github/workflows/check-sdk.yml", {"sdk", "audit"}),
         (".github/workflows/publish-mcp-image.yml", {"audit"}),
         (".github/scripts/select_components.py", {*COMPONENTS}),
@@ -110,6 +142,19 @@ def test_push_to_main_reruns_sdk_mcp_and_reference_and_publishes() -> None:
     assert not selection["contracts"]
 
 
+def test_push_to_main_reruns_analysis_and_mcp_and_publishes() -> None:
+    selection = select(
+        PUSH, ["packages/analysis/src/opendart_analysis/documents/store.py"], FILTER_SET
+    )
+    assert {name for name in COMPONENTS if selection[name]} == {"analysis", "mcp"}
+    assert selection["publish"]
+
+
+def test_sdk_changes_never_select_analysis() -> None:
+    for event in (READY, DRAFT, PUSH):
+        assert not select(event, ["packages/sdk/src/opendart/client.py"], FILTER_SET)["analysis"]
+
+
 def test_push_to_main_publishes_publisher_changes_and_tests_changed_contracts() -> None:
     assert select(PUSH, [".github/scripts/promote_image.sh"], FILTER_SET)["publish"]
     contract = select(PUSH, ["api_reference/paths/company.yaml"], FILTER_SET)
@@ -151,14 +196,15 @@ def test_manual_full_contract_audit_runs_only_on_the_default_branch() -> None:
 
 def test_manual_run_can_select_only_the_audit() -> None:
     inputs = dict.fromkeys(
-        ("quality", "release", "distributions", "sdk", "mcp", "image", "reference"), False
+        ("quality", "release", "distributions", "sdk", "analysis", "mcp", "image", "reference"),
+        False,
     )
     selection = select(
         Event(name="workflow_dispatch", inputs={**inputs, "audit": True}), None, FILTER_SET
     )
     assert selection["quality"]
     assert not selection["style"]
-    assert skippable(selection) == "release,sdk,mcp,image,reference"
+    assert skippable(selection) == "release,sdk,analysis,mcp,image,reference"
 
 
 @pytest.mark.parametrize(

@@ -6,10 +6,10 @@ from fastmcp import Context
 from fastmcp.dependencies import CurrentContext, Depends
 from fastmcp.prompts import Message, prompt
 
+from opendart_analysis.domain.types import Period
 from opendart_mcp.app.errors import prompt_errors
 from opendart_mcp.app.state import get_state
 from opendart_mcp.core.state import AppState
-from opendart_mcp.domain.types import Period
 from opendart_mcp.prompts.common import check_choice, check_year, subject
 
 BRIEFING: Final = """\

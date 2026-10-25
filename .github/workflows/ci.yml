@@ -20,11 +20,15 @@ on:
         type: boolean
         default: true
       distributions:
-        description: Build and smoke-test both distributions
+        description: Build and smoke-test every distribution
         type: boolean
         default: true
       sdk:
         description: SDK checks
+        type: boolean
+        default: true
+      analysis:
+        description: Analysis checks
         type: boolean
         default: true
       mcp:
@@ -98,6 +102,14 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  analysis:
+    name: Analysis
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).analysis
+    uses: ./.github/workflows/check-analysis.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
   mcp:
     name: MCP
     needs: select
@@ -133,7 +145,7 @@ jobs:
   checks:
     name: CI checks
     if: always()
-    needs: [select, quality, release, sdk, mcp, image, reference]
+    needs: [select, quality, release, sdk, analysis, mcp, image, reference]
     runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:

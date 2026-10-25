@@ -13,7 +13,12 @@ from typing import Literal
 
 from pydantic import Field
 
-from opendart_mcp.documents.models import Amendment, DocumentFormat, SearchHit, SuggestedSection
+from opendart_analysis.documents.models import (
+    Amendment,
+    DocumentFormat,
+    SearchHit,
+    SuggestedSection,
+)
 from opendart_mcp.models.common import OutputModel, ToolOutput
 
 FilingMode = Literal["outline", "read", "search"]

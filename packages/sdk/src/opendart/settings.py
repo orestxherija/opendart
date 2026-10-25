@@ -62,7 +62,7 @@ class SettingsGroup(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", hide_input_in_errors=True)
 
 
-class OpenDartSettings(SettingsGroup):
+class OpenDARTSettings(SettingsGroup):
     """Configure one English OpenDART upstream and its owned HTTP pool.
 
     Timeouts apply to individual HTTP phases; they do not impose a total request deadline.
@@ -121,7 +121,7 @@ class Settings(BaseSettings):
     explicit arguments, environment variables, and dotenv values.
 
     Args:
-        api (OpenDartSettings): Upstream settings. May instead be supplied through nested
+        api (OpenDARTSettings): Upstream settings. May instead be supplied through nested
             OPENDART_API__* environment variables.
         _env_file (str | Path | Sequence[str | Path] | None): Optional dotenv file or files
             passed to BaseSettings. No dotenv file is loaded unless explicitly supplied.
@@ -141,7 +141,7 @@ class Settings(BaseSettings):
         extra="ignore",
         hide_input_in_errors=True,
     )
-    api: OpenDartSettings
+    api: OpenDARTSettings
 
     @classmethod
     @override

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from fastmcp import Client
 
-from opendart_mcp.registry import SERVICES
+from opendart_analysis.catalog import SERVICES
 from opendart_mcp.server import create_server
 from opendart_mcp.services.catalog import COVERAGE
 from opendart_mcp.services.catalog_params import param_shapes

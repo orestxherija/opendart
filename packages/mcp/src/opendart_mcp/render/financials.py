@@ -10,7 +10,7 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.units import unit_label
+from opendart_analysis.domain.units import unit_label
 from opendart_mcp.render.markdown import (
     MISSING_VALUE,
     amount,
@@ -23,7 +23,7 @@ from opendart_mcp.render.markdown import (
 )
 
 if TYPE_CHECKING:
-    from opendart_mcp.domain.types import Unit
+    from opendart_analysis.domain.types import Unit
     from opendart_mcp.models.financials import (
         EquityInvestment,
         FinancialsResult,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import SecretStr, ValidationError
 
-from opendart import OpenDartSettings, Settings, get_settings
+from opendart import OpenDARTSettings, Settings, get_settings
 
 
 @pytest.fixture
@@ -114,4 +114,4 @@ def test_invalid_settings(updates):
     """
     values = {"api_key": SecretStr("x" * 40), **updates}
     with pytest.raises(ValidationError):
-        OpenDartSettings(**values)
+        OpenDARTSettings(**values)

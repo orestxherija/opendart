@@ -17,12 +17,12 @@ from fastmcp import Context
 from mcp.types import ElicitRequest, ElicitRequestFormParams, ElicitResult, InputRequiredResult
 from mcp_types.version import MODERN_PROTOCOL_VERSIONS
 
+from opendart_analysis.domain.resolver import company_label
 from opendart_mcp.core.state import AppState
-from opendart_mcp.domain.resolver import company_label
 
 if TYPE_CHECKING:
+    from opendart_analysis.domain.directory import CorpRecord, Match
     from opendart_mcp.core.interaction import Chooser
-    from opendart_mcp.domain.directory import CorpRecord, Match
 
 MAX_CHOICES = 8
 

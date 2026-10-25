@@ -1,7 +1,7 @@
 """Keep the OpenDART API key out of logs.
 
 FSS requires the API key as the ``crtfc_key`` query parameter, so every request URL carries
-it, and httpx2 logs each request URL at INFO. Creating an ``OpenDart`` client attaches
+it, and httpx2 logs each request URL at INFO. Creating an ``OpenDART`` client attaches
 ``RedactSecrets`` to the HTTP client loggers, which rewrites records before any handler
 sees them. Applications that render records elsewhere can use ``RedactingFormatter`` or
 ``redact`` too.

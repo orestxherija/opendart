@@ -11,7 +11,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from opendart_mcp.domain.types import Basis, ConcretePeriod, Unit
+from opendart_analysis.domain.types import Basis, ConcretePeriod, Unit
 from opendart_mcp.models.common import CompanyRef, OutputModel, ToolOutput
 from opendart_mcp.models.financials import Number, StatementBasis
 

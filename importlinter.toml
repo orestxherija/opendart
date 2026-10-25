@@ -1,0 +1,331 @@
+# Package boundaries; run with `just boundaries` after a workspace sync, since Import Linter
+# reads the installed packages. Annotation-only imports count: exclude_type_checking_imports
+# stays off, so a TYPE_CHECKING import across a boundary also fails.
+[tool.importlinter]
+root_packages = ["opendart", "opendart_analysis", "opendart_mcp"]
+# Graph third-party packages too, so the contracts can forbid MCP frameworks by name.
+include_external_packages = true
+
+# Analysis receives bytes, records, and callbacks, never an SDK or HTTP client, and has no MCP runtime.
+[[tool.importlinter.contracts]]
+id = "analysis-independent"
+name = "Analysis imports neither the SDK, MCP, HTTP clients, nor server frameworks"
+type = "forbidden"
+source_modules = ["opendart_analysis"]
+forbidden_modules = [
+    "opendart",
+    "opendart_mcp",
+    "fastmcp",
+    "mcp",
+    "mcp_types",
+    "opentelemetry",
+    "httpx",
+    "httpx2",
+    "starlette",
+]
+
+# The SDK is the raw API contract; interpretation and MCP build on it, not inside it.
+[[tool.importlinter.contracts]]
+id = "sdk-independent"
+name = "The SDK imports neither analysis, MCP, nor server frameworks"
+type = "forbidden"
+source_modules = ["opendart"]
+forbidden_modules = ["opendart_analysis", "opendart_mcp", "fastmcp", "mcp", "mcp_types", "opentelemetry"]
+
+# Parsing, search, and rendering stay pure; only the package exports reach the runtime store.
+[[tool.importlinter.contracts]]
+id = "documents-pure"
+name = "Pure document modules do not reach the runtime store"
+type = "forbidden"
+source_modules = ["opendart_analysis.documents.*"]
+forbidden_modules = ["opendart_analysis.documents.store"]
+
+# Company-domain primitives are pure and synchronous: no runtime store, no async machinery, no
+# background work, no directory loader, and no caller-supplied data access.
+[[tool.importlinter.contracts]]
+id = "domain-pure"
+name = "Company-domain modules reach neither the directory loader, the document store, AnyIO, nor data access"
+type = "forbidden"
+source_modules = ["opendart_analysis.domain"]
+forbidden_modules = [
+    "opendart_analysis.directory",
+    "opendart_analysis.documents.store",
+    "anyio",
+    "opendart_analysis.upstream",
+    "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
+    "opendart_analysis.calendar",
+]
+
+# The data-access convention and failure categories are leaves every capability can import.
+[[tool.importlinter.contracts]]
+id = "conventions-leaf"
+name = "Data-access and error conventions import no capability or framework"
+type = "forbidden"
+source_modules = ["opendart_analysis.upstream", "opendart_analysis.errors"]
+forbidden_modules = [
+    "opendart_analysis.documents",
+    "opendart_analysis.directory",
+    "opendart_analysis.domain",
+    "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
+    "opendart_analysis.calendar",
+    "anyio",
+    "pydantic",
+]
+
+# Periodic-report extracts read records through caller-supplied data access only.
+[[tool.importlinter.contracts]]
+id = "extracts-leaf"
+name = "Extracts depend only on the domain, reports, catalog, and conventions"
+type = "forbidden"
+source_modules = ["opendart_analysis.extracts"]
+forbidden_modules = ["opendart_analysis.documents", "opendart_analysis.directory", "pydantic"]
+
+# Event semantics interpret records; fetching and the filing index sit above them.
+[[tool.importlinter.contracts]]
+id = "events-semantics-pure"
+name = "Event semantics reach neither fetching, the filing index, nor data access"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.events.catalog",
+    "opendart_analysis.events.dates",
+    "opendart_analysis.events.flags",
+    "opendart_analysis.events.kinds_capital",
+    "opendart_analysis.events.kinds_deals",
+    "opendart_analysis.events.kinds_other",
+    "opendart_analysis.events.records",
+    "opendart_analysis.events.templates",
+    "opendart_analysis.events.titles",
+    "opendart_analysis.events.values",
+]
+forbidden_modules = [
+    "opendart_analysis.events.fetch",
+    "opendart_analysis.events.index",
+    "opendart_analysis.filings",
+    "opendart_analysis.upstream",
+    "opendart_analysis.documents.store",
+    "anyio",
+]
+
+# Filing discovery is the lower layer: events read the filing index, never the reverse.
+[[tool.importlinter.contracts]]
+id = "filings-before-events"
+name = "Filing discovery does not import event workflows"
+type = "forbidden"
+source_modules = ["opendart_analysis.filings"]
+forbidden_modules = ["opendart_analysis.events"]
+
+# Financial calculations are pure: workflows, data access, and concurrency sit above them.
+[[tool.importlinter.contracts]]
+id = "financials-calculations-pure"
+name = "Financial calculations reach neither financial workflows, period resolution, nor AnyIO"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.financials.accounts",
+    "opendart_analysis.financials.derived",
+    "opendart_analysis.financials.quarters",
+    "opendart_analysis.financials.specs",
+    "opendart_analysis.financials.statements",
+]
+forbidden_modules = [
+    "opendart_analysis.financials.chain",
+    "opendart_analysis.financials.history",
+    "opendart_analysis.financials.indicators",
+    "opendart_analysis.financials.investments",
+    "opendart_analysis.financials.peers",
+    "opendart_analysis.financials.preliminary",
+    "opendart_analysis.reports.periodic",
+    "opendart_analysis.documents.store",
+    "anyio",
+]
+
+# The directory loader is runtime machinery over the pure directory; it reads no other capability
+# and takes only the progress-callback type from the conventions.
+[[tool.importlinter.contracts]]
+id = "directory-loader-leaf"
+name = "The directory loader reaches no other capability, AnyIO, or Pydantic"
+type = "forbidden"
+source_modules = ["opendart_analysis.directory.loader"]
+forbidden_modules = [
+    "opendart_analysis.documents",
+    "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
+    "opendart_analysis.calendar",
+    "anyio",
+    "pydantic",
+]
+
+# Debt ladders and issuance parsing read records; fetching and period resolution sit above them.
+[[tool.importlinter.contracts]]
+id = "debt-calculations-pure"
+name = "Debt ladders and issuance parsing reach neither debt workflows, data access, nor AnyIO"
+type = "forbidden"
+source_modules = ["opendart_analysis.debt.ladders", "opendart_analysis.debt.issuance"]
+forbidden_modules = [
+    "opendart_analysis.debt.profile",
+    "opendart_analysis.debt.schedule",
+    "opendart_analysis.extracts.fetch",
+    "opendart_analysis.reports",
+    "opendart_analysis.upstream",
+    "opendart_analysis.documents.store",
+    "anyio",
+]
+
+# Dividend rows and profile facts are pure; their workflows sit above them.
+[[tool.importlinter.contracts]]
+id = "dividends-profile-calculations-pure"
+name = "Dividend rows and profile facts reach neither workflows, data access, nor AnyIO"
+type = "forbidden"
+source_modules = ["opendart_analysis.dividends.rows", "opendart_analysis.profile.facts"]
+forbidden_modules = [
+    "opendart_analysis.dividends.history",
+    "opendart_analysis.profile.latest",
+    "opendart_analysis.reports",
+    "opendart_analysis.upstream",
+    "opendart_analysis.extracts.fetch",
+    "anyio",
+]
+
+# Governance calculations read records; fetching, period resolution, and concurrency sit above them.
+[[tool.importlinter.contracts]]
+id = "governance-calculations-pure"
+name = "Governance calculations reach neither the governance workflow, period resolution, data access, nor AnyIO"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.governance.audit",
+    "opendart_analysis.governance.pay",
+    "opendart_analysis.governance.people",
+    "opendart_analysis.governance.values",
+]
+forbidden_modules = [
+    "opendart_analysis.governance.fetch",
+    "opendart_analysis.reports",
+    "opendart_analysis.upstream",
+    "opendart_analysis.extracts.fetch",
+    "opendart_analysis.documents",
+    "anyio",
+    "pydantic",
+]
+
+# Periodic-report capabilities build on extracts and reports, never on each other's unrelated layers,
+# so importing one loads neither financial statements nor the document parser.
+[[tool.importlinter.contracts]]
+id = "periodic-capabilities-leaf"
+name = "Periodic-report capabilities reach neither documents, the directory, events, filing discovery, nor financials"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
+]
+forbidden_modules = [
+    "opendart_analysis.documents",
+    "opendart_analysis.directory",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
+]
+
+[[tool.importlinter.contracts]]
+id = "capital-before-ownership"
+name = "Capital structure does not import ownership"
+type = "forbidden"
+source_modules = ["opendart_analysis.capital"]
+forbidden_modules = ["opendart_analysis.ownership"]
+
+[[tool.importlinter.contracts]]
+id = "capital-layers"
+name = "The capital workflow sits above table parsing, which sits above share counts"
+type = "layers"
+containers = ["opendart_analysis.capital"]
+layers = ["structure", "changes | treasury", "shares"]
+
+[[tool.importlinter.contracts]]
+id = "ownership-layers"
+name = "Ownership workflows sit above table parsing and data access"
+type = "layers"
+containers = ["opendart_analysis.ownership"]
+layers = ["report | holdings", "control", "tables | holding_access"]
+
+# The calendar builds on events and debt; no other capability reads it.
+[[tool.importlinter.contracts]]
+id = "calendar-on-top"
+name = "No other capability imports the corporate-action calendar"
+type = "forbidden"
+source_modules = [
+    "opendart_analysis.documents",
+    "opendart_analysis.directory",
+    "opendart_analysis.catalog",
+    "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.events",
+    "opendart_analysis.filings",
+    "opendart_analysis.financials",
+    "opendart_analysis.ownership",
+    "opendart_analysis.capital",
+    "opendart_analysis.debt",
+    "opendart_analysis.dividends",
+    "opendart_analysis.profile",
+    "opendart_analysis.governance",
+]
+forbidden_modules = ["opendart_analysis.calendar"]
+
+# Calendar requests and items are pure; reading and assembly sit above them.
+[[tool.importlinter.contracts]]
+id = "calendar-calculations-pure"
+name = "Calendar requests and items reach neither calendar workflows, fetching, data access, nor AnyIO"
+type = "forbidden"
+source_modules = ["opendart_analysis.calendar.request", "opendart_analysis.calendar.items"]
+forbidden_modules = [
+    "opendart_analysis.calendar.assemble",
+    "opendart_analysis.calendar.reads",
+    "opendart_analysis.calendar.maturities",
+    "opendart_analysis.calendar.lookback",
+    "opendart_analysis.events.fetch",
+    "opendart_analysis.events.index",
+    "opendart_analysis.filings",
+    "opendart_analysis.debt",
+    "opendart_analysis.reports",
+    "opendart_analysis.extracts",
+    "opendart_analysis.upstream",
+    "opendart_analysis.documents",
+    "anyio",
+]
+
+[[tool.importlinter.contracts]]
+id = "calendar-layers"
+name = "Calendar assembly sits above reading, which sits above requests, lookback, and items"
+type = "layers"
+containers = ["opendart_analysis.calendar"]
+layers = ["assemble", "reads | maturities", "request | lookback", "items"]

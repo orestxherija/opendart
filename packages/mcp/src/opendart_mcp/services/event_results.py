@@ -1,5 +1,8 @@
 """Shape a batch of event reports into the get_corporate_events result.
 
+``opendart_analysis.events`` reads and interprets the reports; this module projects them
+into the tool's output models and adds paging and notes written for the model.
+
 Concise events carry the headline, key terms, dated actions, and flags; detailed events add
 every filled field with its catalog label and the value as filed. Events are newest first,
 cut to the requested limit with the exact call that fetches more.
@@ -10,10 +13,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.domain.filings import is_amendment
-from opendart_mcp.domain.identifiers import dart_viewer_url, filing_date
-from opendart_mcp.events import AMENDED, POSSIBLY_AMENDED, describe, labeled_fields
-from opendart_mcp.events.titles import plain_title
+from opendart_analysis.domain.identifiers import dart_viewer_url, filing_date
+from opendart_analysis.events import (
+    AMENDED,
+    AMENDMENT_GAP_DAYS,
+    POSSIBLY_AMENDED,
+    amendment_flag,
+    describe,
+    labeled_fields,
+    plain_title,
+)
 from opendart_mcp.models.common import NextCall, Pagination
 from opendart_mcp.models.events import (
     CorporateEvent,
@@ -22,22 +31,18 @@ from opendart_mcp.models.events import (
     EventDate,
     EventField,
 )
-from opendart_mcp.registry import EVENT_KINDS
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from pydantic import JsonValue
 
+    from opendart_analysis.events import EventBatch, EventRecord, LabeledValue
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.events import EventRecord, EventView, LabeledValue
-    from opendart_mcp.services.events import EventBatch
+    from opendart_mcp.models.common import CompanyRef
 
 DEFAULT_LIMIT: Final = 50
 MAX_LIMIT: Final = 200
-AMENDMENT_GAP_DAYS: Final = 7
-"""A major-issue decision whose latest filing came more than this many days after the board
-date was probably corrected; such reports are due within days of the resolution."""
 _UNSTRUCTURED_SHOWN: Final = 5
 _UNREAD: Final = {
     "B": "The company has more major-issue filings in the window than the index reads, so every major-issue report was read.",
@@ -72,32 +77,6 @@ class EventRequest:
     until: str | None = None
     limit: int = DEFAULT_LIMIT
     detailed: bool = False
-
-
-def amendment_flag(view: EventView, titles: Mapping[str, str]) -> str | None:
-    """Decide whether an event's row reflects a corrected filing.
-
-    The index title of the event's latest filing settles it. Without one, a major-issue
-    decision whose latest filing came well after its board date was probably corrected.
-    Registration statements are left alone: they are filed weeks after the board resolution
-    they carry.
-
-    Args:
-        view (EventView): Described event.
-        titles (Mapping[str, str]): Filing index titles by filing number.
-
-    Returns:
-        str | None: ``amended`` when the title says so, ``possibly_amended`` for a late
-            major-issue decision without a title, else None.
-    """
-    title = titles.get(view.filing_number)
-    if title is not None:
-        return AMENDED if is_amendment(title) else None
-    if EVENT_KINDS[view.kind].resource != "major_issues" or view.board_date is None:
-        return None
-    filed = filing_date(view.filing_number)
-    late = filed is not None and (filed - view.board_date).days > AMENDMENT_GAP_DAYS
-    return POSSIBLY_AMENDED if late else None
 
 
 def _field(item: LabeledValue) -> EventField:
@@ -167,7 +146,7 @@ def _pagination(batch: EventBatch, request: EventRequest) -> Pagination | None:
     next_call = None
     if request.limit < MAX_LIMIT:
         arguments: dict[str, JsonValue] = {
-            "company": batch.company.corp_code,
+            "company": batch.corp_code,
             "since": batch.window.start.isoformat(),
             "until": batch.window.end.isoformat(),
             "limit": min(total, MAX_LIMIT),
@@ -266,20 +245,26 @@ def _notes(batch: EventBatch, events: list[CorporateEvent], request: EventReques
 
 
 def build_result(
-    state: AppState, batch: EventBatch, *, request: EventRequest, notes: list[str]
+    state: AppState,
+    batch: EventBatch,
+    *,
+    company: CompanyRef,
+    request: EventRequest,
+    notes: list[str],
 ) -> CorporateEventsResult:
     """Build the tool result from a batch.
 
     Args:
         state (AppState): Server state.
         batch (EventBatch): Event reports read.
+        company (CompanyRef): Identity of the company read.
         request (EventRequest): Tool arguments.
         notes (list[str]): Notes gathered earlier, such as window adjustments.
 
     Returns:
         CorporateEventsResult: Events newest first, coverage, paging, and notes.
     """
-    titles = batch.index.titles() if batch.index else {}
+    titles = batch.titles()
     events = [
         event_model(record, titles=titles, detailed=request.detailed)
         for record in batch.records[: request.limit]
@@ -291,7 +276,7 @@ def build_result(
         kinds_failed=list(batch.failed) or None,
     )
     return CorporateEventsResult(
-        company=batch.company.ref,
+        company=company,
         as_of=state.today(),
         since=batch.window.start,
         until=batch.window.end,

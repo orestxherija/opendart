@@ -10,7 +10,7 @@ import functools
 import logging
 from typing import TYPE_CHECKING
 
-from fastmcp.exceptions import PromptError, ResourceError, ToolError
+from fastmcp.exceptions import PromptError, ResourceError
 
 from opendart_mcp.core.errors import ServerError
 
@@ -133,17 +133,3 @@ def prompt_errors[**P, R](function: Callable[P, Awaitable[R]]) -> Callable[P, Aw
         Callable[P, Awaitable[R]]: Wrapped function.
     """
     return _converting(PromptError)(function)
-
-
-def tool_errors[**P, R](function: Callable[P, Awaitable[R]]) -> Callable[P, Awaitable[R]]:
-    """Convert domain failures in a tool function into tool errors.
-
-    ``markdown_view`` already applies this; use it for tools without a Markdown view.
-
-    Args:
-        function (Callable[P, Awaitable[R]]): Tool implementation.
-
-    Returns:
-        Callable[P, Awaitable[R]]: Wrapped function.
-    """
-    return _converting(ToolError)(function)

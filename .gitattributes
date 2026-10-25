@@ -34,6 +34,9 @@ justfile       text eol=lf
 /packages/sdk/src/opendart/models/_base.py linguist-generated=false
 /packages/sdk/src/opendart/resources/*.py linguist-generated
 
+# scripts/generate_mcp_registry.py emits the service catalog's specs from the API catalog.
+/packages/analysis/src/opendart_analysis/catalog/_generated.py linguist-generated
+
 # The reviewed catalog snapshot feeds the generated OpenAPI documents.
 /api_reference/sources/catalog.json linguist-generated
 /api_reference/sources/contract-audit-*.json linguist-generated

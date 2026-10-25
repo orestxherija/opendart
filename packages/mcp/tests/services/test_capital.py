@@ -1,4 +1,4 @@
-"""get_capital_structure service: type names, treasury fallbacks, row filtering, and notes."""
+"""get_capital_structure service: treasury fallbacks, row filtering, sections, and notes."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import pytest
 
 from opendart_mcp.core.metrics import Metrics
 from opendart_mcp.core.runtime import open_state
-from opendart_mcp.services.capital import CapitalQuery, capital_structure, change_category
+from opendart_mcp.services.capital import CapitalQuery, capital_structure
 
 MOVES = ("stock_knd", "acqs_mth1", "acqs_mth2", "acqs_mth3", "bsis_qy", "change_qy_acqs")
 MOVES += ("change_qy_dsps", "change_qy_incnr", "trmend_qy")
@@ -33,6 +33,8 @@ async def state(mcp_settings, sdk_settings, upstream, now):
         transport=upstream.transport,
         clock=lambda: now,
     ) as opened:
+        # Wait for the directory so company identity does not depend on load timing.
+        await opened.directory.wait(5)
         yield opened
 
 
@@ -43,39 +45,6 @@ def treasury(*values, rm="-"):
 async def run(state, **arguments):
     query = CapitalQuery(company="00126380", period="FY", fiscal_year=2025, **arguments)
     return await capital_structure(state, query)
-
-
-@pytest.mark.parametrize(
-    ("kind", "category"),
-    [
-        ("유상증자(주주배정)", "paid-in capital increase (shareholder allotment)"),
-        (
-            "유상증자(주주배정후 실권주 일반공모)",
-            "paid-in capital increase (shareholder allotment)",
-        ),
-        (
-            "유상증자(주주우선공모)",
-            "paid-in capital increase (shareholder-priority public offering)",
-        ),
-        ("유상증자", "paid-in capital increase"),
-        ("무상증자", "bonus issue"),
-        ("주식배당", "stock dividend"),
-        ("전환권행사", "conversion"),
-        ("신주인수권행사", "warrant exercise"),
-        ("주식매수선택권행사", "stock option exercise"),
-        ("무상감자", "capital reduction"),
-        ("이익소각", "share retirement"),
-        ("합병", "merger"),
-        ("액면분할", "stock split"),
-        ("주식병합", "share consolidation"),
-        ("주식교환", "share exchange"),
-        ("상환우선주 상환", "redemption"),
-        ("기타", None),
-        (None, None),
-    ],
-)
-def test_change_types_are_named_in_english(kind, category):
-    assert change_category(kind) == category
 
 
 @pytest.mark.anyio

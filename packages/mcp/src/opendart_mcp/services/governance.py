@@ -1,306 +1,250 @@
 """get_governance: audit, board, executives, pay, and employees from one periodic report.
 
-Each section has its own services, and only the requested sections are fetched, all at once
-for the resolved period. The remuneration services for individuals prefer Ver 2.0 and fall
-back to Ver 1.0 when Ver 2.0 has no data. Flags come from the audit section: a modified
-opinion, going-concern language, and an auditor change from the prior fiscal year, which
-costs one extra call when the report does not list the prior year's auditor.
+``opendart_analysis.governance`` fetches the requested sections' services for the resolved
+period and computes the sections and flags. This adapter resolves the company and period,
+binds fetching to the gateway (``core.upstream.service_fetch``, whose lifetimes follow the
+period's volatility), and projects the analysis values into the unchanged output models.
+Concise results drop unregistered executives (with a note), personal details, opinion
+history, prior-year non-audit services, filed remarks, stock-based pay, and non-headline
+workforce rows; the analysis values keep them all.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Final
+from dataclasses import asdict, dataclass, replace
+from typing import TYPE_CHECKING
 
-from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.periods import FIRST_FISCAL_YEAR, PeriodRef
-from opendart_mcp.models.governance import GovernanceResult
-from opendart_mcp.services.extracts import (
-    checked,
-    fetch_records,
-    fetch_response,
-    gather_all,
-    probe_attempts,
-    records,
-    sources,
-    text,
-)
-from opendart_mcp.services.governance_audit import (
-    audit_facts,
-    audit_flags,
-    changed,
-    opinion_rows,
+from opendart_analysis.errors import AnalysisError
+from opendart_analysis.extracts import checked
+from opendart_analysis.governance import (
+    DEFAULT_SECTIONS,
+    governance_facts,
+    headline,
     scale_note,
 )
-from opendart_mcp.services.governance_pay import PayTables, compensation
-from opendart_mcp.services.governance_people import board, employees, executives
-from opendart_mcp.services.periods import first_available, resolve_period
+from opendart_mcp.core.errors import from_analysis
+from opendart_mcp.core.progress import no_progress
+from opendart_mcp.core.upstream import service_fetch
+from opendart_mcp.models.common import SourceFiling
+from opendart_mcp.models.governance import (
+    AuditFacts,
+    BoardFacts,
+    Compensation,
+    Employees,
+    Executive,
+    GovernanceFlag,
+    GovernanceResult,
+)
+from opendart_mcp.services.periods import resolve_period
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping, Sequence
+    import datetime as dt
+    from collections.abc import Mapping, Sequence
 
+    from opendart_analysis import governance as analysis
+    from opendart_analysis.domain.types import Period
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.types import Period, ResponseFormat
-    from opendart_mcp.models.governance import (
-        AuditFacts,
-        AuditYear,
-        BoardFacts,
-        Compensation,
-        Employees,
-        Executive,
-        GovernanceFlag,
-        GovernanceSection,
-    )
-    from opendart_mcp.services.companies import Company
+    from opendart_mcp.models.common import CompanyRef, ResponseFormat
+    from opendart_mcp.models.governance import GovernanceSection
 
-    type Tables = Mapping[str, list[object] | None]
-
-DEFAULT_SECTIONS: Final[tuple[GovernanceSection, ...]] = ("audit", "board")
-OPINIONS: Final = "accnut_adtor_nm_nd_adt_opinion"
-FEES: Final = "adt_servc_cncls_sttus"
-NON_AUDIT: Final = "accnut_adtor_non_adt_servc_cncls_sttus"
-DIRECTORS_PAY: Final = "directors_over_500m"
-TOP_PAY: Final = "top_paid"
-SECTION_SERVICES: Final[dict[GovernanceSection, tuple[str, ...]]] = {
-    "audit": (OPINIONS, FEES, NON_AUDIT),
-    "board": ("outcmpny_drctr_nd_change_sttus",),
-    "executives": ("exctv_sttus",),
-    "compensation": (
-        "drctr_adt_all_mendng_sttus_gmtsck_confm_amount",
-        "hmv_audit_all_sttus",
-        "drctr_adt_all_mendng_sttus_mendng_pymntamt_ty_cl",
-        "unrst_exctv_mendng_sttus",
-    ),
-    "employees": ("emp_sttus",),
-}
-"""Upstream services per section; compensation also reads two versioned services."""
-
-VERSIONED: Final = (
-    (DIRECTORS_PAY, "hmv_audit_indvdl_by_sttus_v2", "hmv_audit_indvdl_by_sttus"),
-    (TOP_PAY, "indvdl_by_pay_v2", "indvdl_by_pay"),
-)
-"""Individual pay: result key, preferred Ver 2.0 service, Ver 1.0 fallback."""
+__all__ = ["GovernanceQuery", "governance"]
 
 
-async def versioned(
-    state: AppState, services: tuple[str, str], *, company: Company, ref: PeriodRef
-) -> list[object] | None:
-    """Fetch individual pay from the Ver 2.0 service, or from Ver 1.0 when it has none.
+def _audit(facts: analysis.AuditFacts, fiscal_year: int, *, detailed: bool) -> AuditFacts:
+    """Show the audit section; concise results keep the current year's non-audit services.
 
     Args:
-        state (AppState): Server state.
-        services (tuple[str, str]): Ver 2.0 and Ver 1.0 service names.
-        company (Company): Resolved company.
-        ref (PeriodRef): Fiscal year and period.
+        facts (analysis.AuditFacts): Audit facts.
+        fiscal_year (int): Fiscal year of the report's current term.
+        detailed (bool): Keep opinion history, prior-year services, and the work covered.
 
     Returns:
-        list[object] | None: Ver 2.0 ``group`` items or Ver 1.0 records; None when neither
-            has data.
+        AuditFacts: Output audit section.
     """
-    newer, older = services
-    response = await fetch_response(state, newer, company=company, ref=ref)
-    found: list[object] = records(response, "group") if response is not None else []
-    return found or await fetch_records(state, older, company=company, ref=ref)
+    if detailed:
+        return AuditFacts.model_validate(asdict(facts))
+    concise = replace(
+        facts,
+        fees=tuple(replace(fee, scope=None) for fee in facts.fees),
+        non_audit_services=tuple(
+            service for service in facts.non_audit_services if service.fiscal_year == fiscal_year
+        ),
+    )
+    return AuditFacts.model_validate(asdict(concise)).model_copy(update={"history": None})
 
 
-async def fetch_tables(
-    state: AppState, company: Company, ref: PeriodRef, *, sections: Sequence[GovernanceSection]
-) -> dict[str, list[object] | None] | None:
-    """Fetch the services the requested sections need, concurrently.
+def _executive(person: analysis.Executive, *, detailed: bool) -> Executive:
+    """Show one executive; concise results leave out personal details and career.
 
     Args:
-        state (AppState): Server state.
-        company (Company): Resolved company.
-        ref (PeriodRef): Fiscal year and period.
-        sections (Sequence[GovernanceSection]): Requested sections.
+        person (analysis.Executive): Executive.
+        detailed (bool): Keep every field.
 
     Returns:
-        dict[str, list[object] | None] | None: Records by service (and individual-pay key),
-            or None when no service has data.
+        Executive: Output executive.
     """
-    names = [name for section in sections for name in SECTION_SERVICES[section]]
-    calls = [fetch_records(state, name, company=company, ref=ref) for name in names]
-    if "compensation" in sections:
-        names += [key for key, *_ in VERSIONED]
-        calls += [
-            versioned(state, (newer, older), company=company, ref=ref)
-            for _, newer, older in VERSIONED
-        ]
-    found = await gather_all(calls)
-    if all(rows is None for rows in found):
-        return None
-    return dict(zip(names, found, strict=True))
-
-
-@dataclass(slots=True)
-class _Built:
-    """Sections built from one report's tables."""
-
-    tables: Tables
-    ref: PeriodRef
-    detailed: bool
-    audit: AuditFacts | None = None
-    history: list[AuditYear] = field(default_factory=list)
-    board: BoardFacts | None = None
-    executives: list[Executive] | None = None
-    compensation: Compensation | None = None
-    employees: Employees | None = None
-    notes: list[str] = field(default_factory=list)
-
-    def rows(self, service: str) -> list[object]:
-        """Return a service's records.
-
-        Args:
-            service (str): Service name or individual-pay key.
-
-        Returns:
-            list[object]: Records, empty when the service had no data.
-        """
-        return self.tables.get(service) or []
-
-
-def _audit(built: _Built) -> None:
-    """Build the audit section.
-
-    Args:
-        built (_Built): Sections so far; updated in place.
-    """
-    year = built.ref.fiscal_year
-    built.history = opinion_rows(built.rows(OPINIONS), year)
-    built.audit = audit_facts(
-        built.history,
-        built.rows(FEES),
-        built.rows(NON_AUDIT),
-        fiscal_year=year,
-        detailed=built.detailed,
-    )
-    note = scale_note(built.audit.fee_scale) if built.audit and built.audit.fees else None
-    if note:
-        built.notes.append(note)
-
-
-def _board(built: _Built) -> None:
-    """Build the board section.
-
-    Args:
-        built (_Built): Sections so far; updated in place.
-    """
-    built.board = board(built.rows("outcmpny_drctr_nd_change_sttus"))
-
-
-def _executives(built: _Built) -> None:
-    """Build the executives section.
-
-    Args:
-        built (_Built): Sections so far; updated in place.
-    """
-    people, omitted = executives(built.rows("exctv_sttus"), detailed=built.detailed)
-    built.executives = people or None
-    if omitted:
-        built.notes.append(
-            f"{omitted} unregistered executives are omitted; response_format='detailed' lists them."
+    if not detailed:
+        person = replace(
+            person,
+            gender=None,
+            born=None,
+            career=None,
+            largest_shareholder_relation=None,
+            tenure=None,
+            role_as_filed=None,
         )
+    return Executive.model_validate(asdict(person))
 
 
-def _compensation(built: _Built) -> None:
-    """Build the compensation section.
-
-    Args:
-        built (_Built): Sections so far; updated in place.
-    """
-    services = SECTION_SERVICES["compensation"]
-    approved, paid, by_type, unregistered = (built.rows(name) for name in services)
-    tables = PayTables(
-        approved, paid, by_type, built.rows(DIRECTORS_PAY), built.rows(TOP_PAY), unregistered
-    )
-    built.compensation = compensation(tables, detailed=built.detailed)
-
-
-def _employees(built: _Built) -> None:
-    """Build the employees section.
+def _executives(
+    people: Sequence[analysis.Executive] | None, *, detailed: bool
+) -> tuple[list[Executive] | None, int]:
+    """Show executives; concise results keep registered officers only.
 
     Args:
-        built (_Built): Sections so far; updated in place.
-    """
-    built.employees = employees(built.rows("emp_sttus"), detailed=built.detailed)
-
-
-_BUILDERS: Final[dict[GovernanceSection, Callable[[_Built], None]]] = {
-    "audit": _audit,
-    "board": _board,
-    "executives": _executives,
-    "compensation": _compensation,
-    "employees": _employees,
-}
-
-
-def build(
-    tables: Tables, ref: PeriodRef, sections: Sequence[GovernanceSection], *, detailed: bool
-) -> _Built:
-    """Build the requested sections and note the ones without data.
-
-    Args:
-        tables (Tables): Records by service.
-        ref (PeriodRef): Period of the report.
-        sections (Sequence[GovernanceSection]): Requested sections.
-        detailed (bool): Whether to return every field.
+        people (Sequence[analysis.Executive] | None): Every named executive, or None.
+        detailed (bool): Keep unregistered executives and personal details.
 
     Returns:
-        _Built: Sections and notes.
+        tuple[list[Executive] | None, int]: Executives, None when none is left, and how many
+            unregistered executives were left out.
     """
-    built = _Built(tables, ref, detailed)
+    everyone = list(people or ())
+    shown = everyone if detailed else [p for p in everyone if p.role != "unregistered"]
+    found = [_executive(person, detailed=detailed) for person in shown]
+    return found or None, len(everyone) - len(shown)
+
+
+def _compensation(pay: analysis.Compensation, *, detailed: bool) -> Compensation:
+    """Show pay; concise results drop stock-based pay, filed remarks, and pay outside totals.
+
+    Args:
+        pay (analysis.Compensation): Pay facts.
+        detailed (bool): Keep every field.
+
+    Returns:
+        Compensation: Output pay section.
+    """
+    if not detailed:
+        unregistered = pay.unregistered_executives
+        pay = replace(
+            pay,
+            by_type=tuple(replace(group, stock_based=None, note=None) for group in pay.by_type),
+            directors_over_500m=tuple(
+                replace(person, not_in_total=None) for person in pay.directors_over_500m
+            ),
+            top_paid=tuple(replace(person, not_in_total=None) for person in pay.top_paid),
+            unregistered_executives=None
+            if unregistered is None
+            else replace(unregistered, stock_based=None, note=None),
+        )
+    return Compensation.model_validate(asdict(pay))
+
+
+def _employees(staff: analysis.Employees, *, detailed: bool) -> Employees:
+    """Show the workforce; concise results list the headline rows that make the totals.
+
+    Args:
+        staff (analysis.Employees): Workforce facts.
+        detailed (bool): List every row.
+
+    Returns:
+        Employees: Output workforce section.
+    """
+    if not detailed:
+        staff = replace(staff, groups=tuple(headline(staff.groups)))
+    return Employees.model_validate(asdict(staff))
+
+
+def _notes(
+    sections: Sequence[GovernanceSection],
+    shown: Mapping[GovernanceSection, object | None],
+    *,
+    label: str,
+    scale: str | None,
+    omitted: int,
+) -> list[str]:
+    """Explain fee units, omitted executives, and sections without data, in section order.
+
+    Args:
+        sections (Sequence[GovernanceSection]): Requested sections.
+        shown (Mapping[GovernanceSection, object | None]): Output sections by name.
+        label (str): Period label of the report, such as FY2025.
+        scale (str | None): Note on audit-fee units, if any.
+        omitted (int): Unregistered executives left out of a concise result.
+
+    Returns:
+        list[str]: Notes.
+    """
+    notes: list[str] = []
     for section in sections:
-        _BUILDERS[section](built)
-        if getattr(built, section) is None:
-            built.notes.append(f"No {section} data in the {ref.label} report.")
-    return built
-
-
-async def _prior_auditor(state: AppState, company: Company, built: _Built) -> list[object]:
-    """Look up last fiscal year's auditor when the report does not list it.
-
-    Args:
-        state (AppState): Server state.
-        company (Company): Resolved company.
-        built (_Built): Sections so far; the audit section is updated in place.
-
-    Returns:
-        list[object]: Records of the extra call, for provenance; empty when skipped.
-    """
-    audit = built.audit
-    year = built.ref.fiscal_year - 1
-    if audit is None or audit.auditor is None or audit.prior_auditor or year < FIRST_FISCAL_YEAR:
-        return []
-    found = await fetch_records(state, OPINIONS, company=company, ref=PeriodRef(year, "FY")) or []
-    rows = [row for row in opinion_rows(found, year) if row.fiscal_year == year and row.auditor]
-    prior = rows[0].auditor if rows else None
-    built.audit = audit.model_copy(
-        update={
-            "prior_auditor": prior,
-            "auditor_changed_vs_prior_year": changed(audit.auditor, prior),
-        }
-    )
-    return found
-
-
-def _flags(built: _Built, sections: Sequence[GovernanceSection]) -> list[GovernanceFlag]:
-    """Derive flags from the audit section.
-
-    Args:
-        built (_Built): Built sections; a note is added when audit was not requested.
-        sections (Sequence[GovernanceSection]): Requested sections.
-
-    Returns:
-        list[GovernanceFlag]: Flags.
-    """
+        if section == "audit" and scale:
+            notes.append(scale)
+        if section == "executives" and omitted:
+            notes.append(
+                f"{omitted} unregistered executives are omitted; response_format='detailed' lists them."
+            )
+        if shown[section] is None:
+            notes.append(f"No {section} data in the {label} report.")
     if "audit" not in sections:
-        built.notes.append("Flags come from the audit section, which was not requested.")
-        return []
-    if built.audit is None:
-        return []
-    ref = built.ref
-    return audit_flags(built.audit, built.history, fiscal_year=ref.fiscal_year, label=ref.label)
+        notes.append("Flags come from the audit section, which was not requested.")
+    return notes
+
+
+def _result(
+    facts: analysis.GovernanceFacts,
+    *,
+    company: CompanyRef,
+    as_of: dt.date,
+    detailed: bool,
+    period_note: str | None,
+) -> GovernanceResult:
+    """Project analysis facts into the output model.
+
+    Args:
+        facts (analysis.GovernanceFacts): Facts from the analysis workflow.
+        company (CompanyRef): Resolved company.
+        as_of (dt.date): Server date.
+        detailed (bool): Whether the result is detailed.
+        period_note (str | None): Note from period resolution, which comes first.
+
+    Returns:
+        GovernanceResult: Result.
+    """
+    ref = facts.ref
+    audit = None if facts.audit is None else _audit(facts.audit, ref.fiscal_year, detailed=detailed)
+    board = None if facts.board is None else BoardFacts.model_validate(asdict(facts.board))
+    executives, omitted = _executives(facts.executives, detailed=detailed)
+    pay = facts.compensation
+    compensation = None if pay is None else _compensation(pay, detailed=detailed)
+    staff = facts.employees
+    employees = None if staff is None else _employees(staff, detailed=detailed)
+    shown: dict[GovernanceSection, object | None] = {
+        "audit": audit,
+        "board": board,
+        "executives": executives,
+        "compensation": compensation,
+        "employees": employees,
+    }
+    scale = scale_note(audit.fee_scale) if audit is not None and audit.fees else None
+    notes = _notes(facts.sections, shown, label=ref.label, scale=scale, omitted=omitted)
+    return GovernanceResult(
+        company=company,
+        as_of=as_of,
+        source_filings=[SourceFiling.of(s.filing_number, s.title) for s in facts.sources],
+        sections=list(facts.sections),
+        fiscal_year=ref.fiscal_year,
+        period=ref.period,
+        period_end=ref.end_date,
+        audit=audit,
+        board=board,
+        executives=executives,
+        compensation=compensation,
+        employees=employees,
+        flags=[GovernanceFlag(kind=flag.kind, detail=flag.detail) for flag in facts.flags],
+        notes=[n for n in (period_note, *notes) if n],
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -346,35 +290,26 @@ async def governance(
         state, resolved_company, period=query.period, fiscal_year=query.fiscal_year
     )
     await progress(f"Reading {", ".join(wanted)} for {resolved_company.ref.name}")
-    found = await first_available(
-        resolved,
-        lambda ref: fetch_tables(state, resolved_company, ref, sections=wanted),
-        attempts=probe_attempts(resolved),
-    )
-    if found is None:
+    try:
+        facts = await governance_facts(
+            resolved_company,
+            resolved,
+            sections=wanted,
+            fetch_service=service_fetch(state.require_gateway),
+            today=state.today(),
+        )
+    except AnalysisError as error:
+        raise from_analysis(error) from error
+    if facts is None:
         note = f"OpenDART has no {", ".join(wanted)} tables for {checked(resolved)}."
         notes = [n for n in (resolved.note, note) if n]
         return GovernanceResult(
             company=resolved_company.ref, as_of=state.today(), sections=wanted, notes=notes
         )
-    ref, tables = found
-    built = build(tables, ref, wanted, detailed=query.response_format == "detailed")
-    extra = await _prior_auditor(state, resolved_company, built)
-    rows = [*(row for batch in tables.values() for row in batch or ()), *extra]
-    flags = _flags(built, wanted)
-    return GovernanceResult(
+    return _result(
+        facts,
         company=resolved_company.ref,
         as_of=state.today(),
-        source_filings=sources((text(row, "filing_number") for row in rows), resolved.report),
-        sections=wanted,
-        fiscal_year=ref.fiscal_year,
-        period=ref.period,
-        period_end=ref.end_date,
-        audit=built.audit,
-        board=built.board,
-        executives=built.executives,
-        compensation=built.compensation,
-        employees=built.employees,
-        flags=flags,
-        notes=[n for n in (resolved.note, *built.notes) if n],
+        detailed=query.response_format == "detailed",
+        period_note=resolved.note,
     )

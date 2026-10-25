@@ -6,6 +6,13 @@ errors with the message intact. Messages never contain credentials or upstream b
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+from opendart_analysis.errors import DataSourceError, NotConfiguredError
+
+if TYPE_CHECKING:
+    from opendart_analysis.errors import AnalysisError
+
 API_KEY_MISSING = "The OpenDART API key is not configured. Set OPENDART_API__API_KEY, or mount the key as /run/secrets/OPENDART_API__API_KEY, and restart the server."
 QUOTA_EXHAUSTED = (
     "The OpenDART daily request quota for this API key is exhausted. Retry after 00:00 KST."
@@ -48,3 +55,26 @@ class QuotaExhaustedError(UpstreamError):
 
 class StillRunningError(ServerError):
     """Slow work outlived the caller's deadline; it continues and a retry finds it cached."""
+
+
+def from_analysis(error: AnalysisError) -> ServerError:
+    """Translate a structured analysis failure into the server error for its category.
+
+    Analysis messages are safe and name no tools, so they pass through unchanged. Adapters
+    that owe the model more specific instructions catch the analysis subclass themselves and
+    build their own message from its attributes before falling back to this.
+
+    Args:
+        error (AnalysisError): Failure raised by an analysis workflow.
+
+    Returns:
+        ServerError: ``UpstreamError`` for a failed data source, ``ConfigurationError`` for
+            a missing dependency, and ``InvalidArgumentError`` otherwise, including missing
+            data; each keeps the analysis message.
+    """
+    message = str(error)
+    if isinstance(error, DataSourceError):
+        return UpstreamError(message)
+    if isinstance(error, NotConfiguredError):
+        return ConfigurationError(message)
+    return InvalidArgumentError(message)

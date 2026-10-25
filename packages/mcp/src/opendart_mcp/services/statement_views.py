@@ -1,307 +1,46 @@
 """Summary and full-statement views of get_financials.
 
-``summary`` reads the major accounts (``fnltt_singl_acnt``, whose one answer holds the
-consolidated and the separate rows); the full-statement views read ``fnltt_singl_acnt_all``
-(one call per basis) filtered by statement type. Each view ranks its key accounts first, in
-reading order, because full statements arrive sorted by account ID.
+``opendart_analysis.financials`` reads the major accounts (``summary``) or a full statement
+over periods, merges restatements, and derives metrics; this adapter binds its data access
+to the gateway, then chooses the lines a concise result shows, lays them out as the output
+model's columns and rows, and explains fallbacks, quarterly amounts, and currencies.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Final, Literal
+from typing import TYPE_CHECKING, Final, get_args
 
-from opendart_mcp.services import derived
-from opendart_mcp.services.accounts import (
-    COMPONENT_ORDER,
-    EQUITY_AT_END,
-    KEY_ACCOUNTS,
-    KEY_ACCOUNT_NAMES,
-    METRICS,
-    METRIC_RANK,
-    TOTAL_COMPONENT,
-    component,
-    metric_of,
-    normalize,
+from opendart_analysis.financials import derived
+from opendart_analysis.financials.history import (
+    HistoryRequest,
+    StatementRequest,
+    financial_statement,
+    major_accounts,
 )
-from opendart_mcp.services.periods import periodic_ttl, resolve_period
-from opendart_mcp.services.statements import (
-    build_report,
-    column,
-    filled_periods,
-    full_item,
-    merge,
-    select,
-    shift,
-    summary_item,
-    to_rows,
-)
-from opendart_mcp.services.tables import Span, Table, chain, no_data, sources
+from opendart_analysis.financials.specs import STATEMENTS, FullStatement
+from opendart_analysis.financials.statements import filled_periods, shift
+from opendart_mcp.core.upstream_financials import full_statements_fetch, major_accounts_fetch
+from opendart_mcp.services.periods import resolve_period
+from opendart_mcp.services.statements import column, select, to_rows
+from opendart_mcp.services.tables import Table, no_data, sources
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Mapping
 
-    from opendart.models.financial_statements import FnlttSinglAcntResponseListItem
+    from opendart_analysis.domain.periods import PeriodRef
+    from opendart_analysis.financials import Report, StatementHistory
+    from opendart_analysis.reports import ResolvedPeriod
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.periods import PeriodRef
-    from opendart_mcp.domain.types import Basis
-    from opendart_mcp.models.financials import StatementBasis
     from opendart_mcp.services.companies import Company
     from opendart_mcp.services.financials import FinancialsRequest
-    from opendart_mcp.services.statements import Item, Ranker, Report
-    from opendart_mcp.services.tables import Fetch
 
-    type Scope = Literal["CFS", "OFS"]
-
-# Statement-of-changes-in-equity ranks: component position times this span, plus the line.
-_EQUITY_SPAN: Final = 10_000
-_SHOW_ALL: Final = 1 << 30
 _QUARTER_FLOWS: Final = "Quarterly income lines: values are three-month amounts and cumulative holds year-to-date amounts."
 _YEAR_TO_DATE: Final = "Quarterly cash flows and equity changes are year-to-date amounts."
-_SCOPES: Final[Mapping[str, tuple[tuple[Scope, StatementBasis], ...]]] = MappingProxyType(
-    {
-        "auto": (("CFS", "consolidated"), ("OFS", "separate")),
-        "consolidated": (("CFS", "consolidated"),),
-        "separate": (("OFS", "separate"),),
-    }
+_FULL: Final[Mapping[str, FullStatement]] = MappingProxyType(
+    {statement: statement for statement in get_args(FullStatement)}
 )
-
-
-@dataclass(frozen=True, slots=True)
-class StatementSpec:
-    """How a statement view selects, orders, and derives.
-
-    Attributes:
-        statements (tuple[str, ...]): Statement types to read; the first with rows wins.
-        rank (Ranker): Sort position of a row given its upstream position.
-        key_limit (int): Lines ranked below this are key lines in concise results.
-        derive (bool): Whether derived metrics apply.
-        what (str): Name of the statement, for notes.
-    """
-
-    statements: tuple[str, ...]
-    rank: Ranker
-    key_limit: int
-    derive: bool
-    what: str
-
-
-def _key_rank(keys: Sequence[str], names: Mapping[str, str]) -> Ranker:
-    """Rank key accounts in reading order, then other lines in upstream order.
-
-    Args:
-        keys (Sequence[str]): Key account IDs in reading order.
-        names (Mapping[str, str]): Key account ID by normalized name, for lines that lack a
-            standard ID.
-
-    Returns:
-        Ranker: Ranking function.
-    """
-    order = {account_id: rank for rank, account_id in enumerate(keys)}
-
-    def rank(item: Item, position: int) -> int:
-        """Return an account's configured position in the statement view.
-
-        Args:
-            item (Item): Reduced statement row.
-            position (int): Original position in the upstream response.
-
-        Returns:
-            int: Sort position, with unlisted accounts following key accounts.
-        """
-        account_id = item.account_id or names.get(normalize(item.account), "")
-        return order.get(account_id, len(order) + position)
-
-    return rank
-
-
-def _summary_rank(item: Item, position: int) -> int:
-    """Rank summary lines: income lines, then the balance sheet, then the rest.
-
-    Args:
-        item (Item): Reduced row.
-        position (int): Upstream position.
-
-    Returns:
-        int: Sort position.
-    """
-    metric = metric_of(item.account_id, item.account)
-    return METRIC_RANK[metric.key] if metric is not None else len(METRICS) + position
-
-
-def _equity_rank(item: Item, position: int) -> int:
-    """Rank equity changes by component, opening balance first and closing balance last.
-
-    Args:
-        item (Item): Reduced row.
-        position (int): Upstream position.
-
-    Returns:
-        int: Sort position; whole-equity lines rank below ``_EQUITY_SPAN``.
-    """
-    part = component(item.detail) or TOTAL_COMPONENT
-    group = COMPONENT_ORDER.index(part) if part in COMPONENT_ORDER else len(COMPONENT_ORDER)
-    if item.account_id in KEY_ACCOUNTS["SCE"]:
-        line = 0
-    elif item.account_id == EQUITY_AT_END:
-        line = _EQUITY_SPAN - 1
-    else:
-        line = position + 1
-    return group * _EQUITY_SPAN + min(line, _EQUITY_SPAN - 1)
-
-
-def _spec(statements: tuple[str, ...], keys: str, *, derive: bool, what: str) -> StatementSpec:
-    """Build the spec of a full-statement view ranked by key accounts.
-
-    Args:
-        statements (tuple[str, ...]): Statement types to read.
-        keys (str): Statement type whose key accounts rank first.
-        derive (bool): Whether derived metrics apply.
-        what (str): Name of the statement.
-
-    Returns:
-        StatementSpec: View spec.
-    """
-    accounts = KEY_ACCOUNTS[keys]
-    names = KEY_ACCOUNT_NAMES.get(keys, {})
-    return StatementSpec(statements, _key_rank(accounts, names), len(accounts), derive, what)
-
-
-SPECS: Final[Mapping[str, StatementSpec]] = MappingProxyType(
-    {
-        "summary": StatementSpec(
-            ("BS", "IS"), _summary_rank, _SHOW_ALL, derive=True, what="major accounts"
-        ),
-        "income": _spec(("IS", "CIS"), "IS", derive=True, what="income statement"),
-        "balance": _spec(("BS",), "BS", derive=True, what="balance sheet"),
-        "cash_flow": _spec(("CF",), "CF", derive=False, what="cash flow statement"),
-        "comprehensive_income": _spec(
-            ("CIS",), "CIS", derive=False, what="statement of comprehensive income"
-        ),
-        "equity_changes": StatementSpec(
-            ("SCE",),
-            _equity_rank,
-            _EQUITY_SPAN,
-            derive=False,
-            what="statement of changes in equity",
-        ),
-    }
-)
-"""Statement views and how each selects, orders, and derives."""
-
-
-def _summary_fetch(state: AppState, company: Company) -> Fetch:
-    """Bind the major-accounts fetcher for one company.
-
-    Args:
-        state (AppState): Server state.
-        company (Company): Resolved company.
-
-    Returns:
-        Fetch: Fetcher of one period's major accounts on a basis.
-    """
-
-    async def fetch(ref: PeriodRef, basis: Basis) -> Report | None:
-        """Fetch and select the first available major-account statement scope.
-
-        Args:
-            ref (PeriodRef): Fiscal period to fetch.
-            basis (Basis): Requested statement basis.
-
-        Returns:
-            Report | None: Selected major-account report, or None when no rows are
-                available.
-
-        Raises:
-            ServerError: The upstream request fails or is rejected.
-        """
-        gateway = state.require_gateway()
-        response = await gateway.call(
-            periodic_ttl(state, company, ref),
-            gateway.sdk.financial_statements.fnltt_singl_acnt,
-            corporation_code=company.corp_code,
-            fiscal_year=str(ref.fiscal_year),
-            report_period=ref.report_code,
-        )
-        rows: list[FnlttSinglAcntResponseListItem] = (
-            (response.list or []) if response is not None else []
-        )
-        for scope, used in _SCOPES[basis]:
-            items = [summary_item(r) for r in rows if (r.statement_scope or "").upper() == scope]
-            if items:
-                report = build_report(items, ref, rank=_summary_rank)
-                report.basis = used
-                return report
-        return None
-
-    return fetch
-
-
-def _statement_items(items: Sequence[Item], statements: Sequence[str]) -> list[Item]:
-    """Keep the rows of the first statement type that has any.
-
-    Args:
-        items (Sequence[Item]): Reduced rows of every statement.
-        statements (Sequence[str]): Statement types in order of preference.
-
-    Returns:
-        list[Item]: Rows of one statement type, or none.
-    """
-    for statement in statements:
-        chosen = [item for item in items if item.statement == statement]
-        if chosen:
-            return chosen
-    return []
-
-
-def _statement_fetch(state: AppState, company: Company, spec: StatementSpec) -> Fetch:
-    """Bind the full-statement fetcher for one company and view.
-
-    Args:
-        state (AppState): Server state.
-        company (Company): Resolved company.
-        spec (StatementSpec): View spec.
-
-    Returns:
-        Fetch: Fetcher of one period's statement on a basis.
-    """
-
-    async def fetch(ref: PeriodRef, basis: Basis) -> Report | None:
-        """Fetch a full statement for the requested period and basis.
-
-        Args:
-            ref (PeriodRef): Fiscal period to fetch.
-            basis (Basis): Requested statement basis.
-
-        Returns:
-            Report | None: Selected statement report, or None when no rows are
-                available.
-
-        Raises:
-            ServerError: The upstream request fails or is rejected.
-        """
-        gateway = state.require_gateway()
-        ttl = periodic_ttl(state, company, ref)
-        for scope, used in _SCOPES[basis]:
-            response = await gateway.call(
-                ttl,
-                gateway.sdk.financial_statements.fnltt_singl_acnt_all,
-                corporation_code=company.corp_code,
-                fiscal_year=str(ref.fiscal_year),
-                report_period=ref.report_code,
-                statement_scope=scope,
-            )
-            items = [full_item(row) for row in response.list or []] if response else []
-            chosen = _statement_items(items, spec.statements)
-            if chosen:
-                report = build_report(chosen, ref, rank=spec.rank)
-                report.basis = used
-                return report
-        return None
-
-    return fetch
 
 
 def _statement_notes(
@@ -339,6 +78,45 @@ def _statement_notes(
     return [*notes, *([formula] if formula else [])]
 
 
+async def _history(
+    state: AppState,
+    company: Company,
+    resolved: ResolvedPeriod,
+    *,
+    request: FinancialsRequest,
+    progress: Progress,
+) -> StatementHistory | None:
+    """Read the requested statement over periods through the gateway.
+
+    Args:
+        state (AppState): Server state.
+        company (Company): Resolved company.
+        resolved (ResolvedPeriod): Candidate periods.
+        request (FinancialsRequest): Request; its view is summary or a full statement.
+        progress (Progress): Progress callback.
+
+    Returns:
+        StatementHistory | None: Lines by period, or None when no candidate has data.
+    """
+    if request.view == "summary":
+        return await major_accounts(
+            company,
+            resolved,
+            request=HistoryRequest(basis=request.basis, years=request.years),
+            fetch_major_accounts=major_accounts_fetch(state.require_gateway),
+            today=state.today(),
+            progress=progress,
+        )
+    return await financial_statement(
+        company,
+        resolved,
+        request=StatementRequest(_FULL[request.view], basis=request.basis, years=request.years),
+        fetch_full_statements=full_statements_fetch(state.require_gateway),
+        today=state.today(),
+        progress=progress,
+    )
+
+
 async def statements_view(
     state: AppState, company: Company, *, request: FinancialsRequest, progress: Progress
 ) -> Table:
@@ -353,25 +131,19 @@ async def statements_view(
     Returns:
         Table: Lines by period with derived metrics and notes.
     """
-    spec = SPECS[request.view]
+    spec = STATEMENTS["summary" if request.view == "summary" else _FULL[request.view]]
     resolved = await resolve_period(
         state, company, period=request.period, fiscal_year=request.fiscal_year
     )
-    fetch = (
-        _summary_fetch(state, company)
-        if request.view == "summary"
-        else _statement_fetch(state, company, spec)
-    )
-    span = Span(years=request.years)
-    found = await chain(resolved, fetch, basis=request.basis, span=span, progress=progress)
+    found = await _history(state, company, resolved, request=request, progress=progress)
     if found is None:
         hint = (
             ' basis="auto" falls back to separate statements.'
             if request.basis == "consolidated"
             else ""
         )
-        return Table(notes=[no_data(resolved, spec.what) + hint])
-    merged = merge(found.reports)
+        return Table(notes=[no_data(resolved, spec.name) + hint])
+    merged = found.report
     lines, shown = select(
         merged.lines, accounts=request.accounts, detailed=request.detailed, key_limit=spec.key_limit
     )
@@ -382,10 +154,8 @@ async def statements_view(
         filings=sources(merged.filings, resolved.report),
         basis=merged.basis,
         currency=merged.currency,
+        derived=dict(found.derived),
     )
-    if spec.derive:
-        values = derived.metric_values(merged.lines, found.ref, shift(found.ref, 1))
-        table.derived = derived.compute(values)
     table.notes = [
         *found.notes,
         *([shown] if shown else []),

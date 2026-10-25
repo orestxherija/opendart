@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from starlette.requests import Request
     from starlette.responses import Response
 
-    from opendart import OpenDartSettings
+    from opendart import OpenDARTSettings
     from opendart_mcp.core.runtime import TransportFactory
     from opendart_mcp.settings import Settings
 
@@ -51,7 +51,7 @@ async def health(request: Request) -> Response:
 def create_server(
     settings: Settings | None = None,
     *,
-    api: OpenDartSettings | None = None,
+    api: OpenDARTSettings | None = None,
     transport: TransportFactory | None = None,
     clock: Callable[[], datetime] | None = None,
 ) -> FastMCP[dict[str, Any]]:
@@ -59,7 +59,7 @@ def create_server(
 
     Args:
         settings (Settings | None): Server configuration; None loads it from the environment.
-        api (OpenDartSettings | None): Upstream settings; None reads the SDK environment.
+        api (OpenDARTSettings | None): Upstream settings; None reads the SDK environment.
         transport (TransportFactory | None): Transport factory for every SDK client.
         clock (Callable[[], datetime] | None): Aware clock; None uses the system clock.
 

@@ -16,11 +16,11 @@ from fastmcp.exceptions import FastMCPError
 from fastmcp.prompts import Message
 from mcp.types import EmbeddedResource, TextResourceContents
 
+from opendart_analysis.domain.dates import parse_date_arg, parse_horizon
+from opendart_analysis.domain.names import split_names
+from opendart_analysis.domain.normalize import parse_decimal
+from opendart_analysis.domain.periods import FIRST_FISCAL_YEAR
 from opendart_mcp.core.errors import InvalidArgumentError, ServerError
-from opendart_mcp.domain.dates import parse_date_arg, parse_horizon
-from opendart_mcp.domain.names import split_names
-from opendart_mcp.domain.normalize import parse_decimal
-from opendart_mcp.domain.periods import FIRST_FISCAL_YEAR
 from opendart_mcp.render.markdown import company_line
 
 if TYPE_CHECKING:

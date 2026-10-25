@@ -16,10 +16,10 @@
         <mxCell id="package" value="opendart-sdk · packages/sdk/src/opendart" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#dbeafe;strokeColor=#60a5fa;shape=swimlane;startSize=36;horizontal=1;align=left;spacingLeft=16;fontStyle=1;collapsible=0;pointerEvents=0;swimlaneFillColor=#ffffff;" vertex="1" parent="runtime">
           <mxGeometry x="246" y="50" width="550" height="350" as="geometry" />
         </mxCell>
-        <mxCell id="application" value="&lt;b&gt;Calling application&lt;/b&gt;&lt;br&gt;Await endpoint methods&lt;br&gt;Use async with OpenDart()" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#93c5fd;" vertex="1" parent="runtime">
+        <mxCell id="application" value="&lt;b&gt;Calling application&lt;/b&gt;&lt;br&gt;Await endpoint methods&lt;br&gt;Use async with OpenDART()" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#ffffff;strokeColor=#93c5fd;" vertex="1" parent="runtime">
           <mxGeometry x="24" y="110" width="180" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="client" value="&lt;b&gt;OpenDart + resources&lt;/b&gt;&lt;br&gt;6 generated resource groups&lt;br&gt;Typed request validation&lt;br&gt;85 async endpoint methods" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#dbeafe;strokeColor=#3b82f6;" vertex="1" parent="package">
+        <mxCell id="client" value="&lt;b&gt;OpenDART + resources&lt;/b&gt;&lt;br&gt;6 generated resource groups&lt;br&gt;Typed request validation&lt;br&gt;85 async endpoint methods" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#dbeafe;strokeColor=#3b82f6;" vertex="1" parent="package">
           <mxGeometry x="22" y="60" width="228" height="100" as="geometry" />
         </mxCell>
         <mxCell id="transport" value="&lt;b&gt;Shared transport&lt;/b&gt;&lt;br&gt;httpx2.AsyncClient pool&lt;br&gt;API key · timeouts · byte limits&lt;br&gt;One attempt; no redirects" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#dbeafe;strokeColor=#3b82f6;" vertex="1" parent="package">
@@ -31,7 +31,7 @@
         <mxCell id="settings" value="&lt;b&gt;Pydantic settings&lt;/b&gt;&lt;br&gt;OPENDART_API__* / explicit&lt;br&gt;Optional dotenv / file secrets" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#94a3b8;" vertex="1" parent="package">
           <mxGeometry x="22" y="220" width="228" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="response" value="&lt;b&gt;Response boundary&lt;/b&gt;&lt;br&gt;Typed models / ZIP bytes&lt;br&gt;Bounded reads + validation&lt;br&gt;OpenDartError on failure" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#e0f2fe;strokeColor=#38bdf8;" vertex="1" parent="package">
+        <mxCell id="response" value="&lt;b&gt;Response boundary&lt;/b&gt;&lt;br&gt;Typed models / ZIP bytes&lt;br&gt;Bounded reads + validation&lt;br&gt;OpenDARTError on failure" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#e0f2fe;strokeColor=#38bdf8;" vertex="1" parent="package">
           <mxGeometry x="302" y="220" width="228" height="100" as="geometry" />
         </mxCell>
         <mxCell id="lifetime" value="&lt;b&gt;Application lifetime&lt;/b&gt;&lt;br&gt;Reuse the owned HTTP pool&lt;br&gt;Context exit closes resources" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f8fafc;strokeColor=#cbd5e1;" vertex="1" parent="runtime">

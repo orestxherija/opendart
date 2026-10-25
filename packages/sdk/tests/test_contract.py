@@ -13,7 +13,7 @@ import httpx2
 import pytest
 import yaml
 
-from opendart import OpenDart, models
+from opendart import OpenDART, models
 from opendart.models.disclosures import ListRequest, ListResponse
 
 REFERENCE = Path(__file__).resolve().parents[3] / "api_reference"
@@ -58,7 +58,7 @@ def handler_for(settings, route, params, body):
     """Create a mock handler that verifies route, authentication, and query encoding.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         route (str): Expected endpoint path without the /engapi prefix.
         params (dict[str, str | int | list[str]]): Synthetic query parameters from the
             contract examples.
@@ -128,7 +128,7 @@ async def test_contract(settings, group, name, route, params, body):
     """Verify each asynchronous endpoint against its synthetic contract example.
 
     Args:
-        settings (OpenDartSettings): Validated fixture settings with a synthetic API key.
+        settings (OpenDARTSettings): Validated fixture settings with a synthetic API key.
         group (str): Resource attribute for the service category.
         name (str): Generated resource method name.
         route (str): Expected endpoint path without the /engapi prefix.
@@ -137,7 +137,7 @@ async def test_contract(settings, group, name, route, params, body):
         body (dict | bytes): Expected successful JSON payload or ZIP archive bytes.
     """
     transport = httpx2.MockTransport(handler_for(settings, route, params, body))
-    async with OpenDart(settings, transport=transport) as client:
+    async with OpenDART(settings, transport=transport) as client:
         method = getattr(getattr(client, group), name)
         assert inspect.iscoroutinefunction(method)
         stem = route.split(".")[0][1:]

@@ -10,6 +10,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from opendart_analysis.domain.identifiers import parse_identifier
+from opendart_analysis.domain.normalize import clean_text, market_from_corp_cls
+from opendart_analysis.domain.resolver import resolve
+from opendart_analysis.profile import fiscal_year_end_month
 from opendart_mcp.core.errors import (
     API_KEY_MISSING,
     AmbiguousCompanyError,
@@ -19,20 +23,16 @@ from opendart_mcp.core.errors import (
 )
 from opendart_mcp.core.interaction import current_chooser
 from opendart_mcp.core.ttl import DAY
-from opendart_mcp.domain.identifiers import parse_identifier
-from opendart_mcp.domain.normalize import clean_text, market_from_corp_cls
-from opendart_mcp.domain.resolver import ambiguity_message, not_found_message, resolve
 from opendart_mcp.models.common import CompanyRef
+from opendart_mcp.services.company_messages import ambiguity_message, not_found_message
 
 if TYPE_CHECKING:
     from opendart.models import CompanyResponse
+    from opendart_analysis.domain.directory import CorpRecord
     from opendart_mcp.core.gateway import Gateway
     from opendart_mcp.core.interaction import Chooser
     from opendart_mcp.core.progress import Progress
-    from opendart_mcp.domain.directory import CorpRecord
     from opendart_mcp.services.directory import DirectoryService
-
-DECEMBER = 12
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,19 +57,6 @@ class Company:
             str: Corporation code.
         """
         return self.ref.corp_code
-
-
-def _fye_month(profile: CompanyResponse | None) -> int:
-    """Read the fiscal year-end month from a profile.
-
-    Args:
-        profile (CompanyResponse | None): Company overview.
-
-    Returns:
-        int: Month 1-12, defaulting to December.
-    """
-    month = clean_text(profile.acc_mt if profile else None)
-    return int(month) if month and month.isdigit() and 1 <= int(month) <= DECEMBER else DECEMBER
 
 
 class Companies:
@@ -123,7 +110,7 @@ class Companies:
             stock_code=record.stock_code,
             market=market_from_corp_cls(profile.corporation_type if profile else None),
         )
-        return Company(ref=ref, fye_month=_fye_month(profile), profile=profile)
+        return Company(ref=ref, fye_month=fiscal_year_end_month(profile), profile=profile)
 
     async def resolve(
         self, text: str, *, progress: Progress | None = None, choose: Chooser | None = None
@@ -191,4 +178,4 @@ class Companies:
             stock_code=clean_text(profile.stock_code),
             market=market_from_corp_cls(profile.corporation_type),
         )
-        return Company(ref=ref, fye_month=_fye_month(profile), profile=profile)
+        return Company(ref=ref, fye_month=fiscal_year_end_month(profile), profile=profile)

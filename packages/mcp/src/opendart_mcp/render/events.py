@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.events import ACTIONS
+from opendart_analysis.events import ACTIONS
 from opendart_mcp.render.markdown import company_line, footer, join, section, table
 
 if TYPE_CHECKING:

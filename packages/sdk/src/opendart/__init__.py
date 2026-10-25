@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
-from opendart.client import OpenDart
+from opendart.client import OpenDART
 from opendart.errors import (
     APIError,
     APIRejectedError,
     ContractError,
     FileUnavailableError,
     NoDataError,
-    OpenDartError,
+    OpenDARTError,
     QuotaExceededError,
     RejectedError,
     ResponseTooLargeError,
     ServiceUnavailableError,
     UnavailableError,
 )
-from opendart.settings import OpenDartSettings, Settings, get_settings
+from opendart.settings import OpenDARTSettings, Settings, get_settings
 
 __all__ = [
     "APIError",
@@ -24,9 +24,9 @@ __all__ = [
     "ContractError",
     "FileUnavailableError",
     "NoDataError",
-    "OpenDart",
-    "OpenDartError",
-    "OpenDartSettings",
+    "OpenDART",
+    "OpenDARTError",
+    "OpenDARTSettings",
     "QuotaExceededError",
     "RejectedError",
     "ResponseTooLargeError",

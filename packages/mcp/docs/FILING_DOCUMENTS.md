@@ -3,6 +3,10 @@
 Status: findings from live samples taken on 2026-10-22, and the `read_filing` specification they support. Companion to
 [COMPONENT_DESIGN.md](COMPONENT_DESIGN.md).
 
+This is a historical design record. Since 2026-10-24 the parser, archive limits, and document store it specifies live
+in [`opendart_analysis.documents`](../../analysis/docs/documents.md); MCP keeps `read_filing`, the filing resources,
+and their deadlines.
+
 ## Method
 
 Seventeen filings were chosen from `disclosures.search` to cover the document families analysts read:
@@ -241,7 +245,7 @@ financial-sector templates were not sampled, so an alias falls back to heading m
 
 ### Download, parsing, and caching
 
-- Use a dedicated `OpenDart` client for documents, with a 10 s connect timeout, a 90 s read timeout, and a 120 s
+- Use a dedicated `OpenDART` client for documents, with a 10 s connect timeout, a 90 s read timeout, and a 120 s
   overall deadline. The default client keeps its 5 s timeouts for JSON services.
 - Downloads are single-flight: concurrent calls for one filing share one task. The task outlives a cancelled tool
   call, so a retry finds the result cached. The tool reports progress while it waits.
@@ -273,3 +277,6 @@ Synthetic fixtures reproduce:
 
 Golden tests cover outlines, rendering, paging boundaries, aliases, and search. An opt-in live test reads one recent
 filing of each family, like the contract suite.
+
+The parser and document store now live in `opendart_analysis.documents` ([package guide](../../analysis/README.md)),
+with these fixtures in `packages/analysis/tests/documents/`; MCP keeps the `read_filing` adapter and its tests.

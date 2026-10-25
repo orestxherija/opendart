@@ -12,15 +12,8 @@ from typing import TYPE_CHECKING, Final
 
 import anyio.to_thread
 
-from opendart import FileUnavailableError, NoDataError, OpenDartError, ResponseTooLargeError
-from opendart_mcp.core.errors import (
-    InvalidArgumentError,
-    StillRunningError,
-    UpstreamError,
-)
-from opendart_mcp.core.gateway import translate
-from opendart_mcp.core.progress import no_progress
-from opendart_mcp.documents import (
+from opendart import FileUnavailableError, NoDataError, OpenDARTError, ResponseTooLargeError
+from opendart_analysis.documents import (
     DEFAULT_MAX_CHARS,
     ArchiveTooLargeError,
     DocumentError,
@@ -30,7 +23,14 @@ from opendart_mcp.documents import (
     StoreClosedError,
     UnknownDocumentError,
 )
-from opendart_mcp.domain.identifiers import dart_viewer_url, filing_date, is_filing_number
+from opendart_analysis.domain.identifiers import dart_viewer_url, filing_date, is_filing_number
+from opendart_mcp.core.errors import (
+    InvalidArgumentError,
+    StillRunningError,
+    UpstreamError,
+)
+from opendart_mcp.core.gateway import translate
+from opendart_mcp.core.progress import no_progress
 from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.models.documents import (
     DocumentEntry,
@@ -45,10 +45,10 @@ from opendart_mcp.models.documents import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from opendart_analysis.documents import DocumentInfo, LabelMode, ParsedFiling, SectionInfo
     from opendart_mcp.core.errors import ServerError
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.documents import DocumentInfo, LabelMode, ParsedFiling, SectionInfo
     from opendart_mcp.models.documents import FilingMode
 
     type _View = tuple[FilingOutline | FilingPage | FilingHits, str, list[str]]
@@ -172,7 +172,7 @@ def _failure(error: Exception, filing_number: str) -> ServerError:
         if isinstance(error, source):
             url = dart_viewer_url(filing_number)
             return target(template.format(number=filing_number, url=url, error=error))
-    if isinstance(error, OpenDartError):
+    if isinstance(error, OpenDARTError):
         return translate(error)
     url = dart_viewer_url(filing_number)
     return DocumentUnavailableError(
@@ -206,7 +206,7 @@ async def load_filing(
     store = state.require_documents()
     try:
         return await store.get(filing_number, wait_s=wait_s, on_progress=progress)
-    except (DocumentError, OpenDartError, TimeoutError) as error:
+    except (DocumentError, OpenDARTError, TimeoutError) as error:
         raise _failure(error, filing_number) from error
 
 

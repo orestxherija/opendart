@@ -6,7 +6,7 @@ from datetime import date
 
 from pydantic import Field
 
-from opendart_mcp.domain.categories import FilingCategory
+from opendart_analysis.domain.categories import FilingCategory
 from opendart_mcp.models.common import CompanyRef, OutputModel, Pagination, ToolOutput
 
 

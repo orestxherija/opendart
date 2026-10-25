@@ -1,14 +1,24 @@
-"""Company search and company profiles."""
+"""Company search and company profiles.
+
+``opendart_analysis.profile`` normalizes the company overview and finds the latest periodic
+report; this adapter resolves the company (directory, elicitation, and the overview stay with
+``services.companies``), binds the filing search to the gateway, and projects the profile into
+the output model. Company search stays here: it ranks the directory and fills in markets from
+company overviews.
+"""
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from typing import TYPE_CHECKING, Final
 
 import anyio
 
+from opendart_analysis.domain.normalize import market_from_corp_cls
+from opendart_analysis.domain.resolver import resolve
+from opendart_analysis.profile import profile_company
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.normalize import clean_text, market_from_corp_cls, parse_date
-from opendart_mcp.domain.resolver import resolve
+from opendart_mcp.core.upstream import filing_search
 from opendart_mcp.models.common import SourceFiling
 from opendart_mcp.models.company import (
     CompanyMatch,
@@ -17,16 +27,14 @@ from opendart_mcp.models.company import (
     FindCompanyResult,
     PeriodicReportRef,
 )
-from opendart_mcp.services.periods import latest_periodic_report
 
 if TYPE_CHECKING:
-    from opendart.models import CompanyResponse
+    from opendart_analysis.domain.directory import Match
+    from opendart_analysis.domain.types import Market, MarketFilter
+    from opendart_analysis.reports import PeriodicReport
     from opendart_mcp.core.interaction import Chooser
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
-    from opendart_mcp.domain.directory import Match
-    from opendart_mcp.domain.types import Market, MarketFilter
-    from opendart_mcp.services.periods import PeriodicReport
 
 _LISTED_MARKETS: Final[dict[str, Market]] = {"KOSPI": "KOSPI", "KOSDAQ": "KOSDAQ", "KONEX": "KONEX"}
 _DOMINANT: Final = frozenset({"code", "exact", "dominant"})
@@ -140,34 +148,6 @@ async def find_companies(
     )
 
 
-def _profile(profile: CompanyResponse | None, fye_month: int) -> CompanyProfile:
-    """Normalize the company overview.
-
-    Args:
-        profile (CompanyResponse | None): Upstream overview.
-        fye_month (int): Fiscal year-end month.
-
-    Returns:
-        CompanyProfile: Reference facts.
-    """
-    if profile is None:
-        return CompanyProfile(fiscal_year_end_month=fye_month)
-    return CompanyProfile(
-        stock_name=clean_text(profile.stock_name),
-        ceo=clean_text(profile.ceo_nm),
-        industry_code=clean_text(profile.induty_code),
-        fiscal_year_end_month=fye_month,
-        established=parse_date(profile.est_dt),
-        address=clean_text(profile.adres),
-        website=clean_text(profile.hm_url),
-        ir_url=clean_text(profile.ir_url),
-        phone=clean_text(profile.phn_no),
-        fax=clean_text(profile.fax_no),
-        corporate_registration_number=clean_text(profile.jurir_no),
-        business_registration_number=clean_text(profile.bizr_no),
-    )
-
-
 def _report_ref(report: PeriodicReport) -> PeriodicReportRef:
     """Describe the latest periodic report.
 
@@ -207,17 +187,18 @@ async def company_profile(
         CompanyProfileResult: Identity, reference facts, and the latest periodic report.
     """
     resolved = await state.companies.resolve(company, progress=progress, choose=choose)
-    report = await latest_periodic_report(state, resolved)
-    notes = []
-    if resolved.profile is None:
-        notes.append("OpenDART has no company overview for this company.")
-    if report is None:
-        notes.append("No periodic report was filed in the last 15 months.")
+    profile = await profile_company(
+        resolved,
+        resolved.profile,
+        search_filings=filing_search(state.require_gateway),
+        today=state.today(),
+    )
+    report = profile.latest_report
     return CompanyProfileResult(
         company=resolved.ref,
-        profile=_profile(resolved.profile, resolved.fye_month),
+        profile=CompanyProfile(**asdict(profile.facts)),
         latest_periodic_report=_report_ref(report) if report else None,
-        source_filings=[SourceFiling.of(report.filing_number, report.title)] if report else [],
-        notes=notes,
+        source_filings=[SourceFiling.of(s.filing_number, s.title) for s in profile.sources],
+        notes=list(profile.notes),
         as_of=state.today(),
     )

@@ -23,6 +23,9 @@ coverage:
       sdk:
         flags:
           - sdk
+      analysis:
+        flags:
+          - analysis
       mcp:
         flags:
           - mcp
@@ -31,6 +34,9 @@ coverage:
       sdk:
         flags:
           - sdk
+      analysis:
+        flags:
+          - analysis
       mcp:
         flags:
           - mcp
@@ -39,6 +45,10 @@ flags:
   sdk:
     paths:
       - packages/sdk/src/opendart/
+    carryforward: false
+  analysis:
+    paths:
+      - packages/analysis/src/opendart_analysis/
     carryforward: false
   mcp:
     paths:

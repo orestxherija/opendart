@@ -1,16 +1,18 @@
 """get_corporate_action_calendar: forward corporate-action dates for a company or watchlist.
 
-Each company's event reports are read through the events service, as calendar_reads plans:
-schedules (subscriptions, record dates, listings, conversion windows, meetings, suspensions)
-are announced weeks to a year before the dates themselves, bond schedules years before, and
-amended rows carry the latest dates. Only kinds whose reports have calendar dates are read.
+Assembling the calendar lives in ``opendart_analysis.calendar``: the window and kinds, the
+lookback windows over which each company's event reports are read (a year before the first
+date, three years for bond reports), event dates as items, merged repeats, and the order.
+This adapter validates tool arguments, resolves the watchlist (asking about ambiguous names),
+binds the reads to the gateway, bounds the work by a deadline, projects the analysis values
+into the unchanged output model, caps it at ``MAX_ITEMS``, and words the notes.
 
 Debt maturities are merged through an optional MaturityProvider: a coroutine function that
 takes the state, one resolved company, and the calendar window, and returns calendar items
 (action "debt_maturity") and notes, for example on what the items cover or why the source
-was unavailable. It runs when kinds is None or names DEBT_KIND; items outside the window are
-dropped. calendar_items merges dates that a registration statement repeats from its
-decision, and event maturities that a debt maturity repeats.
+was unavailable. It runs when kinds is None or names ``opendart_analysis.calendar.DEBT_KIND``;
+items outside the window are dropped, and its items merge with event maturities like the
+analysis reader's.
 """
 
 from __future__ import annotations
@@ -19,30 +21,37 @@ import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
-from opendart_mcp.core.errors import (
-    AmbiguousCompanyError,
-    InvalidArgumentError,
-    QuotaExhaustedError,
-    UpstreamError,
+from opendart_analysis import calendar
+from opendart_analysis.calendar import (
+    LONG_KINDS,
+    MAX_COMPANIES,
+    UndatedKindsError,
+    UnknownKindsError,
 )
+from opendart_analysis.errors import AnalysisError
+from opendart_mcp.core.errors import AmbiguousCompanyError, InvalidArgumentError, from_analysis
 from opendart_mcp.core.interaction import choosing
 from opendart_mcp.core.progress import no_progress
-from opendart_mcp.domain.dates import DateWindow, parse_date_arg, parse_horizon
-from opendart_mcp.events import ACTIONS, CALENDAR_KINDS
+from opendart_mcp.core.upstream import service_fetch
+from opendart_mcp.core.upstream_filings import filing_pages
 from opendart_mcp.models.calendar import CalendarResult
-from opendart_mcp.registry import expand
-from opendart_mcp.services.calendar_items import event_items, merge_maturities
-from opendart_mcp.services.calendar_reads import LONG_KINDS, Reads, read_events
-from opendart_mcp.services.events import FOREGROUND_DEADLINE, bounded
+from opendart_mcp.services.calendar_items import analysis_item, output_item, subject
+from opendart_mcp.services.events import FOREGROUND_DEADLINE, READ_POLICY, bounded
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
     from datetime import date
 
+    from opendart_analysis.calendar import (
+        CalendarSubject,
+        CorporateActionCalendar,
+        KindSelection,
+        Reads,
+    )
+    from opendart_analysis.domain.dates import DateWindow
     from opendart_mcp.core.progress import Progress
     from opendart_mcp.core.state import AppState
     from opendart_mcp.models.calendar import CalendarItem
-    from opendart_mcp.registry import EventKind
     from opendart_mcp.services.companies import Company
 
 type MaturityProvider = Callable[
@@ -50,11 +59,17 @@ type MaturityProvider = Callable[
 ]
 """Debt maturity source: (state, company, calendar window) to calendar items and notes."""
 
-DEBT_KIND: Final = "debt_maturity"
-"""Calendar-only kind that selects the maturity provider's debt maturities."""
+__all__ = [
+    "MAX_ITEMS",
+    "CalendarRequest",
+    "MaturityProvider",
+    "action_calendar",
+    "calendar_kinds",
+    "resolve_companies",
+]
+
 MAX_ITEMS: Final = 200
 """Most items returned; the calendar app and the model read them all."""
-_ACTION_ORDER: Final = {code: index for index, code in enumerate(ACTIONS)}
 _AS_FILED: Final = "Conversion, exercise, exchange, and maturity dates of bonds are as filed at issuance; bonds converted or redeemed early still show them."
 
 
@@ -66,7 +81,7 @@ class CalendarRequest:
         horizon (str): Last date, as an ISO date or a forward duration.
         include_past (str | None): First date when earlier than today, as an ISO date or a
             backward duration; None starts today.
-        kinds (tuple[str, ...] | None): Event groups or kinds, and DEBT_KIND; None for
+        kinds (tuple[str, ...] | None): Event groups or kinds, and the debt kind; None for
             every kind with calendar dates and debt maturities.
     """
 
@@ -76,118 +91,40 @@ class CalendarRequest:
 
 
 @dataclass(frozen=True, slots=True)
-class KindSelection:
-    """What a calendar request reads.
+class _Provided:
+    """A maturity provider's answer, as ``opendart_analysis.calendar`` reads it.
 
     Attributes:
-        events (tuple[EventKind, ...] | None): Event kinds; None lets each company's filing
-            index choose; empty reads no event reports.
-        debt (bool): Whether to merge debt maturities.
-        notes (tuple[str, ...]): Notes about kinds left out.
+        items (tuple[calendar.CalendarItem, ...]): The provider's items.
+        notes (tuple[str, ...]): The provider's notes.
     """
 
-    events: tuple[EventKind, ...] | None
-    debt: bool
-    notes: tuple[str, ...] = ()
-
-
-@dataclass(frozen=True, slots=True)
-class _Plan:
-    """What to read for every company.
-
-    Attributes:
-        span (DateWindow): Calendar dates to keep.
-        reads (Reads): Event reports to read.
-        maturities (MaturityProvider | None): Debt maturity source, when requested.
-    """
-
-    span: DateWindow
-    reads: Reads
-    maturities: MaturityProvider | None
-
-
-def _horizon(text: str, today: date) -> date:
-    """Parse the forward horizon.
-
-    Args:
-        text (str): ISO date or forward duration, such as 90d.
-        today (date): Today in KST.
-
-    Returns:
-        date: Last calendar date.
-
-    Raises:
-        InvalidArgumentError: The horizon is invalid or in the past.
-    """
-    try:
-        end = parse_horizon(text, today=today)
-    except ValueError as error:
-        message = f"horizon: {error}."
-        raise InvalidArgumentError(message) from error
-    if end < today:
-        message = f"horizon ({end}) is before today ({today}); pass a forward duration such as 90d, and include_past for earlier dates."
-        raise InvalidArgumentError(message)
-    return end
-
-
-def _start(text: str | None, today: date) -> date:
-    """Parse include_past.
-
-    Args:
-        text (str | None): ISO date or backward duration, such as 30d; None for today.
-        today (date): Today in KST.
-
-    Returns:
-        date: First calendar date.
-
-    Raises:
-        InvalidArgumentError: The value is invalid or after today.
-    """
-    if text is None:
-        return today
-    try:
-        start = parse_date_arg(text, today=today)
-    except ValueError as error:
-        message = f"include_past: {error}."
-        raise InvalidArgumentError(message) from error
-    if start > today:
-        message = f"include_past ({start}) is after today ({today}); pass a past date or a duration such as 30d."
-        raise InvalidArgumentError(message)
-    return start
+    items: tuple[calendar.CalendarItem, ...]
+    notes: tuple[str, ...]
 
 
 def calendar_kinds(kinds: Sequence[str] | None) -> KindSelection:
     """Validate requested kinds, keeping those whose reports have calendar dates.
 
     Args:
-        kinds (Sequence[str] | None): Event groups or kinds, and DEBT_KIND; None or empty
+        kinds (Sequence[str] | None): Event groups or kinds, and the debt kind; None or empty
             for all.
 
     Returns:
-        KindSelection: Event kinds to read, whether to merge debt maturities, and notes
-            about kinds left out.
+        KindSelection: Event kinds to read, whether to merge debt maturities, and the kinds
+            left out.
 
     Raises:
         InvalidArgumentError: A name is unknown, or no requested kind has calendar dates.
     """
-    if not kinds:
-        return KindSelection(None, debt=True)
-    names = [name for name in kinds if name != DEBT_KIND]
-    debt = len(names) < len(kinds)
-    if not names:
-        return KindSelection((), debt=debt)
     try:
-        selected = expand(names)
-    except ValueError as error:
-        message = f"{error} The calendar also accepts {DEBT_KIND}. See the opendart://reference/event-kinds resource."
+        return calendar.calendar_kinds(kinds)
+    except UnknownKindsError as error:
+        message = f"{error} See the opendart://reference/event-kinds resource."
         raise InvalidArgumentError(message) from error
-    kept = tuple(kind for kind in selected if kind in CALENDAR_KINDS)
-    dropped = [kind for kind in selected if kind not in CALENDAR_KINDS]
-    if not kept and not debt:
-        message = f"{", ".join(dropped)} reports carry no calendar dates; call get_corporate_events for them."
-        raise InvalidArgumentError(message)
-    note = f"Left out kinds without calendar dates: {", ".join(dropped)}."
-    return KindSelection(kept, debt=debt, notes=(note,) if dropped else ())
+    except UndatedKindsError as error:
+        message = f"{", ".join(error.kinds)} reports carry no calendar dates; call get_corporate_events for them."
+        raise InvalidArgumentError(message) from error
 
 
 async def _settle(
@@ -243,119 +180,59 @@ async def resolve_companies(
     return list(unique.values()), [f"Merged {merged} duplicate companies."] if merged else []
 
 
-async def _maturities(
-    state: AppState, company: Company, plan: _Plan
-) -> tuple[Sequence[CalendarItem], Sequence[str]]:
-    """Ask the maturity provider for one company's debt maturities within the span.
+def _provider(
+    state: AppState, provider: MaturityProvider, companies: Sequence[Company]
+) -> Callable[[CalendarSubject, DateWindow], Awaitable[_Provided]]:
+    """Adapt a maturity provider to ``opendart_analysis.calendar``'s maturity reader.
 
     Args:
         state (AppState): Server state.
-        company (Company): Resolved company.
-        plan (_Plan): What to read.
+        provider (MaturityProvider): Debt maturity source.
+        companies (Sequence[Company]): Resolved companies, by which subjects are found.
 
     Returns:
-        tuple[Sequence[CalendarItem], Sequence[str]]: Items within the span and notes.
+        Callable[[CalendarSubject, DateWindow], Awaitable[_Provided]]: The reader.
     """
-    if plan.maturities is None:
-        return (), ()
-    items, notes = await plan.maturities(state, company, plan.span)
-    return [item for item in items if plan.span.start <= item.date <= plan.span.end], notes
+    by_code = {company.corp_code: company for company in companies}
 
-
-async def _company_items(
-    state: AppState, company: Company, plan: _Plan
-) -> tuple[list[CalendarItem], list[str]]:
-    """Collect one company's calendar items, reading events and debt concurrently.
-
-    Args:
-        state (AppState): Server state.
-        company (Company): Resolved company.
-        plan (_Plan): What to read.
-
-    Returns:
-        tuple[list[CalendarItem], list[str]]: Items and notes.
-
-    Raises:
-        BaseException: The first failure of either read, after both have finished.
-    """
-    batches, maturities = await asyncio.gather(
-        read_events(state, company, plan.reads),
-        _maturities(state, company, plan),
-        return_exceptions=True,
-    )
-    if isinstance(batches, BaseException):
-        raise batches
-    if isinstance(maturities, BaseException):
-        raise maturities
-    debt, debt_notes = maturities
-    records = [record for batch in batches for record in batch.records]
-    items = merge_maturities(event_items(company, records, plan.span), debt)
-    failed = ", ".join(kind for batch in batches for kind in batch.failed)
-    notes = (
-        [f"OpenDART did not answer for {company.ref.name}'s {failed} reports."] if failed else []
-    )
-    return items, [*notes, *debt_notes]
-
-
-async def _collect(
-    state: AppState, companies: Sequence[Company], plan: _Plan, *, progress: Progress
-) -> tuple[list[CalendarItem], list[str]]:
-    """Collect every company's items concurrently, reporting each company.
-
-    Args:
-        state (AppState): Server state.
-        companies (Sequence[Company]): Resolved companies.
-        plan (_Plan): What to read.
-        progress (Progress): Receives "7/20 Samsung Electronics" messages.
-
-    Returns:
-        tuple[list[CalendarItem], list[str]]: Items and notes.
-
-    Raises:
-        BaseException: A failure other than an upstream error for one company.
-    """
-    done = 0
-
-    async def one(company: Company) -> tuple[list[CalendarItem], list[str]]:
-        """Collect one company's calendar entries and report its completion.
+    async def read(subject: CalendarSubject, window: DateWindow) -> _Provided:
+        """Ask the provider for one company's maturities.
 
         Args:
-            company (Company): Resolved company to read.
+            subject (CalendarSubject): Company.
+            window (DateWindow): Calendar dates.
 
         Returns:
-            tuple[list[CalendarItem], list[str]]: Calendar entries and their notes.
+            _Provided: The provider's items and notes.
         """
-        nonlocal done
-        found = await _company_items(state, company, plan)
-        done += 1
-        await progress(f"{done}/{len(companies)} {company.ref.name}")
-        return found
+        company = by_code[subject.corp_code]
+        items, notes = await provider(state, company, window)
+        return _Provided(tuple(analysis_item(item, company) for item in items), tuple(notes))
 
-    outcomes = await asyncio.gather(*(one(c) for c in companies), return_exceptions=True)
-    items: list[CalendarItem] = []
-    notes: list[str] = []
-    for company, outcome in zip(companies, outcomes, strict=True):
-        if isinstance(outcome, UpstreamError) and not isinstance(outcome, QuotaExhaustedError):
-            notes.append(f"No dates for {company.ref.name}: {outcome}")
-        elif isinstance(outcome, BaseException):
-            raise outcome
-        else:
-            items.extend(outcome[0])
-            notes.extend(outcome[1])
-    return items, notes
+    return read
 
 
-def _sort_key(item: CalendarItem) -> tuple[date, str, int, str]:
-    """Order items by date, company, action, and filing.
+def _company_notes(found: CorporateActionCalendar[_Provided]) -> list[str]:
+    """Describe each company's failures and debt coverage, in company order.
 
     Args:
-        item (CalendarItem): Calendar item.
+        found (CorporateActionCalendar[_Provided]): Assembled calendar.
 
     Returns:
-        tuple[date, str, int, str]: Sort key.
+        list[str]: Notes.
     """
-    order = _ACTION_ORDER.get(item.action, len(_ACTION_ORDER))
-    return item.date, item.company.name, order, item.filing_number
+    notes: list[str] = []
+    for company in found.companies:
+        name = company.subject.name
+        if company.error is not None:
+            notes.append(f"No dates for {name}: {company.error}")
+            continue
+        if company.failed:
+            notes.append(
+                f"OpenDART did not answer for {name}'s {", ".join(company.failed)} reports."
+            )
+        notes.extend(() if company.maturities is None else company.maturities.notes)
+    return notes
 
 
 async def action_calendar(
@@ -381,19 +258,34 @@ async def action_calendar(
         CalendarResult: Items sorted by date, capped at MAX_ITEMS.
     """
     today = state.today()
-    span = DateWindow(_start(request.include_past, today), _horizon(request.horizon, today))
+    span = _window(request, today)
     selection = calendar_kinds(request.kinds)
     resolved, merged = await resolve_companies(state, companies, progress=progress)
-    reads = Reads.before(span.start, today=today, kinds=selection.events)
-    plan = _Plan(span, reads, maturities if selection.debt else None)
-    label = f"Reading event filings for {len(resolved)} companies"
-    items, found = await bounded(
-        _collect(state, resolved, plan, progress=progress), progress, label=label, deadline=deadline
+    provider = maturities if selection.debt else None
+    work = calendar.corporate_action_calendar(
+        [subject(company) for company in resolved],
+        window=span,
+        kinds=selection.events,
+        maturities=None if provider is None else _provider(state, provider, resolved),
+        fetch_service=service_fetch(state.require_gateway),
+        read_filing_page=filing_pages(state.require_gateway),
+        policy=READ_POLICY,
+        max_companies=MAX_COMPANIES,
+        # The gateway bounds every upstream request across tool calls; a second limit here
+        # would also hold slots for cache hits and change how calls share the gateway.
+        limit=None,
+        today=today,
+        progress=progress,
     )
-    items.sort(key=_sort_key)
-    missing = selection.debt and maturities is None
-    coverage = _coverage(items, plan, missing=missing)
-    notes = [*merged, *selection.notes, *coverage, *found, *_tail(items, span)]
+    label = f"Reading event filings for {len(resolved)} companies"
+    try:
+        found = await bounded(work, progress, label=label, deadline=deadline)
+    except AnalysisError as error:
+        raise from_analysis(error) from error
+    by_code = {company.corp_code: company for company in resolved}
+    items = [output_item(item, by_code[item.corp_code]) for item in found.items]
+    coverage = _coverage(found, selection, missing=selection.debt and maturities is None)
+    notes = [*merged, *coverage, *_company_notes(found), *_tail(items, span)]
     return CalendarResult(
         as_of=today,
         start=span.start,
@@ -405,22 +297,66 @@ async def action_calendar(
     )
 
 
-def _coverage(items: Sequence[CalendarItem], plan: _Plan, *, missing: bool) -> list[str]:
+def _window(request: CalendarRequest, today: date) -> DateWindow:
+    """Resolve the calendar's dates.
+
+    Args:
+        request (CalendarRequest): Validated tool arguments.
+        today (date): Today in KST.
+
+    Returns:
+        DateWindow: From today or include_past to the horizon.
+
+    Raises:
+        InvalidArgumentError: horizon or include_past is invalid or on the wrong side of today.
+    """
+    try:
+        return calendar.calendar_window(request.horizon, request.include_past, today=today)
+    except AnalysisError as error:
+        raise from_analysis(error) from error
+
+
+def _source_note(reads: Reads) -> str | None:
+    """Say which filings the event dates come from.
+
+    Args:
+        reads (Reads): Event reports read.
+
+    Returns:
+        str | None: The note, or None when no event reports are read.
+    """
+    recent, bonds = reads.reads_recent, reads.reads_bonds
+    if recent and bonds:
+        return f"Dates come from major-issue and registration filings made since {reads.recent.start} and, for convertible, warrant, exchangeable, and other bonds, since {reads.extended.start}."
+    if recent:
+        return (
+            f"Dates come from major-issue and registration filings made since {reads.recent.start}."
+        )
+    if bonds:
+        return f"Dates come from convertible, warrant, exchangeable, and other bond filings made since {reads.extended.start}."
+    return None
+
+
+def _coverage(
+    found: CorporateActionCalendar[_Provided], selection: KindSelection, *, missing: bool
+) -> list[str]:
     """Describe what the dates cover.
 
     Args:
-        items (Sequence[CalendarItem]): Every item found.
-        plan (_Plan): What was read.
+        found (CorporateActionCalendar[_Provided]): Assembled calendar.
+        selection (KindSelection): Kinds read and left out.
         missing (bool): Whether debt maturities were requested without a source.
 
     Returns:
         list[str]: Notes.
     """
-    source = plan.reads.note()
-    notes = [source] if source else []
+    dropped = ", ".join(selection.dropped)
+    notes = [f"Left out kinds without calendar dates: {dropped}."] if dropped else []
+    if source := _source_note(found.reads):
+        notes.append(source)
     if missing:
         notes.append("Debt maturities are not included; see get_debt_profile.")
-    if any(item.source_kind in LONG_KINDS for item in items):
+    if any(item.source_kind in LONG_KINDS for item in found.items):
         notes.append(_AS_FILED)
     return notes
 

@@ -6,6 +6,7 @@ from fastmcp import Context
 from fastmcp.dependencies import CurrentContext, Depends
 from fastmcp.prompts import Message, prompt
 
+from opendart_analysis.catalog import EVENT_GROUPS, EVENT_KINDS
 from opendart_mcp.app.errors import prompt_errors
 from opendart_mcp.app.state import get_state
 from opendart_mcp.core.state import AppState
@@ -17,7 +18,6 @@ from opendart_mcp.prompts.common import (
     quoted,
     subject,
 )
-from opendart_mcp.registry import EVENT_GROUPS, EVENT_KINDS
 
 DIRECTIONS: Final = ("long", "short")
 GROUP_OF: Final[dict[str, str]] = {

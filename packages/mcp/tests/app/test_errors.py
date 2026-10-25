@@ -9,15 +9,23 @@ import pytest
 from fastmcp import Client
 from fastmcp.exceptions import PromptError, ResourceError, ToolError
 from mcp import MCPError
+from pydantic import BaseModel
 
 from opendart_mcp.app.errors import (
     as_mcp_error,
     find_cause,
     prompt_errors,
     resource_errors,
-    tool_errors,
 )
+from opendart_mcp.app.views import markdown_view
 from opendart_mcp.core.errors import AmbiguousCompanyError, InvalidArgumentError, ServerError
+
+
+class Profile(BaseModel):
+    """A tool result for the conversion tests."""
+
+    name: str
+
 
 MESSAGE = "Ambiguous company 'Samsung'; candidates: 00126380 (005930), 00126362 (006400)."
 
@@ -31,8 +39,7 @@ def test_errors_keep_the_domain_message_and_log_quietly(kind):
 
 
 @pytest.mark.parametrize(
-    ("decorator", "kind"),
-    [(tool_errors, ToolError), (resource_errors, ResourceError), (prompt_errors, PromptError)],
+    ("decorator", "kind"), [(resource_errors, ResourceError), (prompt_errors, PromptError)]
 )
 @pytest.mark.anyio
 async def test_decorators_convert_domain_failures(decorator, kind):
@@ -46,7 +53,7 @@ async def test_decorators_convert_domain_failures(decorator, kind):
     assert failing.__name__ == "failing"
 
 
-@pytest.mark.parametrize("decorator", [tool_errors, resource_errors, prompt_errors])
+@pytest.mark.parametrize("decorator", [resource_errors, prompt_errors])
 @pytest.mark.anyio
 async def test_decorators_pass_results_and_other_failures_through(decorator):
     @decorator
@@ -75,8 +82,8 @@ async def test_converted_failures_are_not_masked_without_the_middleware(wired):
         raise AmbiguousCompanyError(MESSAGE)
 
     @server.tool
-    @tool_errors
-    async def profile() -> str:
+    @markdown_view(lambda result: result.name)
+    async def profile() -> Profile:
         raise AmbiguousCompanyError(MESSAGE)
 
     async with Client(server) as client:
