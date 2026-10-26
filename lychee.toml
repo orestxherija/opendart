@@ -23,7 +23,8 @@ exclude = [
     '^https?://(?:eng)?opendart\.fss\.or\.kr(?:/|$)',
     # Anonymous Docker dashboard requests enter an OAuth redirect loop.
     '^https://app\.docker\.com/?$',
-    # Private workflow URLs return 404 to anonymous requests.
-    '^https://github\.com/orestxherija/opendart/actions/workflows/ci\.yml\?query=branch%3Amain$',
-    '^https://github\.com/orestxherija/opendart/actions/workflows/ci\.yml/badge\.svg\?branch=main$',
+    # This repository is private, so its own GitHub URLs return 404 to anonymous requests.
+    # Package READMEs use absolute URLs because PyPI cannot resolve relative links.
+    # Drop this exclusion when the repository becomes public.
+    '^https://github\.com/orestxherija/opendart(?:/|$)',
 ]
