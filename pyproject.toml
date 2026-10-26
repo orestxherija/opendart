@@ -11,7 +11,7 @@ package = false
 # actionlint-py builds from source; pin its build tools. packaging stays free because
 # hatchling also uses it to build the workspace packages.
 build-constraint-dependencies = [
-  "certifi==2026.10.19",
+  "certifi==2026.10.23",
   "charset-normalizer==3.5.2",
   "idna==3.20",
   "requests==2.34.2",
