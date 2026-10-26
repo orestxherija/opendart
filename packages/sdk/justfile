@@ -1,0 +1,31 @@
+set working-directory := '../..'
+
+default:
+    @just --justfile '{{ source_file() }}' --list
+
+lint:
+    uv run --no-sync ruff check packages/sdk scripts/sdk/generate_sdk.py
+    uv run --no-sync ruff format --check packages/sdk scripts/sdk/generate_sdk.py
+
+format:
+    uv run --no-sync ruff format packages/sdk scripts/sdk/generate_sdk.py
+
+typecheck:
+    uv run --no-sync pyrefly check --config pyrefly.toml packages/sdk/src
+
+test:
+    uv run --no-sync prek run pytest-sdk --all-files --stage pre-push
+
+# Check that the generated SDK files match the reference.
+generated:
+    uv run --no-sync python scripts/sdk/generate_sdk.py --check
+
+# Check the SDK and generated-file freshness.
+check: lint typecheck test generated
+
+# Regenerate the SDK from the checked-in reference.
+generate:
+    uv run --no-sync python scripts/sdk/generate_sdk.py
+
+build:
+    uv build --package opendart-sdk

@@ -1,0 +1,9 @@
+# Betterleaks v1 finding fingerprints only; no path globs.
+# This file intentionally has no active exceptions.
+#
+# Document each confirmed false positive before adding a fingerprint:
+# path/to/file:rule-id:start-line
+# commit-sha:path/to/file:rule-id:start-line
+#
+# Prefer a narrowly scoped path-and-value allowlist in betterleaks.toml for a
+# recurring synthetic fixture. Never ignore an actual credential.

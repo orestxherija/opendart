@@ -1,0 +1,12 @@
+[run]
+branch = true
+relative_files = true
+data_file = ".cache/coverage/.coverage.analysis"
+source = ["packages/analysis/src/opendart_analysis"]
+
+[report]
+show_missing = true
+skip_covered = true
+
+[xml]
+output = ".cache/coverage/analysis.xml"

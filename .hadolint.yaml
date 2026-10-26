@@ -1,0 +1,19 @@
+---
+
+failure-threshold: info
+format: tty
+no-color: false
+no-fail: false
+ignored: []
+override:
+  error: []
+  warning: []
+  info:
+    - DL1001
+    - DL3057
+  style: []
+
+label-schema: {}
+strict-labels: false
+disable-ignore-pragma: true
+trustedRegistries: []

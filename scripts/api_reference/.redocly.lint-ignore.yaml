@@ -1,0 +1,6 @@
+# Redocly validates literal XML as JSON; check.py parses and validates these XML examples.
+../../api_reference/examples.yaml:
+  no-invalid-media-type-examples:
+    - '#/NoDataXml/value'
+    - '#/FileUnavailableXml/value'
+    - '#/InvalidParametersXml/value'

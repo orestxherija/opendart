@@ -1,0 +1,83 @@
+# Entries waive one <scenario>:<check-id>; newly passing checks must be removed.
+# Only absent suite fixtures, unsupported optional features, and upstream defects belong here.
+server:
+  - tools-call-image:tools-call-image
+  - tools-call-audio:tools-call-audio
+  - tools-call-embedded-resource:tools-call-embedded-resource
+  - tools-call-mixed-content:tools-call-mixed-content
+
+  - tools-call-with-logging:tools-call-with-logging
+  - tools-call-with-progress:tools-call-with-progress
+  - tools-call-sampling:tools-call-sampling
+  - tools-call-elicitation:tools-call-elicitation
+  - elicitation-sep1034-defaults:elicitation-sep1034-general
+  - elicitation-sep1330-enums:elicitation-sep1330-general
+
+  - json-schema-2020-12:json-schema-2020-12-tool-found
+
+  - server-sse-polling:incoming-sse-event
+
+  - server-stateless:sep-2575-server-rejects-undeclared-capability
+  - server-stateless:sep-2575-missing-capability-http-400
+
+  - resources-read-text:resources-read-text
+  - resources-read-binary:resources-read-binary
+  - resources-templates-read:resources-templates-read
+
+  - prompts-get-simple:prompts-get-simple
+  - prompts-get-with-args:prompts-get-with-args
+  - prompts-get-embedded-resource:prompts-get-embedded-resource
+  - prompts-get-with-image:prompts-get-with-image
+
+  - input-required-result-basic-elicitation:sep-2322-elicitation-incomplete
+  - input-required-result-basic-sampling:sep-2322-sampling-incomplete
+  - input-required-result-basic-list-roots:sep-2322-list-roots-incomplete
+  - input-required-result-request-state:sep-2322-request-state-incomplete
+  - input-required-result-multiple-input-requests:sep-2322-multiple-inputs-incomplete
+  - input-required-result-multi-round:sep-2322-multi-round-r1
+  - input-required-result-non-tool-request:sep-2322-non-tool-incomplete
+  - input-required-result-result-type:sep-2322-result-type-included
+  - input-required-result-tampered-state:sep-2322-reject-tampered-state
+  - input-required-result-capability-check:sep-2322-respect-client-capabilities
+  - input-required-result-missing-input-response:sep-2322-missing-response-rerequests
+
+  - tasks-capability-negotiation:tasks-per-request-meta-opt-in
+  - tasks-dispatch-and-envelope:tasks-server-directed-creation-no-hint
+  - tasks-dispatch-and-envelope:sep-2663-durable-create-strong-consistency
+  - tasks-lifecycle:sep-2663-result-type-task-on-create
+  - tasks-lifecycle:sep-2663-tasks-get-status-working
+  - tasks-lifecycle:sep-2663-tasks-get-status-completed
+  - tasks-lifecycle:sep-2663-tool-error-uses-completed-status
+  - tasks-lifecycle:sep-2663-tasks-get-status-failed
+  - tasks-lifecycle:sep-2663-cancel-ack-empty-result
+  - tasks-lifecycle:tasks-cancel-terminal-idempotent-ack
+  - tasks-mrtr-composition:sep-2663-mrtr-synchronous-before-task-creation
+  - tasks-mrtr-input:sep-2663-tasks-get-status-input-required
+  - tasks-mrtr-input:tasks-mrtr-tasks-update-resumes
+  - tasks-mrtr-input:tasks-mrtr-partial-fulfillment
+  - tasks-request-headers:tasks-headers-tolerate-mcp-method-on-tools-call
+  - tasks-request-headers:sep-2663-routing-headers-accepted-on-tasks-get
+  - tasks-request-headers:sep-2663-server-rejects-mismatched-mcp-name-on-tasks-get
+  - tasks-request-state-removal:tasks-request-state-removal-setup
+  - tasks-required-task-error:sep-2663-server-returns-missing-capability-when-required
+  - tasks-wire-fields:tasks-wire-field-renames
+  - tasks-wire-fields:tasks-no-early-ttl-expiry
+  - tasks-wire-fields:tasks-no-related-task-meta-on-inlined-result
+
+  # Not offered: the server does not declare resources.subscribe.
+  - resources-subscribe:resources-subscribe
+  - resources-unsubscribe:resources-unsubscribe
+
+  # No tool declares x-mcp-header parameters.
+  - http-custom-header-server-validation:sep-2243-server-no-xmcp-tool
+  - http-custom-header-server-validation:sep-2243-server-decode-base64
+  - http-custom-header-server-validation:sep-2243-server-validate-param-match
+  - http-custom-header-server-validation:sep-2243-server-reject-invalid-param-chars
+  - http-custom-header-server-validation:sep-2243-server-reject-param-mismatch
+
+  # SSE resumption requires an event store; this server has none.
+  - server-sse-polling:server-sse-priming-event
+  - server-sse-polling:server-sse-retry-field
+
+  # mcp-types 2.3 treats null inputResponses as absent; rejecting it is a SHOULD-level check.
+  - input-required-result-validate-input:sep-2322-error-on-protocol-error

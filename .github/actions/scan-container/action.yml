@@ -1,0 +1,56 @@
+name: Scan container
+description: Retain all vulnerability findings and gate fixable HIGH/CRITICAL CVEs and secrets.
+
+inputs:
+  image:
+    description: Image tag or immutable digest to scan
+    required: true
+  vulnerabilities:
+    description: Report and gate vulnerabilities; secrets are always scanned
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Report all vulnerabilities including unfixed findings
+      if: inputs.vulnerabilities == 'true'
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        version: v0.76.0
+        image-ref: ${{ inputs.image }}
+        scanners: vuln
+        format: json
+        output: ${{ runner.temp }}/container-vulnerabilities.json
+        severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+        ignore-unfixed: false
+        exit-code: "0"
+    - name: Gate fixable high and critical vulnerabilities
+      if: inputs.vulnerabilities == 'true'
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        version: v0.76.0
+        image-ref: ${{ inputs.image }}
+        scanners: vuln
+        format: table
+        severity: HIGH,CRITICAL
+        ignore-unfixed: true
+        exit-code: "1"
+    - name: Scan image for secrets
+      if: ${{ !cancelled() }}
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        version: v0.76.0
+        image-ref: ${{ inputs.image }}
+        scanners: secret
+        format: table
+        severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+        exit-code: "1"
+    - name: Retain vulnerability report
+      if: always() && inputs.vulnerabilities == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: container-vulnerabilities-${{ github.job }}
+        path: ${{ runner.temp }}/container-vulnerabilities.json
+        if-no-files-found: warn
+        retention-days: 30

@@ -1,0 +1,33 @@
+set working-directory := '../..'
+
+scripts := 'scripts/analysis/generate_mcp_registry.py'
+
+default:
+    @just --justfile '{{ source_file() }}' --list
+
+lint:
+    uv run --no-sync ruff check packages/analysis {{ scripts }}
+    uv run --no-sync ruff format --check packages/analysis {{ scripts }}
+
+format:
+    uv run --no-sync ruff format packages/analysis {{ scripts }}
+
+typecheck:
+    uv run --no-sync pyrefly check --config pyrefly.toml packages/analysis/src
+
+test:
+    uv run --no-sync prek run pytest-analysis --all-files --stage pre-push
+
+# Check that the generated service catalog matches the API catalog and the SDK naming rules.
+generated:
+    uv run --no-sync python scripts/analysis/generate_mcp_registry.py --check
+
+# Check the analysis package and the generated service catalog.
+check: lint typecheck test generated
+
+# Regenerate the service catalog from the API catalog and the SDK naming rules.
+generate:
+    uv run --no-sync python scripts/analysis/generate_mcp_registry.py
+
+build:
+    uv build --package opendart-analysis

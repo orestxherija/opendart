@@ -1,0 +1,32 @@
+set working-directory := '../..'
+
+default:
+    @just --justfile '{{ source_file() }}' --list
+
+sync:
+    npm --prefix scripts/api_reference ci
+
+lint:
+    uv run --no-sync ruff check scripts/api_reference
+    uv run --no-sync ruff format --check scripts/api_reference
+    npm --prefix scripts/api_reference run lint
+
+# Run offline contract tests.
+test:
+    uv run --no-sync prek run pytest-contracts --all-files --stage pre-push
+
+# Check the reference and generated-file freshness offline.
+check: lint test
+    uv run --no-sync python scripts/api_reference/check.py
+
+# Check operations against the live API: those changed since base, or all without one. Needs a key.
+contracts base='':
+    uv run --no-sync python -m scripts.api_reference.contracts.selection --base {{ quote(base) }} --head "$(git rev-parse HEAD)" --output contract-results/selection.json
+    uv run --no-sync python -m scripts.api_reference.contracts.run --selection contract-results/selection.json --report contract-results/report.json
+
+# Regenerate the OpenAPI reference from the source snapshot.
+generate:
+    uv run --no-sync python scripts/api_reference/build.py
+
+build:
+    npm --prefix scripts/api_reference run build

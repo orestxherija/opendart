@@ -1,0 +1,47 @@
+* text=auto eol=lf
+* whitespace=blank-at-eol,blank-at-eof,space-before-tab
+
+.gitattributes text eol=lf
+.gitignore     text eol=lf
+*.py           text eol=lf diff=python
+*.pyi          text eol=lf diff=python
+*.sh           text eol=lf
+Dockerfile     text eol=lf
+justfile       text eol=lf
+
+*.css      diff=css
+*.html     diff=html
+*.md       diff=markdown
+*.json     text diff
+*.lock     text diff
+*.toml     text diff
+*.xml      text diff
+*.yaml     text diff
+*.yml      text diff
+
+*.gif    binary
+*.ico    binary
+*.jpeg   binary
+*.jpg    binary
+*.pdf    binary
+*.png    binary
+*.webp   binary
+
+/packages/sdk/src/opendart/models/*.py    linguist-generated
+/packages/sdk/src/opendart/models/_base.py linguist-generated=false
+/packages/sdk/src/opendart/resources/*.py linguist-generated
+
+/packages/analysis/src/opendart_analysis/catalog/_generated.py linguist-generated
+
+/api_reference/sources/catalog.json linguist-generated
+/api_reference/sources/contract-audit-*.json linguist-generated
+/api_reference/openapi.yaml    linguist-generated
+/api_reference/parameters.yaml linguist-generated
+/api_reference/examples.yaml   linguist-generated
+/api_reference/paths/*.yaml     linguist-generated
+/api_reference/schemas/*.yaml   linguist-generated
+
+/api_reference/**       linguist-documentation
+*.md                    linguist-documentation
+
+/.agents/plugins/python-conventions/** linguist-vendored

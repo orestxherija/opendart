@@ -1,0 +1,30 @@
+extensions = ["md"]
+hidden = true
+exclude_path = ['(^|/)\.agents/plugins/python-conventions/']
+include_verbatim = false
+include_mail = false
+include_fragments = "anchor-only"
+scheme = ["http", "https", "file"]
+exclude_all_private = true
+skip_missing = false
+require_https = true
+accept = ["200..=299"]
+timeout = 30
+max_retries = 2
+retry_wait_time = 2
+max_concurrency = 16
+host_concurrency = 4
+host_request_interval = "100ms"
+no_progress = true
+format = "compact"
+
+exclude = [
+    # FSS requires unsupported TLS suites or an API key.
+    '^https?://(?:eng)?opendart\.fss\.or\.kr(?:/|$)',
+    # Anonymous Docker dashboard requests enter an OAuth redirect loop.
+    '^https://app\.docker\.com/?$',
+    # This repository is private, so its own GitHub URLs return 404 to anonymous requests.
+    # Package READMEs use absolute URLs because PyPI cannot resolve relative links.
+    # Drop this exclusion when the repository becomes public.
+    '^https://github\.com/orestxherija/opendart(?:/|$)',
+]

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opendart-sdk"
+version = "0.1.0"
+description = "Typed asynchronous Python SDK for English OpenDART"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+  "httpx2>=2.13,<3",
+  "pydantic>=2.11,<3",
+  "pydantic-settings>=2.14.2,<3",
+  "defusedxml>=0.7.1,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opendart"]
+core-metadata-version = "2.4"
+
+[tool.hatch.build.targets.sdist]
+core-metadata-version = "2.4"

@@ -1,0 +1,55 @@
+name: Set up
+description: Install the pinned uv and Python, and optionally Node.js, Safe Chain, and locked dependencies.
+
+inputs:
+  sync:
+    description: Arguments for uv sync --locked; empty installs no Python dependencies
+    required: false
+    default: ""
+  node:
+    description: Also set up Node.js and verify npm and npx through Safe Chain
+    required: false
+    default: "false"
+  npm-cache:
+    description: Lockfile that keys the npm cache; empty disables it
+    required: false
+    default: ""
+  cache:
+    description: Restore and save the uv cache
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up uv and Python
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        version: "0.11.20"
+        python-version: "3.14"
+        enable-cache: ${{ inputs.cache }}
+    - name: Set up Node.js
+      if: inputs.node == 'true'
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: "22.23.3"
+        cache: ${{ inputs.npm-cache != '' && 'npm' || '' }}
+        cache-dependency-path: ${{ inputs.npm-cache }}
+    - name: Install Safe Chain
+      if: inputs.sync != '' || inputs.node == 'true'
+      shell: bash
+      run: bash "$GITHUB_ACTION_PATH/../../../scripts/ci/install_safe_chain.sh"
+    - name: Install locked dependencies
+      if: inputs.sync != ''
+      shell: bash
+      env:
+        SYNC_ARGS: ${{ inputs.sync }}
+      # Later steps call the locked tools by name; the path is fixed, not event input.
+      run: | # zizmor: ignore[github-env]
+        uv safe-chain-verify
+        read -ra arguments <<< "$SYNC_ARGS" && uv sync --locked "${arguments[@]}"
+        echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+    - name: Verify npm and npx through Safe Chain
+      if: inputs.node == 'true'
+      shell: bash
+      run: npm safe-chain-verify && npx safe-chain-verify

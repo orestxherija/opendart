@@ -1,0 +1,12 @@
+{
+  "name": "opendart-api-reference",
+  "private": true,
+  "scripts": {
+    "lint": "redocly lint opendart --config redocly.yaml",
+    "build": "node build-docs.mjs"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.64.1",
+    "redoc": "3.0.1"
+  }
+}

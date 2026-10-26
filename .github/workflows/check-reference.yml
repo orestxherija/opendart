@@ -1,0 +1,67 @@
+name: Check API reference
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build API reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          sync: --only-group dev --only-group contracts
+          node: true
+          npm-cache: scripts/api_reference/package-lock.json
+      - name: Install Redocly
+        run: just reference sync
+      - name: Check tooling, offline contract tests, OpenAPI lint, and generated files
+        run: just reference check
+      - name: Upload offline contract test report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: contracts-test-report
+          path: .cache/pytest/contracts-report.html
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Build static reference
+        run: just reference build
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: site
+          retention-days: 7
+
+  deploy:
+    name: Deploy API reference
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write # Publish the reference to Pages.
+      id-token: write # Authenticate the Pages deployment.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Set up Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5

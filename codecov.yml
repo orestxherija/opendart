@@ -1,0 +1,56 @@
+codecov:
+  notify:
+    wait_for_ci: true
+  require_ci_to_pass: true
+
+comment:
+  behavior: default
+  layout: reach,diff,flags,tree
+  show_carryforward_flags: false
+
+coverage:
+  precision: 2
+  range:
+    - 60.0
+    - 80.0
+  round: down
+  status:
+    changes: false
+    default_rules:
+      flag_coverage_not_uploaded_behavior: include
+    patch:
+      default: false
+      sdk:
+        flags:
+          - sdk
+      analysis:
+        flags:
+          - analysis
+      mcp:
+        flags:
+          - mcp
+    project:
+      default: false
+      sdk:
+        flags:
+          - sdk
+      analysis:
+        flags:
+          - analysis
+      mcp:
+        flags:
+          - mcp
+
+flags:
+  sdk:
+    paths:
+      - packages/sdk/src/opendart/
+    carryforward: false
+  analysis:
+    paths:
+      - packages/analysis/src/opendart_analysis/
+    carryforward: false
+  mcp:
+    paths:
+      - packages/mcp/src/opendart_mcp/
+    carryforward: false

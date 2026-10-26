@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opendart-mcp"
+version = "0.1.0"
+description = "Local HTTP OpenDART MCP server backed by opendart-sdk"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+  "anyio>=4,<5",
+  # fastmcp-tasks patches mcp internals: upgrade fastmcp and mcp together.
+  "fastmcp[tasks]>=4.1.2,<5",
+  "mcp>=2.3,<3",
+  "mcp-types>=2.3,<3",
+  "opendart-analysis>=0.1.0,<0.2",
+  "opendart-sdk>=0.1.0,<0.2",
+  "opentelemetry-api>=1.30,<2",
+  "pydantic>=2.12,<3",
+  "pydantic-settings>=2.14.2,<3",
+  "starlette>=1,<2",
+]
+
+[project.scripts]
+opendart-mcp = "opendart_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opendart_mcp"]
+core-metadata-version = "2.4"
+
+[tool.hatch.build.targets.sdist]
+core-metadata-version = "2.4"

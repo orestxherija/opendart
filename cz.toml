@@ -1,0 +1,43 @@
+[tool.commitizen]
+name = "cz_conventional_commits"
+use_shortcuts = true
+encoding = "utf-8"
+style = []
+
+# Package versions move together; the virtual workspace version is unrelated.
+version_provider = "commitizen"
+version = "0.1.0"
+version_files = [
+    "packages/sdk/pyproject.toml:version",
+    "packages/analysis/pyproject.toml:version",
+    "packages/mcp/pyproject.toml:version",
+]
+version_scheme = "pep440"
+
+tag_format = "v$version"
+ignored_tag_formats = []
+annotated_tag = false
+gpg_sign = false
+
+bump_message = "bump: version $current_version → $new_version"
+# Switch this off when the major version reaches 1.
+major_version_zero = true
+prerelease_offset = 0
+pre_bump_hooks = []
+post_bump_hooks = []
+
+retry_after_failure = false
+always_signoff = false
+breaking_change_exclamation_in_title = false
+
+allow_abort = false
+allowed_prefixes = ["Merge", "Revert", "Pull request", "fixup!", "squash!", "amend!"]
+message_length_limit = 0
+
+changelog_format = "markdown"
+changelog_incremental = false
+changelog_merge_prerelease = false
+update_changelog_on_bump = false
+extras = {}
+change_type_map = {}
+change_type_order = []

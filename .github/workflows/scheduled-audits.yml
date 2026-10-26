@@ -1,0 +1,31 @@
+name: Scheduled audits
+
+on:
+  schedule:
+    - cron: "23 8 * * 1"
+  workflow_dispatch:
+    inputs:
+      audit:
+        description: Audit workflows and locked Python dependencies
+        type: boolean
+        default: true
+      links:
+        description: Check documentation links, including external sites
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-audits
+  cancel-in-progress: false
+
+jobs:
+  audits:
+    name: Audits
+    uses: ./.github/workflows/check-quality.yml
+    with:
+      style: false
+      audit: ${{ github.event_name == 'schedule' || inputs.audit }}
+      links: ${{ github.event_name == 'schedule' || inputs.links }}

@@ -1,0 +1,41 @@
+name: Check release
+
+on:
+  workflow_call:
+    inputs:
+      build:
+        description: Build, validate, and smoke-test every package's distributions
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Package versions and release artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up
+        uses: ./.github/actions/setup
+        with:
+          sync: --all-packages
+      - name: Check release tooling and coordinated versions
+        run: just release-check
+      - name: Build, validate, and smoke-test distributions
+        if: inputs.build
+        run: just release-dist
+      - name: Upload release validation report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-validation-report
+          path: .cache/pytest/release-report.html
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7

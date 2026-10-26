@@ -1,0 +1,40 @@
+default_max_lines = 500
+respect_gitignore = true
+fix_guidance = "Split responsibilities into cohesive modules before adding code."
+exclude = [
+    ".git/**",
+    ".agents/plugins/python-conventions/**",
+    "uv.lock",
+    "scripts/api_reference/package-lock.json",
+    "prek.toml",
+    "api_reference/sources/**",
+    "api_reference/**/*.yaml",
+    "packages/sdk/src/opendart/models/__init__.py",
+    "packages/sdk/src/opendart/models/disclosures.py",
+    "packages/sdk/src/opendart/models/equity_disclosures.py",
+    "packages/sdk/src/opendart/models/financial_statements.py",
+    "packages/sdk/src/opendart/models/major_issues.py",
+    "packages/sdk/src/opendart/models/periodic_reports.py",
+    "packages/sdk/src/opendart/models/securities_registration.py",
+    "packages/sdk/src/opendart/resources/disclosures.py",
+    "packages/sdk/src/opendart/resources/equity_disclosures.py",
+    "packages/sdk/src/opendart/resources/financial_statements.py",
+    "packages/sdk/src/opendart/resources/major_issues.py",
+    "packages/sdk/src/opendart/resources/periodic_reports.py",
+    "packages/sdk/src/opendart/resources/securities_registration.py",
+    "packages/analysis/src/opendart_analysis/catalog/_generated.py",
+    "packages/mcp/components.lock.json",
+]
+
+# Reduce these legacy limits as modules are split.
+[[rules]]
+path = "packages/sdk/tests/test_client.py"
+max_lines = 524
+
+[[rules]]
+path = "scripts/api_reference/build.py"
+max_lines = 722
+
+[[rules]]
+path = "scripts/sdk/generate_sdk.py"
+max_lines = 641

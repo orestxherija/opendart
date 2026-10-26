@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opendart-analysis"
+version = "0.1.0"
+description = "Filing parsing, company lookup, and analysis for English OpenDART data"
+readme = "README.md"
+requires-python = ">=3.14"
+# Analysis never depends on opendart-sdk: callers supply bytes, records, and callbacks.
+dependencies = ["anyio>=4,<5", "defusedxml>=0.7.1,<1", "pydantic>=2.12,<3"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opendart_analysis"]
+core-metadata-version = "2.4"
+
+[tool.hatch.build.targets.sdist]
+core-metadata-version = "2.4"

@@ -1,0 +1,87 @@
+---
+extends: default
+
+yaml-files:
+  - '*.yaml'
+  - '*.yml'
+  - .yamllint.yaml
+ignore:
+  - .git/
+  - .agents/
+  - .codex/
+  - .cache/
+  - .venv/
+  - node_modules/
+  # PyYAML owns generated reference formatting.
+  - /api_reference/openapi.yaml
+  - /api_reference/parameters.yaml
+  - /api_reference/examples.yaml
+  - /api_reference/paths/*.yaml
+  - /api_reference/schemas/*.yaml
+
+rules:
+  anchors:
+    forbid-undeclared-aliases: true
+    forbid-duplicated-anchors: true
+    forbid-unused-anchors: true
+
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+
+  comments:
+    require-starting-space: true
+    ignore-shebangs: true
+    min-spaces-from-content: 1
+  comments-indentation: enable
+
+  document-start: disable
+  document-end:
+    present: false
+
+  empty-lines:
+    max: 1
+    max-start: 0
+    max-end: 0
+
+  empty-values:
+    # GitHub Actions permits empty event mappings.
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: true
+    forbid-in-block-sequences: true
+
+  float-values:
+    require-numeral-before-decimal: true
+    forbid-scientific-notation: false
+    forbid-nan: true
+    forbid-inf: true
+
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  key-duplicates:
+    forbid-duplicated-merge-keys: true
+
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+
+  new-lines:
+    type: unix
+
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: false
+
+  truthy:
+    allowed-values:
+      - 'true'
+      - 'false'
+    # GitHub Actions uses the YAML 1.2 key on.
+    check-keys: false

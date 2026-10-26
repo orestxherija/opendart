@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint-cli2/v0.23.2/schema/markdownlint-cli2-config-schema.json",
+  "config": {
+    "default": true,
+    "MD003": { "style": "atx" },
+    "MD004": { "style": "dash" },
+    "MD007": { "indent": 2 },
+    "MD013": { "line_length": 120, "code_blocks": false, "tables": false },
+    "MD024": { "siblings_only": true },
+    "MD029": { "style": "one_or_ordered" },
+    "MD035": { "style": "---" },
+    "MD046": { "style": "fenced" },
+    "MD048": { "style": "backtick" },
+    "MD049": { "style": "asterisk" },
+    "MD050": { "style": "asterisk" },
+    "MD055": { "style": "leading_and_trailing" },
+    "MD060": { "style": "compact" }
+  },
+  "gitignore": true,
+  "ignores": [".agents/plugins/python-conventions/**"],
+  "noInlineConfig": true
+}

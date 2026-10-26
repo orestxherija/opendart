@@ -1,0 +1,44 @@
+services:
+  mcp:
+    image: ${OPENDART_MCP_IMAGE:-opendart-mcp:dev}
+    pull_policy: never
+    build:
+      context: ../..
+      dockerfile: packages/mcp/Dockerfile
+    environment:
+      OPENDART_MCP_HTTP__HOST: "0.0.0.0"
+      OPENDART_MCP_HTTP__PORT: "8000"
+      OPENDART_MCP_DIRECTORY__CACHE_DIR: /var/cache/opendart-mcp
+    ports:
+      - "127.0.0.1:${OPENDART_MCP_HTTP__PORT:-8000}:8000"
+
+    user: "10001:10001"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=32m,mode=1777
+
+    # Preserve the directory archive across restarts to avoid downloading it again.
+    volumes:
+      - directory-cache:/var/cache/opendart-mcp
+
+    cpus: "1.0"
+    # Measured peak: about 260 MiB with the directory indexed and a large report cached.
+    mem_limit: 512m
+    memswap_limit: 512m
+    pids_limit: 64
+    init: true
+    stop_grace_period: 10s
+    restart: unless-stopped
+
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  directory-cache:

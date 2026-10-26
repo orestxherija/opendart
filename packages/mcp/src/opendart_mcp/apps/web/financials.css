@@ -1,0 +1,4 @@
+/* Financial statements app. */
+#filter { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+#derived { margin-top: 8px; }
+tr.total > * { font-weight: var(--font-weight-semibold, 600); }

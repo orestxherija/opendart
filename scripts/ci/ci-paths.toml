@@ -1,0 +1,197 @@
+# A changed file selects a filter when the last pattern it matches has no leading "!".
+# "include" puts another filter's patterns first. select_components.py applies the event policy.
+
+[shared]
+paths = [
+    "pyproject.toml",
+    "uv.toml",
+    "uv.lock",
+    ".python-version",
+    "justfile",
+    "scripts/ci/justfile",
+    "scripts/ci/ci-paths.toml",
+    ".github/workflows/ci.yml",
+    ".github/actions/setup/**",
+    "scripts/ci/install_safe_chain.sh",
+    "scripts/ci/select_components.py",
+]
+
+[python]
+paths = ["ruff.toml", "pytest.toml"]
+
+[audit]
+paths = [
+    "prek.toml",
+    "pytest.toml",
+    "uv.lock",
+    "scripts/quality/pip_audit.sh",
+    ".github/actions/**",
+    "scripts/ci/**",
+    "scripts/mcp/check_mcp_container.sh",
+    "scripts/mcp/verify_dhi.sh",
+    "scripts/release/check_release_tag.sh",
+    "scripts/release/resolve_image.sh",
+    "scripts/release/promote_image.sh",
+    ".github/workflows/**",
+    "!.github/workflows/README.md",
+    "packages/mcp/Dockerfile",
+    "scripts/conftest.py",
+    "scripts/testing/git.py",
+]
+
+[release]
+include = ["shared", "python"]
+paths = [
+    ".github/workflows/check-release.yml",
+    "cz.toml",
+    "packages/sdk/pyproject.toml",
+    "packages/analysis/pyproject.toml",
+    "packages/mcp/pyproject.toml",
+    "scripts/release/check_release.py",
+    "scripts/release/smoke_distributions.py",
+    "scripts/release/smoke_installed.py",
+    "scripts/release/tests/**",
+    "scripts/conftest.py",
+    "scripts/testing/git.py",
+]
+
+# Package tests cannot change whether the distributions build or install.
+[distributions]
+include = ["shared"]
+paths = [
+    ".github/workflows/check-release.yml",
+    "cz.toml",
+    "packages/sdk/**",
+    "packages/analysis/**",
+    "packages/mcp/**",
+    "!packages/*/tests/**",
+    "scripts/release/check_release.py",
+    "scripts/release/smoke_distributions.py",
+    "scripts/release/smoke_installed.py",
+]
+
+[sdk]
+include = ["shared", "python"]
+paths = [
+    "prek.toml",
+    "pyrefly.toml",
+    "codecov.yml",
+    ".github/workflows/check-sdk.yml",
+    "packages/sdk/**",
+    "scripts/sdk/generate_sdk.py",
+    "api_reference/openapi.yaml",
+    "api_reference/parameters.yaml",
+    "api_reference/examples.yaml",
+    "api_reference/paths/**",
+    "api_reference/schemas/**",
+    "api_reference/sources/**",
+    "scripts/api_reference/build.py",
+    "scripts/api_reference/snapshot.py",
+]
+
+# Analysis uses the SDK generator's naming rules, but never imports the SDK package.
+[analysis]
+include = ["shared", "python"]
+paths = [
+    "prek.toml",
+    "pyrefly.toml",
+    "codecov.yml",
+    "importlinter.toml",
+    ".github/workflows/check-analysis.yml",
+    "packages/analysis/**",
+    "scripts/testing/**",
+    "scripts/analysis/generate_mcp_registry.py",
+    "scripts/sdk/generate_sdk.py",
+    "api_reference/sources/catalog.json",
+    "api_reference/paths/**",
+]
+
+# MCP tests run against the installed SDK and analysis packages.
+[mcp]
+include = ["shared", "python"]
+paths = [
+    "prek.toml",
+    "pyrefly.toml",
+    "codecov.yml",
+    ".hadolint.yaml",
+    ".github/workflows/check-mcp.yml",
+    "packages/mcp/**",
+    "scripts/testing/**",
+    "scripts/mcp/check_mcp.py",
+    "scripts/mcp/check_mcp_runtime.py",
+    "scripts/mcp/check_mcp_components.py",
+    "scripts/mcp/check_mcp_conformance.py",
+    "packages/sdk/src/**",
+    "packages/sdk/pyproject.toml",
+    "packages/sdk/README.md",
+    "packages/analysis/src/**",
+    "packages/analysis/pyproject.toml",
+    "packages/analysis/README.md",
+    "importlinter.toml",
+]
+
+# The image's build inputs mirror the .dockerignore allowlist, without READMEs.
+[image]
+include = ["shared"]
+paths = [
+    ".dockerignore",
+    ".github/workflows/check-mcp-image.yml",
+    ".github/actions/image-metadata/**",
+    ".github/actions/scan-container/**",
+    "scripts/mcp/check_mcp_container.sh",
+    "scripts/mcp/verify_dhi.sh",
+    "packages/mcp/Dockerfile",
+    "packages/mcp/docker-compose.yml",
+    "packages/mcp/compose.secrets.yml",
+    "packages/mcp/pyproject.toml",
+    "packages/mcp/src/**",
+    "packages/mcp/components.lock.json",
+    "packages/sdk/pyproject.toml",
+    "packages/sdk/src/**",
+    "packages/analysis/pyproject.toml",
+    "packages/analysis/src/**",
+    "scripts/mcp/check_mcp.py",
+    "scripts/mcp/check_mcp_runtime.py",
+]
+
+[publisher]
+paths = [
+    ".github/workflows/publish-mcp-image.yml",
+    ".github/actions/verify-image-signature/**",
+    "scripts/release/promote_image.sh",
+]
+
+[base_images]
+paths = ["packages/mcp/Dockerfile", "scripts/mcp/verify_dhi.sh", ".github/workflows/check-mcp-image.yml"]
+
+# Package source cannot change the image's vulnerabilities; the daily scan covers new advisories.
+[vulnerabilities]
+paths = [
+    ".dockerignore",
+    "packages/mcp/Dockerfile",
+    "uv.lock",
+    ".github/actions/scan-container/**",
+    ".github/workflows/check-mcp-image.yml",
+]
+
+[reference]
+include = ["shared", "python"]
+paths = [
+    "prek.toml",
+    ".github/workflows/check-reference.yml",
+    "api_reference/**",
+    "!api_reference/*.md",
+    "scripts/api_reference/**",
+    "scripts/conftest.py",
+    "scripts/testing/git.py",
+]
+
+[api]
+paths = [
+    "api_reference/openapi.yaml",
+    "api_reference/parameters.yaml",
+    "api_reference/examples.yaml",
+    "api_reference/paths/**",
+    "api_reference/schemas/**",
+    ".github/workflows/test-live-contracts.yml",
+]

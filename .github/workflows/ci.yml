@@ -1,0 +1,181 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      quality:
+        description: File, style, and secret checks
+        type: boolean
+        default: true
+      audit:
+        description: Workflow security and locked dependency audit
+        type: boolean
+        default: true
+      release:
+        description: Release metadata and helper tests
+        type: boolean
+        default: true
+      distributions:
+        description: Build and smoke-test every distribution
+        type: boolean
+        default: true
+      sdk:
+        description: SDK checks
+        type: boolean
+        default: true
+      analysis:
+        description: Analysis checks
+        type: boolean
+        default: true
+      mcp:
+        description: MCP checks and protocol conformance
+        type: boolean
+        default: true
+      image:
+        description: Build, test, and scan the MCP image
+        type: boolean
+        default: true
+      reference:
+        description: API reference build; deploys from main
+        type: boolean
+        default: true
+      contracts:
+        description: Test every operation against the live API; main only
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  select:
+    name: Select checks
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    outputs:
+      selection: ${{ steps.select.outputs.selection }}
+      skippable: ${{ steps.select.outputs.skippable }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python
+        uses: ./.github/actions/setup
+        with:
+          cache: false
+      - name: Select checks for the changed files
+        id: select
+        run: uv run --no-project scripts/ci/select_components.py
+
+  quality:
+    name: Quality
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).quality
+    uses: ./.github/workflows/check-quality.yml
+    with:
+      style: ${{ fromJSON(needs.select.outputs.selection).style }}
+      audit: ${{ fromJSON(needs.select.outputs.selection).audit }}
+
+  release:
+    name: Release
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).release
+    uses: ./.github/workflows/check-release.yml
+    with:
+      build: ${{ fromJSON(needs.select.outputs.selection).distributions }}
+
+  sdk:
+    name: SDK
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).sdk
+    uses: ./.github/workflows/check-sdk.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  analysis:
+    name: Analysis
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).analysis
+    uses: ./.github/workflows/check-analysis.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  mcp:
+    name: MCP
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).mcp
+    uses: ./.github/workflows/check-mcp.yml
+    with:
+      conformance: ${{ fromJSON(needs.select.outputs.selection).conformance }}
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  image:
+    name: MCP image
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).image
+    uses: ./.github/workflows/check-mcp-image.yml
+    with:
+      verify-base-images: ${{ fromJSON(needs.select.outputs.selection).base_images }}
+      scan-vulnerabilities: ${{ fromJSON(needs.select.outputs.selection).vulnerabilities }}
+    secrets:
+      DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
+      DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
+
+  reference:
+    name: API reference
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).reference
+    permissions:
+      contents: read
+      pages: write # Allow the reference workflow to deploy Pages.
+      id-token: write # Authenticate the Pages deployment.
+    uses: ./.github/workflows/check-reference.yml
+
+  checks:
+    name: CI checks
+    if: always()
+    needs: [select, quality, release, sdk, analysis, mcp, image, reference]
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Require every selected check to pass
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}
+          allowed-skips: ${{ needs.select.outputs.skippable }}
+
+  publish:
+    name: Publish MCP image
+    needs: [select, checks]
+    if: >-
+      !cancelled() && needs.select.result == 'success' && needs.checks.result == 'success'
+      && fromJSON(needs.select.outputs.selection).publish
+    permissions:
+      contents: read
+      packages: write # Allow publishing MCP images to GHCR.
+      id-token: write # Sign published images with Cosign.
+    uses: ./.github/workflows/publish-mcp-image.yml
+    secrets:
+      DHI_USERNAME: ${{ secrets.DHI_USERNAME }}
+      DHI_TOKEN: ${{ secrets.DHI_TOKEN }}
+
+  contracts:
+    name: Live API contracts
+    needs: select
+    if: fromJSON(needs.select.outputs.selection).contracts
+    uses: ./.github/workflows/test-live-contracts.yml
+    with:
+      base: ${{ github.event_name == 'push' && github.event.before || '' }}
+    secrets:
+      OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}

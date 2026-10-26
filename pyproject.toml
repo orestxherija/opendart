@@ -1,0 +1,88 @@
+[project]
+name = "opendart-workspace"
+version = "0.1.0"
+description = "Workspace for the OpenDART Python SDK, analysis library, and MCP server"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
+
+[tool.uv]
+package = false
+# Pin actionlint-py build tools; packaging must also satisfy Hatchling.
+build-constraint-dependencies = [
+  "certifi==2026.10.19",
+  "charset-normalizer==3.5.2",
+  "idna==3.20",
+  "requests==2.34.2",
+  "semver==3.1.0",
+  "setuptools==84.2.1",
+  "urllib3==2.8.0",
+  "wheel==0.48.0",
+]
+
+[tool.uv.workspace]
+members = ["packages/sdk", "packages/analysis", "packages/mcp"]
+
+[tool.uv.sources]
+opendart-sdk = { workspace = true }
+opendart-analysis = { workspace = true }
+
+[dependency-groups]
+hooks = ["prek>=0.4.13,<0.5", "rust-just==1.59.0"]
+contracts = [
+  "schemathesis==4.32.0",
+  "hypothesis>=6,<7",
+  "requests>=2,<3",
+  "PyYAML==6.0.3",
+  "jsonschema==4.26.0",
+  "defusedxml>=0.7,<1",
+]
+test = [
+  "anyio>=4,<5",
+  "coverage[toml]>=7.15.2,<8",
+  "pytest>=9,<10",
+  "pytest-asyncio>=1.4,<2",
+  "pytest-cov>=7.1,<8",
+  "pytest-html>=4.2,<5",
+  "pytest-randomly>=4.1,<5",
+  "pytest-socket>=0.8,<0.9",
+  "pytest-timeout>=2.4,<3",
+  "pytest-xdist>=3.8,<4",
+  "PyYAML==6.0.3",
+  "openapi-spec-validator==0.9.0",
+  "jsonschema==4.26.0",
+]
+quality = [
+  "actionlint-py==1.7.12.25",
+  "import-linter>=2.15,<3",
+  "loq>=0.1,<0.2",
+  "pip-audit==2.10.1",
+  "ruff>=0.17.1,<0.18",
+  "shellcheck-py==0.11.0.1",
+  "shfmt-py==4.2.0",
+  "pyrefly>=1.1.1,<1.2",
+  "types-PyYAML>=6,<7",
+  "typos==1.48.0",
+  "yamllint>=1.38,<2",
+  "zizmor==1.29.0",
+]
+release = ["commitizen==4.17.0", "packaging>=25,<27", "twine>=6,<7"]
+dev = [
+  { include-group = "hooks" },
+  { include-group = "test" },
+  { include-group = "quality" },
+  { include-group = "release" },
+]
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+source = [
+  "packages/sdk/src/opendart",
+  "packages/analysis/src/opendart_analysis",
+  "packages/mcp/src/opendart_mcp",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

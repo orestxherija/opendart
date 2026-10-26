@@ -1,0 +1,42 @@
+#:schema taplo://taplo.toml
+
+include = ["**/*.toml", "**/.*.toml"]
+exclude = [
+    "**/.git/**",
+    "**/.agents/**",
+    "**/.codex/**",
+    "**/.cache/**",
+    "**/.venv/**",
+    "**/node_modules/**",
+    "**/build/**",
+    "**/dist/**",
+]
+
+[formatting]
+align_entries = false
+align_comments = true
+align_single_comments = false
+array_trailing_comma = true
+array_auto_expand = true
+array_auto_collapse = false
+compact_arrays = true
+reorder_arrays = false
+compact_inline_tables = false
+inline_table_expand = true
+reorder_inline_tables = false
+compact_entries = false
+indent_tables = false
+indent_entries = false
+reorder_keys = false
+column_width = 120
+indent_string = "    "
+allowed_blank_lines = 2
+trailing_newline = true
+crlf = false
+
+# Package manifests use two-space arrays.
+[[rule]]
+include = ["**/pyproject.toml"]
+
+[rule.formatting]
+indent_string = "  "
