@@ -1,4 +1,4 @@
-"""Load scripts/generate_mcp_registry.py so tests can call its pure functions."""
+"""Load scripts/analysis/generate_mcp_registry.py so tests can call its pure functions."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[4]
 @pytest.fixture(scope="session")
 def generator() -> ModuleType:
     """The catalog generator module, imported by path."""
-    path = ROOT / "scripts/generate_mcp_registry.py"
+    path = ROOT / "scripts/analysis/generate_mcp_registry.py"
     spec = importlib.util.spec_from_file_location("generate_mcp_registry", path)
     assert spec is not None
     assert spec.loader is not None

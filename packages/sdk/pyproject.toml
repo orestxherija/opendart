@@ -17,7 +17,6 @@ dependencies = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/opendart"]
-# Keep both formats compatible with the locked Twine release validator.
 core-metadata-version = "2.4"
 
 [tool.hatch.build.targets.sdist]

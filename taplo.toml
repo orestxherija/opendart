@@ -18,7 +18,6 @@ align_comments = true
 align_single_comments = false
 array_trailing_comma = true
 array_auto_expand = true
-# Preserve deliberately multiline dependency and rule lists.
 array_auto_collapse = false
 compact_arrays = true
 reorder_arrays = false
@@ -35,7 +34,7 @@ allowed_blank_lines = 2
 trailing_newline = true
 crlf = false
 
-# Match the workspace and package manifests' existing two-space arrays.
+# Package manifests use two-space arrays.
 [[rule]]
 include = ["**/pyproject.toml"]
 

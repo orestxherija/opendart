@@ -24,7 +24,7 @@ from opendart_mcp.versioning.changes import parse_version
 from opendart_mcp.versioning.model import approx_tokens, canonical, sha256
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "scripts/check_mcp_components.py"
+SCRIPT = ROOT / "scripts/mcp/check_mcp_components.py"
 BUDGET = 10_000
 
 

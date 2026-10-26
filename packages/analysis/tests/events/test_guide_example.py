@@ -1,6 +1,6 @@
 """The events and filing-discovery guides' SDK recipes, without the SDK or MCP.
 
-``sdk_filing_pages`` and ``sdk_service_fetch`` match docs/filings.md and docs/events.md. A
+``sdk_filing_pages`` and ``sdk_service_fetch`` match the filing-discovery and events guides. A
 duck-typed client stands in for ``opendart.OpenDART``, and a local ``NoDataError`` for the
 SDK's exception of that name.
 """
@@ -23,7 +23,7 @@ from opendart_analysis.events import (
     fetch_events,
 )
 from opendart_analysis.filings import FilingSearchRequest, find_filings
-from tests.support.events import convertible_bond, filing
+from scripts.testing.events import convertible_bond, filing
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable

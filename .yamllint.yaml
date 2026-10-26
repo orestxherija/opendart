@@ -12,7 +12,7 @@ ignore:
   - .cache/
   - .venv/
   - node_modules/
-  # PyYAML owns these files' layout; reference CI validates them and regeneration.
+  # PyYAML owns generated reference formatting.
   - /api_reference/openapi.yaml
   - /api_reference/parameters.yaml
   - /api_reference/examples.yaml
@@ -25,7 +25,6 @@ rules:
     forbid-duplicated-anchors: true
     forbid-unused-anchors: true
 
-  # Workflows use compact branch lists and dependency lists.
   braces:
     min-spaces-inside: 0
     max-spaces-inside: 1
@@ -39,7 +38,6 @@ rules:
     min-spaces-from-content: 1
   comments-indentation: enable
 
-  # Existing tool configs use both explicit and implicit document starts.
   document-start: disable
   document-end:
     present: false
@@ -50,7 +48,7 @@ rules:
     max-end: 0
 
   empty-values:
-    # GitHub Actions permits empty event mappings such as workflow_dispatch:.
+    # GitHub Actions permits empty event mappings.
     forbid-in-block-mappings: false
     forbid-in-flow-mappings: true
     forbid-in-block-sequences: true

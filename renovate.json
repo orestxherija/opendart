@@ -153,9 +153,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Track the MCP conformance suite that scripts/check_mcp_conformance.py runs through npx. It is a 0.2 prerelease because only those know the 2026-07-28 revision.",
+      "description": "Track the MCP conformance suite that scripts/mcp/check_mcp_conformance.py runs through npx. It is a 0.2 prerelease because only those know the 2026-07-28 revision.",
       "managerFilePatterns": [
-        "/^scripts/check_mcp_conformance\\.py$/"
+        "/^scripts/mcp/check_mcp_conformance\\.py$/"
       ],
       "matchStrings": [
         "\"(?<depName>@modelcontextprotocol/conformance)@(?<currentValue>[^\"]+)\""
@@ -212,7 +212,7 @@
       "customType": "regex",
       "description": "Aikido Safe Chain installer release.",
       "managerFilePatterns": [
-        "/^\\.github/scripts/install_safe_chain\\.sh$/"
+        "/^scripts/ci/install_safe_chain\\.sh$/"
       ],
       "matchStrings": [
         "\\nversion=(?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"
@@ -224,7 +224,7 @@
       "customType": "regex",
       "description": "Betterleaks release used by local hooks and CI.",
       "managerFilePatterns": [
-        "/^scripts/betterleaks\\.sh$/"
+        "/^scripts/quality/betterleaks\\.sh$/"
       ],
       "matchStrings": [
         "\\nversion=(?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"
@@ -237,7 +237,7 @@
       "customType": "regex",
       "description": "Docker Scout CLI used to verify DHI attestations.",
       "managerFilePatterns": [
-        "/^\\.github/scripts/verify_dhi\\.sh$/"
+        "/^scripts/mcp/verify_dhi\\.sh$/"
       ],
       "matchStrings": [
         "\\nversion=(?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"

@@ -22,7 +22,7 @@ from opendart_analysis.events import (
     fetch_events,
     search_index,
 )
-from tests.support.events import convertible_bond, merger
+from scripts.testing.events import convertible_bond, merger
 
 pytestmark = pytest.mark.anyio
 

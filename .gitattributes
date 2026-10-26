@@ -18,8 +18,6 @@ justfile       text eol=lf
 *.xml      text diff
 *.yaml     text diff
 *.yml      text diff
-*.svg      text diff
-*.drawio   text diff
 
 *.gif    binary
 *.ico    binary
@@ -29,15 +27,12 @@ justfile       text eol=lf
 *.png    binary
 *.webp   binary
 
-# These modules are emitted by scripts/generate_sdk.py; the model base is handwritten.
 /packages/sdk/src/opendart/models/*.py    linguist-generated
 /packages/sdk/src/opendart/models/_base.py linguist-generated=false
 /packages/sdk/src/opendart/resources/*.py linguist-generated
 
-# scripts/generate_mcp_registry.py emits the service catalog's specs from the API catalog.
 /packages/analysis/src/opendart_analysis/catalog/_generated.py linguist-generated
 
-# The reviewed catalog snapshot feeds the generated OpenAPI documents.
 /api_reference/sources/catalog.json linguist-generated
 /api_reference/sources/contract-audit-*.json linguist-generated
 /api_reference/openapi.yaml    linguist-generated
@@ -47,8 +42,6 @@ justfile       text eol=lf
 /api_reference/schemas/*.yaml   linguist-generated
 
 /api_reference/**       linguist-documentation
-/packages/*/docs/**     linguist-documentation
 *.md                    linguist-documentation
 
-# Installed agent conventions are maintained outside this project.
 /.agents/plugins/python-conventions/** linguist-vendored

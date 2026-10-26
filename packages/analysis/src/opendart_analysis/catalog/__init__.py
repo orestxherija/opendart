@@ -1,7 +1,7 @@
 """Catalog of the 85 OpenDART services: SDK names, catalog labels, value kinds, and events.
 
 SERVICES is generated from api_reference/sources/catalog.json by
-scripts/generate_mcp_registry.py; regenerate it rather than editing _generated.py. SDK
+scripts/analysis/generate_mcp_registry.py; regenerate it rather than editing _generated.py. SDK
 method and attribute names are data; this package never imports the SDK.
 """
 

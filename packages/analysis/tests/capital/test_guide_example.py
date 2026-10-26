@@ -1,7 +1,7 @@
 """The capital guide's example, run through a duck-typed client without the SDK or MCP.
 
-``sdk_periodic`` matches docs/capital.md and ``sdk_filing_search`` docs/data-access.md; a local
-``NoDataError`` stands in for the SDK's exception of that name.
+``sdk_periodic`` matches the capital guide and ``sdk_filing_search`` the data-access guide; a
+local ``NoDataError`` stands in for the SDK's exception of that name.
 """
 
 from __future__ import annotations

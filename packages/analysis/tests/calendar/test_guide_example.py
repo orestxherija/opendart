@@ -1,9 +1,9 @@
 """The calendar guide's example, without the SDK or MCP.
 
 ``or_none``, ``sdk_filing_search``, ``sdk_filing_pages``, ``sdk_fetch_service``, and
-``calendar_report`` match docs/data-access.md, docs/filings.md, docs/extracts.md, and
-docs/calendar.md. A duck-typed client stands in for ``opendart.OpenDART``, and a local
-``NoDataError`` for the SDK's exception of that name.
+``calendar_report`` match the data-access, filing-discovery, extracts, and calendar guides. A
+duck-typed client stands in for ``opendart.OpenDART``, and a local ``NoDataError`` for the SDK's
+exception of that name.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from opendart_analysis.calendar import (
 )
 from opendart_analysis.catalog import service
 from opendart_analysis.upstream import CallLimit
-from tests.support.events import HYNIX, SAMSUNG, buyback, convertible_bond, filing
+from scripts.testing.events import HYNIX, SAMSUNG, buyback, convertible_bond, filing
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence

@@ -459,7 +459,7 @@ def build(snapshot):
             "not RFC 3339 dates. Unknown response properties are allowed, and report fields are optional because presence "
             "depends on disclosure content. Examples are synthetic illustrations, not captured or guaranteed filings.\n\n"
             "The guides do not fully specify scalar response types, XML serialization, HTTP error mappings, or media headers. "
-            "These limits, live contract findings, and coverage gaps are recorded in README.md and CONTRACT_TESTING.md. "
+            "The source snapshot and sanitized live observations are retained in sources/. "
             "Bounded Schemathesis audits check observed responses, not every possible filing. "
             "FSS cautions that extracted report data may be incomplete or later corrected.",
             "termsOfService": "https://engopendart.fss.or.kr/intro/terms.do",

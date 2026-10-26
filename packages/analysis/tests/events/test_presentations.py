@@ -18,7 +18,7 @@ from opendart_analysis.events.templates import (
     ratio,
     total,
 )
-from tests.support.events import buyback, convertible_bond, merger, rights_issue
+from scripts.testing.events import buyback, convertible_bond, merger, rights_issue
 
 SAMPLE = {
     "amount": "1,000,000,000",

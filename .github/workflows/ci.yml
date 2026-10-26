@@ -75,7 +75,7 @@ jobs:
           cache: false
       - name: Select checks for the changed files
         id: select
-        run: uv run --no-project .github/scripts/select_components.py
+        run: uv run --no-project scripts/ci/select_components.py
 
   quality:
     name: Quality
@@ -138,8 +138,8 @@ jobs:
     if: fromJSON(needs.select.outputs.selection).reference
     permissions:
       contents: read
-      pages: write # The called workflow deploys the reference site from main.
-      id-token: write # The Pages deployment authenticates with OIDC.
+      pages: write # Allow the reference workflow to deploy Pages.
+      id-token: write # Authenticate the Pages deployment.
     uses: ./.github/workflows/check-reference.yml
 
   checks:
@@ -163,8 +163,8 @@ jobs:
       && fromJSON(needs.select.outputs.selection).publish
     permissions:
       contents: read
-      packages: write # Push, promote, and tag the verified image in GHCR.
-      id-token: write # Sign the image digest with keyless Cosign OIDC.
+      packages: write # Allow publishing MCP images to GHCR.
+      id-token: write # Sign published images with Cosign.
     uses: ./.github/workflows/publish-mcp-image.yml
     secrets:
       DHI_USERNAME: ${{ secrets.DHI_USERNAME }}

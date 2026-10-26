@@ -1,6 +1,6 @@
 """Immutable descriptions of OpenDART services, their parameters, and their response fields.
 
-scripts/generate_mcp_registry.py builds one ServiceSpec per upstream service from the API
+scripts/analysis/generate_mcp_registry.py builds one ServiceSpec per upstream service from the API
 catalog. Names match the SDK: ServiceSpec.name is the method on the resource attribute
 ServiceSpec.resource, ParamSpec.name is the method's keyword argument, and FieldSpec.name is the
 attribute on the SDK record model. The wire names are the upstream ones.

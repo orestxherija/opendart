@@ -1,7 +1,7 @@
 """The ownership guide's example, run through a duck-typed client without the SDK or MCP.
 
-``sdk_holdings`` matches docs/ownership.md, ``sdk_periodic`` docs/capital.md, and
-``sdk_filing_search`` docs/data-access.md; a local ``NoDataError`` stands in for the SDK's
+``sdk_holdings`` matches the ownership guide, ``sdk_periodic`` the capital guide, and
+``sdk_filing_search`` the data-access guide; a local ``NoDataError`` stands in for the SDK's
 exception of that name. The rows are a trimmed copy of Samsung Electronics' FY2025 annual report.
 """
 

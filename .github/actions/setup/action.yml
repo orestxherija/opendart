@@ -38,7 +38,7 @@ runs:
     - name: Install Safe Chain
       if: inputs.sync != '' || inputs.node == 'true'
       shell: bash
-      run: bash "$GITHUB_ACTION_PATH/../../scripts/install_safe_chain.sh"
+      run: bash "$GITHUB_ACTION_PATH/../../../scripts/ci/install_safe_chain.sh"
     - name: Install locked dependencies
       if: inputs.sync != ''
       shell: bash

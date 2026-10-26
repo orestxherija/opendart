@@ -1,18 +1,14 @@
-# Use the shared workspace configuration, including when invoked as a module.
 set working-directory := '../..'
 
-# List available commands.
 default:
     @just --justfile '{{ source_file() }}' --list
 
-# Install locked documentation dependencies.
 sync:
     npm --prefix scripts/api_reference ci
 
-# Check Python tooling and OpenAPI lint.
 lint:
-    uv run --no-sync ruff check scripts/api_reference tests
-    uv run --no-sync ruff format --check scripts/api_reference tests
+    uv run --no-sync ruff check scripts/api_reference
+    uv run --no-sync ruff format --check scripts/api_reference
     npm --prefix scripts/api_reference run lint
 
 # Run offline contract tests.
@@ -25,13 +21,12 @@ check: lint test
 
 # Check operations against the live API: those changed since base, or all without one. Needs a key.
 contracts base='':
-    uv run --no-sync python -m tests.contracts.selection --base {{ quote(base) }} --head "$(git rev-parse HEAD)" --output contract-results/selection.json
-    uv run --no-sync python -m tests.contracts.run --selection contract-results/selection.json --report contract-results/report.json
+    uv run --no-sync python -m scripts.api_reference.contracts.selection --base {{ quote(base) }} --head "$(git rev-parse HEAD)" --output contract-results/selection.json
+    uv run --no-sync python -m scripts.api_reference.contracts.run --selection contract-results/selection.json --report contract-results/report.json
 
 # Regenerate the OpenAPI reference from the source snapshot.
 generate:
     uv run --no-sync python scripts/api_reference/build.py
 
-# Build the static documentation site.
 build:
     npm --prefix scripts/api_reference run build

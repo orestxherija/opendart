@@ -17,7 +17,7 @@ from opendart_analysis.calendar import (
 from opendart_analysis.catalog import EVENT_KINDS
 from opendart_analysis.errors import DataSourceError
 from opendart_analysis.events import ReadPolicy
-from tests.support.events import HYNIX, SAMSUNG, buyback, convertible_bond, merger
+from scripts.testing.events import HYNIX, SAMSUNG, buyback, convertible_bond, merger
 
 pytestmark = pytest.mark.anyio
 

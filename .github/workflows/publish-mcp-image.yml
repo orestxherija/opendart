@@ -13,7 +13,6 @@ on:
       DHI_TOKEN:
         description: Docker personal access token with read access to DHI
         required: true
-  # A manual run republishes the tip of the default branch.
   workflow_dispatch:
 
 permissions:
@@ -31,8 +30,8 @@ jobs:
       cancel-in-progress: false
     permissions:
       contents: read
-      packages: write # Push and promote the verified image in GHCR.
-      id-token: write # Sign the image digest with keyless Cosign OIDC.
+      packages: write # Push and promote images in GHCR.
+      id-token: write # Sign image digests with Cosign.
     outputs:
       digest: ${{ steps.candidate.outputs.digest }}
     env:
@@ -64,7 +63,7 @@ jobs:
         env:
           DOCKER_SCOUT_HUB_USER: ${{ secrets.DHI_USERNAME }}
           DOCKER_SCOUT_HUB_PASSWORD: ${{ secrets.DHI_TOKEN }}
-        run: .github/scripts/verify_dhi.sh
+        run: scripts/mcp/verify_dhi.sh
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Generate image labels
@@ -100,7 +99,7 @@ jobs:
       - name: Test runtime restrictions, file secrets, and the MCP protocol
         env:
           DIGEST: ${{ steps.candidate.outputs.digest }}
-        run: .github/scripts/check_mcp_container.sh "$IMAGE@$DIGEST"
+        run: scripts/mcp/check_mcp_container.sh "$IMAGE@$DIGEST"
       - name: Scan the candidate
         uses: ./.github/actions/scan-container
         with:
@@ -113,4 +112,4 @@ jobs:
       - name: Promote the digest to its commit tag and main
         env:
           DIGEST: ${{ steps.candidate.outputs.digest }}
-        run: .github/scripts/promote_image.sh "$IMAGE" "$DIGEST" "sha-$GITHUB_SHA" main
+        run: scripts/release/promote_image.sh "$IMAGE" "$DIGEST" "sha-$GITHUB_SHA" main

@@ -9,7 +9,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from opendart_analysis.events import labeled_fields, records_from
-from tests.support.events import REDEMPTION, convertible_bond, equity_registration
+from scripts.testing.events import REDEMPTION, convertible_bond, equity_registration
 
 
 def response(*rows):

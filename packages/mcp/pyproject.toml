@@ -27,7 +27,6 @@ opendart-mcp = "opendart_mcp.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/opendart_mcp"]
-# Keep both formats compatible with the locked Twine release validator.
 core-metadata-version = "2.4"
 
 [tool.hatch.build.targets.sdist]

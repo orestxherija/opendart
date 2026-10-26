@@ -21,7 +21,6 @@ glob = [
 [default_language_version]
 python = "3.14"
 mise = "default"
-# node = "default"
 
 [default_env]
 PYTHONUTF8 = "1"
@@ -51,14 +50,12 @@ cooldown_days = 7
 freeze = true
 exclude_tags = ["*-{alpha,beta,rc}*"]
 
-# Fast native checks need no additional runtime or package installation.
 [[repos]]
 repo = "builtin"
 
 [[repos.hooks]]
 id = "fix-byte-order-marker"
 types = ["text"]
-# Vendored conventions are maintained in their upstream repository.
 exclude = '^\.agents/plugins/python-conventions/'
 groups = ["builtin", "format", "fast", "ci"]
 priority = "normalize_encoding"
@@ -67,7 +64,6 @@ priority = "normalize_encoding"
 id = "mixed-line-ending"
 args = ["--fix=lf"]
 types = ["text"]
-# Vendored conventions are maintained in their upstream repository.
 exclude = '^\.agents/plugins/python-conventions/'
 groups = ["builtin", "format", "fast", "ci"]
 priority = "normalize_line_endings"
@@ -76,7 +72,6 @@ priority = "normalize_line_endings"
 id = "pretty-format-json"
 args = ["--autofix", "--indent=2", "--no-ensure-ascii", "--no-sort-keys"]
 types = ["json"]
-# Vendored conventions are maintained in their upstream repository.
 exclude = '^\.agents/plugins/python-conventions/'
 groups = ["builtin", "json", "format", "fast", "ci"]
 priority = "normalize_structured"
@@ -85,7 +80,6 @@ priority = "normalize_structured"
 id = "trailing-whitespace"
 args = ["--markdown-linebreak-ext=md", "--markdown-linebreak-ext=mdx"]
 types = ["text"]
-# Vendored conventions are maintained in their upstream repository.
 exclude = '^\.agents/plugins/python-conventions/'
 groups = ["builtin", "format", "fast", "ci"]
 priority = "normalize_whitespace"
@@ -93,7 +87,6 @@ priority = "normalize_whitespace"
 [[repos.hooks]]
 id = "end-of-file-fixer"
 types = ["text"]
-# Vendored conventions are maintained in their upstream repository.
 exclude = '^\.agents/plugins/python-conventions/'
 groups = ["builtin", "format", "fast", "ci"]
 priority = "normalize_eof"
@@ -103,7 +96,6 @@ id = "check-added-large-files"
 args = ["--maxkb=500", "--enforce-all"]
 types = ["file"]
 stages = ["pre-commit", "pre-push"]
-# Reviewed upstream catalog and generated lockfile; other checks cover their contents.
 exclude = '^(api_reference/sources/catalog\.json|uv\.lock)$'
 groups = ["builtin", "validate", "fast", "ci"]
 priority = "integrity"
@@ -144,7 +136,6 @@ priority = "integrity"
 [[repos.hooks]]
 id = "check-shebang-scripts-are-executable"
 types = ["text"]
-# Vendored conventions are maintained in their upstream repository.
 exclude = '^\.agents/plugins/python-conventions/'
 groups = ["builtin", "validate", "fast", "ci"]
 priority = "integrity"
@@ -166,7 +157,7 @@ priority = "syntax"
 
 [[repos.hooks]]
 id = "check-json5"
-# Prek 0.4 does not identify .jsonc; include the Markdownlint configuration.
+# Prek 0.4 does not identify .jsonc.
 files = '\.json[5c]$'
 types = ["text"]
 stages = ["pre-commit", "pre-merge-commit"]
@@ -198,7 +189,6 @@ priority = "syntax"
 [[repos.hooks]]
 id = "check-vcs-permalinks"
 types = ["text"]
-# Vendored conventions are maintained in their upstream repository.
 exclude = '^\.agents/plugins/python-conventions/'
 groups = ["builtin", "validate", "fast", "ci"]
 priority = "syntax"
@@ -213,7 +203,6 @@ priority = "security"
 [[repos.hooks]]
 id = "no-commit-to-branch"
 args = ["--branch", "main"]
-# Enforce local branch policy; CI uses detached checkouts and main pushes.
 always_run = true
 pass_filenames = false
 groups = ["builtin", "policy", "fast"]
@@ -239,13 +228,11 @@ types = ["dockerfile"]
 always_run = false
 pass_filenames = true
 groups = ["docker", "lint", "slow", "ci"]
-# Starting Docker, and pulling the image on first use, is too slow for every commit.
 stages = ["pre-push"]
 require_serial = false
 priority = "analyze"
 log_file = ".prek-hadolint.log"
 
-# Keep the hook version aligned with ruff.toml and the quality dependency group.
 [[repos]]
 repo = "https://github.com/astral-sh/ruff-pre-commit"
 rev = "v0.17.1"
@@ -297,8 +284,7 @@ require_serial = true
 priority = "analyze"
 log_file = ".prek-lychee.log"
 
-# Install the locked workspace and contract dependencies with `just sync` first.
-# --no-sync keeps concurrent hooks from modifying their shared environment.
+# --no-sync prevents concurrent hooks from changing the shared environment.
 [[repos]]
 repo = "local"
 
@@ -344,11 +330,10 @@ log_file = ".prek-actionlint.log"
 [[repos.hooks]]
 id = "pip-audit"
 name = "Pip-audit locked workspace dependencies"
-entry = "uv run --locked --no-progress --no-sync bash scripts/pip_audit.sh"
+entry = "uv run --locked --no-progress --no-sync bash scripts/quality/pip_audit.sh"
 args = ["--cache-dir=.cache/pip-audit", "--strict", "--aliases=on", "--progress-spinner=off"]
 language = "system"
-# Audit when locked dependencies change; scheduled CI catches newly published advisories.
-files = { glob = ["uv.lock", "scripts/pip_audit.sh", "prek.toml"] }
+files = { glob = ["uv.lock", "scripts/quality/pip_audit.sh", "prek.toml"] }
 pass_filenames = false
 groups = ["python", "dependencies", "security", "slow", "ci"]
 stages = ["pre-push"]
@@ -358,7 +343,7 @@ priority = "security"
 [[repos.hooks]]
 id = "betterleaks"
 name = "Betterleaks staged secrets"
-entry = "bash scripts/betterleaks.sh git"
+entry = "bash scripts/quality/betterleaks.sh git"
 args = ["--config=betterleaks.toml", "--pre-commit", "--redact", "--staged"]
 language = "system"
 always_run = true
@@ -379,7 +364,6 @@ exclude = '^\.agents/plugins/python-conventions/'
 groups = ["markdown", "lint", "fast", "ci"]
 stages = ["pre-commit", "pre-merge-commit"]
 require_serial = true
-# Separate from Taplo's initial npm installation into the shared cache.
 priority = "quality"
 log_file = ".prek-markdownlint-cli2.log"
 
@@ -387,11 +371,10 @@ log_file = ".prek-markdownlint-cli2.log"
 id = "taplo-format"
 name = "Taplo format (check)"
 description = "Checks TOML formatting using the repository's Taplo configuration."
-# Invoke npm through PATH so CI's Safe Chain wrapper protects installation.
+# Use PATH so CI's Safe Chain wrapper protects installation.
 entry = "npx --yes --package=@taplo/cli@0.7.0 taplo format --check --config taplo.toml"
 language = "system"
 types = ["toml"]
-# uv generates its lockfile layout.
 exclude = '^uv\.lock$'
 pass_filenames = true
 groups = ["toml", "format-check", "fast", "ci"]
@@ -410,7 +393,6 @@ types = ["toml"]
 exclude = '^uv\.lock$'
 pass_filenames = true
 groups = ["toml", "lint", "slow", "ci"]
-# Schema validation fetches remote schemas, so keep network access out of commits.
 stages = ["pre-push"]
 require_serial = true
 priority = "analyze"
@@ -462,7 +444,6 @@ log_file = ".prek-shfmt.log"
 id = "renovate-config"
 name = "Renovate configuration"
 description = "Validates renovate.json with Renovate's strict validator."
-# Renovate needs Node.js 24 and validates its own configuration on every run, so CI skips this.
 entry = "npx --yes --package=renovate@44.181.0 renovate-config-validator --strict"
 language = "system"
 files = '^renovate\.json$'
@@ -493,21 +474,18 @@ name = "Loq file-size limits"
 description = "Enforces line limits for handwritten files, with explicit legacy baselines."
 entry = "uv run --locked --no-progress --no-sync loq check"
 language = "system"
-# Check the changed files on each commit; CI checks every tracked file.
 types = ["text"]
 groups = ["quality", "fast", "ci"]
 stages = ["pre-commit", "pre-merge-commit"]
 priority = "quality"
 log_file = ".prek-loq.log"
 
-# Path-gated hooks run only when commits or pushes change their inputs.
 [[repos.hooks]]
 id = "pyrefly"
 name = "Pyrefly type checking"
 description = "Type-checks every Python package source tree with strict Pyrefly settings."
 entry = "uv run --locked --no-progress --no-sync pyrefly check --config pyrefly.toml"
 language = "system"
-# A whole-project check takes about a second, so it runs with each commit.
 files = { glob = ["packages/{sdk,analysis,mcp}/{src/**,pyproject.toml}", "{pyrefly,pyproject,prek}.toml", "uv.lock"] }
 pass_filenames = false
 groups = ["python", "typecheck", "fast", "ci"]
@@ -522,7 +500,6 @@ name = "Import Linter package boundaries"
 description = "Checks that analysis and the SDK never import each other, MCP, or server frameworks."
 entry = "uv run --locked --no-progress --no-sync lint-imports --config importlinter.toml --no-cache"
 language = "system"
-# Building the import graph takes about a tenth of a second, so it runs with each commit.
 files = { glob = ["packages/*/src/**", "{importlinter,prek}.toml", "uv.lock"] }
 pass_filenames = false
 groups = ["python", "lint", "fast", "ci"]
@@ -535,14 +512,12 @@ log_file = ".prek-import-boundaries.log"
 id = "mcp-components"
 name = "MCP component lock"
 description = "Checks MCP component versions, definition fingerprints, and the tool token budget against the lock."
-entry = "uv run --locked --no-progress --no-sync python scripts/check_mcp_components.py"
+entry = "uv run --locked --no-progress --no-sync python scripts/mcp/check_mcp_components.py"
 language = "system"
-# Building the server's manifest offline takes about a second, so it runs with each commit.
 files = { glob = [
     "packages/mcp/{src/**,pyproject.toml,components.lock.json}",
-    # Output schemas embed analysis models.
     "packages/analysis/{src/**,pyproject.toml}",
-    "scripts/check_mcp_components.py",
+    "scripts/mcp/check_mcp_components.py",
     "{prek.toml,uv.lock}",
 ] }
 pass_filenames = false
@@ -556,14 +531,13 @@ log_file = ".prek-mcp-components.log"
 id = "mcp-registry"
 name = "Service catalog freshness"
 description = "Checks that the generated analysis service catalog matches the API catalog and the SDK naming rules."
-entry = "uv run --locked --no-progress --no-sync python scripts/generate_mcp_registry.py --check"
+entry = "uv run --locked --no-progress --no-sync python scripts/analysis/generate_mcp_registry.py --check"
 language = "system"
-# Generation takes about five seconds, so it runs before pushes that change its inputs.
 files = { glob = [
     "api_reference/{sources/catalog.json,paths/**}",
-    "scripts/generate_{mcp_registry,sdk}.py",
+    "scripts/analysis/generate_mcp_registry.py",
+    "scripts/sdk/generate_sdk.py",
     "packages/analysis/src/opendart_analysis/catalog/_generated.py",
-    # The generator formats its output with the locked Ruff and the repository configuration.
     "{ruff,prek}.toml",
     "uv.lock",
 ] }
@@ -582,7 +556,6 @@ entry = "uv run --locked --no-progress --no-sync pytest packages/sdk/tests --cov
 language = "system"
 files = { glob = [
     "packages/sdk/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
-    # SDK contract tests exercise every service against the reference documents.
     "api_reference/**/*.{yaml,json}",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
 ] }
@@ -599,13 +572,11 @@ name = "Pytest (analysis)"
 description = "Runs offline analysis tests and writes isolated coverage and HTML reports."
 entry = "uv run --locked --no-progress --no-sync pytest packages/analysis/tests --cov-config=packages/analysis/.coveragerc.toml --html=.cache/pytest/analysis-report.html -o cache_dir=.cache/pytest/analysis"
 language = "system"
-# Analysis never uses the SDK, so SDK changes do not rerun these tests. Catalog tests run
-# the catalog generator on its inputs, which include the SDK generator's naming rules.
 files = { glob = [
     "packages/analysis/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
-    # Shared test data and fakes.
-    "tests/support/**",
-    "scripts/generate_{mcp_registry,sdk}.py",
+    "scripts/testing/**",
+    "scripts/analysis/generate_mcp_registry.py",
+    "scripts/sdk/generate_sdk.py",
     "api_reference/{sources/catalog.json,paths/**}",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
 ] }
@@ -624,14 +595,9 @@ entry = "uv run --locked --no-progress --no-sync pytest packages/mcp/tests --cov
 language = "system"
 files = { glob = [
     "packages/mcp/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
-    # Shared test data and fakes.
-    "tests/support/**",
-    # MCP runs on the installed SDK and analysis packages.
+    "scripts/testing/**",
     "packages/{sdk,analysis}/{src/**,pyproject.toml}",
-    # The event-vocabulary test parses the component design; manifest tests run the
-    # component lock script.
-    "packages/mcp/docs/COMPONENT_DESIGN.md",
-    "scripts/check_mcp_components.py",
+    "scripts/mcp/check_mcp_components.py",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
 ] }
 pass_filenames = false
@@ -645,15 +611,12 @@ log_file = ".prek-pytest-mcp.log"
 id = "mcp-conformance"
 name = "MCP conformance"
 description = "Runs the official MCP conformance suite in both protocol eras against an isolated server without an API key."
-entry = "uv run --locked --no-progress --no-sync python scripts/check_mcp_conformance.py"
+entry = "uv run --locked --no-progress --no-sync python scripts/mcp/check_mcp_conformance.py"
 language = "system"
-# Starting a server and running the pinned suite takes a few seconds once npx has cached
-# it, so it runs before pushes that change the server, its SDK or analysis packages, the
-# baseline, or the runner.
 files = { glob = [
     "packages/mcp/{src/**,pyproject.toml,conformance-baseline.yaml}",
     "packages/{sdk,analysis}/{src/**,pyproject.toml}",
-    "scripts/check_mcp_conformance.py",
+    "scripts/mcp/check_mcp_conformance.py",
     "{prek.toml,uv.lock}",
 ] }
 pass_filenames = false
@@ -667,12 +630,15 @@ log_file = ".prek-mcp-conformance.log"
 id = "pytest-ci"
 name = "Pytest (CI)"
 description = "Tests which CI checks each change selects and that shared tool pins match."
-entry = "uv run --locked --no-progress --no-sync pytest tests/ci --no-cov --html=.cache/pytest/ci-report.html -o cache_dir=.cache/pytest/ci"
+entry = "uv run --locked --no-progress --no-sync pytest scripts/ci/tests --no-cov --html=.cache/pytest/ci-report.html -o cache_dir=.cache/pytest/ci"
 language = "system"
 files = { glob = [
-    ".github/{ci-paths.toml,scripts/select_components.py,actions/setup/action.yml}",
+    "scripts/ci/{ci-paths.toml,select_components.py}",
+    ".github/actions/setup/action.yml",
     "packages/mcp/Dockerfile",
-    "tests/ci/**",
+    "scripts/ci/tests/**",
+    "scripts/conftest.py",
+    "scripts/testing/git.py",
     "{pytest,prek}.toml",
     "uv.lock",
 ] }
@@ -687,11 +653,12 @@ log_file = ".prek-pytest-ci.log"
 id = "pytest-contracts"
 name = "Pytest (offline contracts)"
 description = "Tests API reference tooling and contract validation without live API calls."
-entry = "uv run --locked --no-progress --no-sync pytest tests/contracts --no-cov --html=.cache/pytest/contracts-report.html -o cache_dir=.cache/pytest/contracts"
+entry = "uv run --locked --no-progress --no-sync pytest scripts/api_reference/tests --no-cov --html=.cache/pytest/contracts-report.html -o cache_dir=.cache/pytest/contracts"
 language = "system"
 files = { glob = [
-    "tests/{__init__.py,contracts/**}",
-    "scripts/api_reference/*.py",
+    "scripts/api_reference/**/*.py",
+    "scripts/conftest.py",
+    "scripts/testing/git.py",
     "api_reference/**/*.{yaml,json}",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
 ] }

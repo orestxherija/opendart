@@ -1,12 +1,11 @@
 [pytest]
-# Standalone configuration and native TOML values require pytest 9.0+.
 minversion = "9.0"
 
 addopts = [
     "-ra",
     "--import-mode=importlib",
 
-    # Coverage sources are selected by each package's test command.
+    # Each package command selects its coverage sources.
     "--cov",
     "--cov-report=term-missing",
     "--cov-report=xml",
@@ -16,7 +15,7 @@ addopts = [
     "--maxprocesses=8",
     "--max-worker-restart=2",
 
-    # The default suite is offline; asyncio still needs Unix sockets.
+    # Asyncio needs Unix sockets even in offline tests.
     "--disable-socket",
     "--allow-unix-socket",
 
@@ -33,9 +32,15 @@ tmp_path_retention_count = "3"
 filterwarnings = []
 
 cache_dir = ".cache/pytest"
-testpaths = ["packages/sdk/tests", "packages/analysis/tests", "packages/mcp/tests", "tests"]
-# CI selection tests import the selector by module name.
-pythonpath = [".", ".github/scripts"]
+testpaths = [
+    "packages/sdk/tests",
+    "packages/analysis/tests",
+    "packages/mcp/tests",
+    "scripts/ci/tests",
+    "scripts/release/tests",
+    "scripts/api_reference/tests",
+]
+pythonpath = ["."]
 consider_namespace_packages = true
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
@@ -57,18 +62,15 @@ required_plugins = [
     "pytest-xdist>=3.8,<4",
 ]
 
-# pytest-timeout
 timeout = "60"
 session_timeout = "900"
 timeout_func_only = false
 
-# AnyIO tests opt in with their existing marker; asyncio tests must also opt in.
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
 asyncio_default_test_loop_scope = "function"
 asyncio_debug = false
 
-# pytest-html
 render_collapsed = "passed"
 environment_table_redact_list = [".*TOKEN.*", ".*PASSWORD.*", ".*SECRET.*"]
 generate_report_on_test = true
