@@ -3,7 +3,8 @@
 Python SDK, analysis library, and MCP server for Korean corporate disclosures through the
 **English OpenDART API** operated by Korea's Financial Supervisory Service (FSS).
 Official OpenDART API websites: [English](https://engopendart.fss.or.kr/) and
-[Korean](https://opendart.fss.or.kr/). The Korean-language API is a separate service and is not supported.
+[Korean](https://opendart.fss.or.kr/). The Korean site is the same API in Korean; this repository is built and tested
+against the English endpoint only.
 
 [![CI](https://github.com/orestxherija/opendart/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/orestxherija/opendart/actions/workflows/ci.yml?query=branch%3Amain)
 ![Python](https://img.shields.io/badge/python-3.14%2B-blue)
@@ -91,7 +92,23 @@ python -m pip install ./packages/sdk ./packages/analysis                  # SDK 
 python -m pip install ./packages/sdk ./packages/analysis ./packages/mcp   # MCP server
 ```
 
-Each package's guide covers its configuration and usage; the MCP guide also covers the Docker image.
+### MCP server in Docker
+
+The MCP server's container is built on [Docker Hardened Images](https://docs.docker.com/dhi/how-to/use/), which are
+pulled from `dhi.io` and need a Docker account. Create a free [Docker account](https://www.docker.com/), generate a
+personal access token with read access to public repositories, then authenticate and start the server:
+
+```sh
+docker login dhi.io --username YOUR_DOCKER_ID   # paste the token at the password prompt
+docker compose -f packages/mcp/docker-compose.yml build mcp
+docker compose -f packages/mcp/docker-compose.yml up --detach --wait mcp
+```
+
+The server listens at `http://127.0.0.1:8000/mcp`. Running it natively with `uv run --no-sync opendart-mcp` needs no
+Docker account. CI and Renovate also need these credentials as secrets; see the
+[CI guide](.github/workflows/README.md#secrets).
+
+Each package's guide covers its configuration and usage.
 
 ## Development
 

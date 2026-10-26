@@ -143,3 +143,4 @@ __marimo__/
 /.agents/
 /.codex/
 /packages/*/docs/
+/.devcontainer/
