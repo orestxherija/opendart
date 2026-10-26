@@ -8,8 +8,7 @@ dependencies = []
 
 [tool.uv]
 package = false
-# actionlint-py builds from source; pin its build tools. packaging stays free because
-# hatchling also uses it to build the workspace packages.
+# Pin actionlint-py build tools; packaging must also satisfy Hatchling.
 build-constraint-dependencies = [
   "certifi==2026.10.19",
   "charset-normalizer==3.5.2",
@@ -29,7 +28,6 @@ opendart-sdk = { workspace = true }
 opendart-analysis = { workspace = true }
 
 [dependency-groups]
-# Just runs the task recipes that CI and local development share.
 hooks = ["prek>=0.4.13,<0.5", "rust-just==1.59.0"]
 contracts = [
   "schemathesis==4.32.0",
@@ -56,7 +54,6 @@ test = [
 ]
 quality = [
   "actionlint-py==1.7.12.25",
-  # Enforces package boundaries: analysis and the SDK never import each other or MCP.
   "import-linter>=2.15,<3",
   "loq>=0.1,<0.2",
   "pip-audit==2.10.1",
@@ -69,9 +66,7 @@ quality = [
   "yamllint>=1.38,<2",
   "zizmor==1.29.0",
 ]
-# Commit messages, coordinated package versions, and built distribution validation.
 release = ["commitizen==4.17.0", "packaging>=25,<27", "twine>=6,<7"]
-# uv installs dev by default. Group includes keep the tool requirements in one place.
 dev = [
   { include-group = "hooks" },
   { include-group = "test" },

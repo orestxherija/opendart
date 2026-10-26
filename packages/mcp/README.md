@@ -222,7 +222,7 @@ then receive "task not found" and call again.
 Every tool, resource, template, and prompt declares `version="MAJOR.MINOR.PATCH"`. FastMCP publishes it as
 `_meta.fastmcp.version`, and clients can pin it by sending `"_meta": {"fastmcp": {"version": "1.0.0"}}` with a request.
 [`components.lock.json`](components.lock.json) records each definition exactly as clients receive it, with its SHA-256,
-a hash of each top-level part, and token estimates. `scripts/check_mcp_components.py` compares the server with the lock
+a hash of each top-level part, and token estimates. `scripts/mcp/check_mcp_components.py` compares the server with the lock
 and fails when:
 
 - a component declares no version, or one that is not `MAJOR.MINOR.PATCH`;
@@ -244,7 +244,7 @@ and fails when:
 After an intended change, bump `version=` on the component, record the new definitions, and commit the lock:
 
 ```sh
-just mcp lock                   # scripts/check_mcp_components.py --update
+just mcp lock                   # scripts/mcp/check_mcp_components.py --update
 just mcp lock --accept-changes  # after review, also record changes the rules refuse; writes the first lock
 ```
 
@@ -265,7 +265,7 @@ a second), and in CI. `--tokens` lists each tool's estimated model-visible token
 tool slot. The smoke test checks a running server over real HTTP:
 
 ```sh
-uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
+uv run --no-sync python scripts/mcp/check_mcp.py --url http://127.0.0.1:8000/mcp
 ```
 
 It requires hostile Host and Origin headers to be rejected with 421 and 403, `/health` to answer, both protocol eras
@@ -311,7 +311,7 @@ From the repository root, after `docker login dhi.io` (the Python base images co
 ```sh
 docker compose -f packages/mcp/docker-compose.yml build mcp
 docker compose -f packages/mcp/docker-compose.yml up --detach --wait mcp
-uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
+uv run --no-sync python scripts/mcp/check_mcp.py --url http://127.0.0.1:8000/mcp
 ```
 
 The [container guide](docs/CONTAINER.md) covers DHI credentials, the hardened Compose service, passing the API key

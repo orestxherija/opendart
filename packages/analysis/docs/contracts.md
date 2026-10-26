@@ -149,7 +149,7 @@ versions of `opendart-analysis` and `opendart-sdk`.
 
 Public names are the exports of each capability package (`__all__`) and the conventions in `upstream` and `errors`.
 Modules under `domain`, and modules a package does not export, are internal and may change. Before 1.0, a minor
-release may change public names; the [changelog](../../../CHANGELOG.md) records them.
+release may change public names.
 
 Annotations are for static type checkers. Modules use postponed annotations (`from __future__ import annotations`) and
 import names used only in annotations under `TYPE_CHECKING`, so resolving the annotations of the analysis dataclasses

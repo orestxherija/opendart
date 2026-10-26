@@ -51,8 +51,8 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      pages: write # Publish the validated reference artifact to GitHub Pages.
-      id-token: write # Authenticate the Pages deployment with OIDC.
+      pages: write # Publish the reference to Pages.
+      id-token: write # Authenticate the Pages deployment.
     concurrency:
       group: pages
       cancel-in-progress: false

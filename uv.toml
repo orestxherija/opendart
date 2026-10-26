@@ -1,4 +1,3 @@
-# uv policy shared by the workspace. CI and the MCP image pin an exact uv release.
 required-version = ">=0.11,<1.0"
 python-preference = "only-managed"
 python-downloads = "automatic"
@@ -10,5 +9,5 @@ compile-bytecode = false
 cache-dir = ".cache/uv"
 link-mode = "clone"
 
-# Match the dependency age policy used by Safe Chain in CI.
+# Match the Safe Chain dependency age policy in CI.
 exclude-newer = "48 hours"

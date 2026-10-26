@@ -23,13 +23,11 @@ jobs:
       - name: Set up
         uses: ./.github/actions/setup
         with:
-          # Without the SDK, MCP, or FastMCP installed, an accidental runtime import fails the tests.
           sync: --package opendart-workspace --package opendart-analysis
       - name: Lint
         run: just analysis lint
       - name: Check types
         run: just analysis typecheck
-      # The generator needs only the standard library, PyYAML, and Ruff from the dev groups.
       - name: Check the generated service catalog
         run: just analysis generated
       - name: Run tests

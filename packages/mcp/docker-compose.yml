@@ -1,7 +1,6 @@
 services:
   mcp:
     image: ${OPENDART_MCP_IMAGE:-opendart-mcp:dev}
-    # Build locally or explicitly pull the selected published image before running.
     pull_policy: never
     build:
       context: ../..
@@ -12,6 +11,7 @@ services:
       OPENDART_MCP_DIRECTORY__CACHE_DIR: /var/cache/opendart-mcp
     ports:
       - "127.0.0.1:${OPENDART_MCP_HTTP__PORT:-8000}:8000"
+
     user: "10001:10001"
     read_only: true
     cap_drop:
@@ -20,20 +20,20 @@ services:
       - no-new-privileges:true
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m,mode=1777
-    # The cached company directory archive (about 4 MiB), kept across restarts so they
-    # skip the minutes-long download; the root filesystem stays read-only.
+
+    # Preserve the directory archive across restarts to avoid downloading it again.
     volumes:
       - directory-cache:/var/cache/opendart-mcp
+
     cpus: "1.0"
-    # Measured in this container: about 135 MiB after startup, about 260 MiB peak with the
-    # company directory indexed and a large annual report cached (documents cap near 50 MiB).
+    # Measured peak: about 260 MiB with the directory indexed and a large report cached.
     mem_limit: 512m
     memswap_limit: 512m
     pids_limit: 64
     init: true
     stop_grace_period: 10s
     restart: unless-stopped
-    # Bound retained service logs; MCP responses travel over HTTP.
+
     logging:
       driver: local
       options:

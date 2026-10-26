@@ -3,7 +3,8 @@
 ![CI workflows: triggers start ci.yml, which selects the quality, release, SDK, analysis, MCP, image, and reference check workflows from the changed files and gates on CI checks; release tags, a weekly audit, and a daily image scan run separately](workflows.svg)
 
 Pull requests and pushes to `main` start one workflow, [CI](workflows/ci.yml). Its first job
-compares the change with its base, applies the filters in [ci-paths.toml](ci-paths.toml), and
+compares the change with its base, applies the filters in
+[`scripts/ci/ci-paths.toml`](../scripts/ci/ci-paths.toml), and
 calls only the check workflows whose inputs changed. The required **CI checks** job passes when
 every selected check passes. Draft pull requests skip the image, distribution, and conformance
 checks until they are marked ready. Analysis changes also select the MCP, image, and distribution
@@ -30,8 +31,9 @@ republishes `main`, **Release MCP image** retries a tag, and both scheduled work
   triggers of their own; CI and the scheduled workflows call them.
 - `actions/setup` installs the pinned uv, Python, Node.js, Safe Chain, and locked dependencies.
   The other actions generate image labels, sign and verify images, and scan them with Trivy.
-- `scripts/` holds the CI logic: change selection, Safe Chain and DHI verification, container
-  checks, and image promotion. The selector's tests live in [tests/ci](../tests/ci).
+- [`scripts/ci/`](../scripts/ci/) holds change selection, bootstrap tooling, recipes, configuration, and tests.
+  Container checks live in [`scripts/mcp/`](../scripts/mcp/); image-release helpers live in
+  [`scripts/release/`](../scripts/release/).
 - Steps run the same `just` recipes as local development.
 
 Light jobs run on `ubuntu-slim`; Docker, parallel tests, and type checks use `ubuntu-latest`.

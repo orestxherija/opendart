@@ -56,8 +56,7 @@ python -m pip install ./packages/sdk ./packages/analysis ./packages/mcp   # MCP 
 ```
 
 Wheels built with `uv build --all-packages` install the same way: list their paths in `dist/` instead of the
-package directories. Each choice is tested in a fresh environment from both wheels and source archives; see the
-[release guide](docs/RELEASING.md).
+package directories. Each choice is tested in a fresh environment from both wheels and source archives.
 
 Start with these guides:
 
@@ -186,15 +185,19 @@ configuration changes, scanning all workflow and action definitions together.
 
 The `api_reference/` directory contains API documents and source data. Reference
 tooling, dependency manifests, and the Just module live in `scripts/api_reference/`;
-the contract test harness lives in `tests/contracts/`.
+the live audit harness lives in `scripts/api_reference/contracts/`, with offline tests
+in `scripts/api_reference/tests/`. Other [scripts](scripts/README.md) are grouped by
+SDK generation, analysis generation, MCP verification, releases, and quality checks.
+Package tests stay beside their packages; CI tests live in `scripts/ci/tests/`, release
+tests in `scripts/release/tests/`, and shared test helpers in `scripts/testing/`.
 
 ```sh
 uv sync --locked --all-packages --group contracts
 uv run --no-sync pytest
 uv run --no-sync pyrefly check
-uv run --no-sync ruff check packages scripts tests
-uv run --no-sync ruff format --check packages scripts tests
-uv run --no-sync python scripts/generate_sdk.py --check
+uv run --no-sync ruff check
+uv run --no-sync ruff format --check
+uv run --no-sync python scripts/sdk/generate_sdk.py --check
 uv run --no-sync python scripts/api_reference/check.py
 uv build --package opendart-sdk
 uv build --package opendart-analysis
@@ -202,7 +205,7 @@ uv build --package opendart-mcp
 uv run --no-sync lint-imports --config importlinter.toml
 ```
 
-[`pytest.toml`](pytest.toml) configures all four offline suites with strict
+[`pytest.toml`](pytest.toml) configures all six offline suites with strict
 configuration and marker checks, randomized order, up to eight parallel workers,
 timeouts, blocked network sockets, and HTML reports. The existing AnyIO tests use
 their explicit markers. Run `uv run --no-sync pytest -n 0` for a serial run.
@@ -238,8 +241,8 @@ coverage data and XML reports in `.cache/coverage/`. Branch coverage is configur
 those XML reports to Codecov with separate `sdk`, `analysis`, and `mcp` flags, configured in
 [`codecov.yml`](codecov.yml).
 
-The quality configs exclude generated API/SDK files where appropriate and the
-vendored convention plugins. Loq caps handwritten files at 500 lines, with explicit
+The quality configs exclude generated API/SDK files where appropriate.
+Loq caps handwritten files at 500 lines, with explicit
 adoption limits for three existing larger files. Pull requests run the same
 built-in, Ruff, Markdown, YAML, TOML, spelling, and file-length checks
 across the repository through [quality CI](.github/workflows/check-quality.yml),
@@ -257,8 +260,8 @@ Run `uv lock` after changing dependencies and commit the updated `uv.lock`.
 
 `just release-check` verifies coordinated package versions and the release tooling.
 `just release-build` also builds wheels and source archives, checks their metadata,
-and smoke-tests isolated installations. See the [release guide](docs/RELEASING.md)
-for version updates, the [changelog](CHANGELOG.md), and artifact preparation.
+and smoke-tests isolated installations. Keep the three package versions and `cz.toml`
+aligned, update MCP's dependency ranges when needed, and regenerate `uv.lock`.
 Renovate waits the same two days before proposing any dependency update.
 
 To load local environment variables and activate `.venv` automatically when entering
@@ -279,14 +282,15 @@ regenerate the reference, then regenerate the SDK:
 
 ```sh
 uv run python scripts/api_reference/build.py
-uv run python scripts/generate_sdk.py
+uv run python scripts/sdk/generate_sdk.py
 ```
 
 Generation and SDK tests run offline against synthetic examples and mock transports.
-Separate [Schemathesis contract checks](api_reference/CONTRACT_TESTING.md) audit
+Separate [Schemathesis contract checks](scripts/api_reference/contracts/) audit
 live JSON, XML, and ZIP responses. After OpenAPI changes reach the default branch,
 CI checks only affected operations; its `OPENDART_API_KEY` Actions secret is required.
-The reference records the findings and remaining uncertainty about unsampled data.
+The reference's [audit snapshot](api_reference/sources/contract-audit-2026-10-20.json)
+records bounded observations, which do not establish every possible upstream response.
 The SDK preserves financial strings and unknown fields; optional response fields
 are represented by `None` when missing or null. API status `013` raises `NoDataError`.
 Pagination is explicit: request each page using `page_number` and inspect `total_page`.

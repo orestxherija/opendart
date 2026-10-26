@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-      packages: read # Pull the published image from GHCR.
+      packages: read # Pull published GHCR images for scanning.
     env:
       IMAGE: ghcr.io/${{ github.repository_owner }}/opendart-mcp
     steps:
@@ -44,7 +44,7 @@ jobs:
         id: image
         env:
           REQUESTED: ${{ inputs.digest || 'main' }}
-        run: .github/scripts/resolve_image.sh "$IMAGE" "$REQUESTED"
+        run: scripts/release/resolve_image.sh "$IMAGE" "$REQUESTED"
       - name: Verify the publishing signature
         uses: ./.github/actions/verify-image-signature
         with:

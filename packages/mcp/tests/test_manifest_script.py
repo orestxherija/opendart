@@ -1,4 +1,4 @@
-"""scripts/check_mcp_components.py: check and update the lock against small servers."""
+"""scripts/mcp/check_mcp_components.py: check and update the lock against small servers."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 @pytest.fixture(scope="module")
 def script():
-    path = ROOT / "scripts/check_mcp_components.py"
+    path = ROOT / "scripts/mcp/check_mcp_components.py"
     spec = importlib.util.spec_from_file_location("check_mcp_components", path)
     assert spec is not None
     assert spec.loader is not None

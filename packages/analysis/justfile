@@ -1,41 +1,33 @@
-# Use the shared workspace configuration, including when invoked as a module.
 set working-directory := '../..'
 
-# The service catalog's generator; its output is opendart_analysis/catalog/_generated.py.
-scripts := 'scripts/generate_mcp_registry.py'
+scripts := 'scripts/analysis/generate_mcp_registry.py'
 
-# List available commands.
 default:
     @just --justfile '{{ source_file() }}' --list
 
-# Check lint and formatting.
 lint:
     uv run --no-sync ruff check packages/analysis {{ scripts }}
     uv run --no-sync ruff format --check packages/analysis {{ scripts }}
 
-# Format Python files.
 format:
     uv run --no-sync ruff format packages/analysis {{ scripts }}
 
-# Check types.
 typecheck:
     uv run --no-sync pyrefly check --config pyrefly.toml packages/analysis/src
 
-# Run analysis tests.
 test:
     uv run --no-sync prek run pytest-analysis --all-files --stage pre-push
 
 # Check that the generated service catalog matches the API catalog and the SDK naming rules.
 generated:
-    uv run --no-sync python scripts/generate_mcp_registry.py --check
+    uv run --no-sync python scripts/analysis/generate_mcp_registry.py --check
 
 # Check the analysis package and the generated service catalog.
 check: lint typecheck test generated
 
 # Regenerate the service catalog from the API catalog and the SDK naming rules.
 generate:
-    uv run --no-sync python scripts/generate_mcp_registry.py
+    uv run --no-sync python scripts/analysis/generate_mcp_registry.py
 
-# Build the Python package.
 build:
     uv build --package opendart-analysis

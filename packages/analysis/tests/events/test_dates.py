@@ -18,7 +18,7 @@ from opendart_analysis.events import (
     event_flags,
 )
 from opendart_analysis.events.dates import BOARD_DATE_FIELDS, DATE_FIELDS, IGNORED_DATE_FIELDS
-from tests.support.events import REDEMPTION
+from scripts.testing.events import REDEMPTION
 
 NUMBER = "20261021000092"
 

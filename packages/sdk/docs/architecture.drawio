@@ -43,7 +43,7 @@
         <mxCell id="reference" value="&lt;b&gt;Checked-in API reference&lt;/b&gt;&lt;br&gt;api_reference/openapi.yaml&lt;br&gt;paths/ + schemas/" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f0fdfa;strokeColor=#14b8a6;" vertex="1" parent="generation">
           <mxGeometry x="24" y="70" width="250" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="generator" value="&lt;b&gt;SDK generator&lt;/b&gt;&lt;br&gt;scripts/generate_sdk.py&lt;br&gt;Offline; deterministic" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f0fdfa;strokeColor=#14b8a6;" vertex="1" parent="generation">
+        <mxCell id="generator" value="&lt;b&gt;SDK generator&lt;/b&gt;&lt;br&gt;scripts/sdk/generate_sdk.py&lt;br&gt;Offline; deterministic" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#f0fdfa;strokeColor=#14b8a6;" vertex="1" parent="generation">
           <mxGeometry x="340" y="70" width="250" height="90" as="geometry" />
         </mxCell>
         <mxCell id="generated" value="&lt;b&gt;Committed Python modules&lt;/b&gt;&lt;br&gt;resources/ + models/ across 6 categories&lt;br&gt;Included in the installed SDK wheel" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=13;fontColor=#1e293b;strokeWidth=1.5;spacing=12;fillColor=#dbeafe;strokeColor=#3b82f6;" vertex="1" parent="generation">

@@ -460,7 +460,7 @@ All 85 services are reachable; 84 through the abstractions and `fnltt_xbrl` defe
   year") that counts calls and tokens, plus an opt-in live suite like the contract tests.
 - **Module layout** (500-line file cap): `resolver`, `periods`, `normalize`, `registry`, tool modules, `resources`,
   `prompts`. `ping` moves to a `/health` custom route (`MCPServer.custom_route`) so it does not spend a tool slot;
-  `scripts/check_mcp.py` then calls `find_company` instead.
+  `scripts/mcp/check_mcp.py` then calls `find_company` instead.
 
 ## Delivery plan
 

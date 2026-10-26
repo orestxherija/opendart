@@ -45,7 +45,7 @@ docker compose -f packages/mcp/docker-compose.yml up --detach --wait mcp
 Test the running container through its localhost HTTP endpoint:
 
 ```sh
-uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
+uv run --no-sync python scripts/mcp/check_mcp.py --url http://127.0.0.1:8000/mcp
 ```
 
 Compose publishes `127.0.0.1:8000:8000`, making the service reachable only from
@@ -207,7 +207,7 @@ the repository's GitHub metadata.
 
 Publishing is automatic. When a push to `main` changes the image's inputs (the same
 `image` filter that selects the pull request image check in
-[ci-paths.toml](../../../.github/ci-paths.toml)) or the publisher itself, and every
+[ci-paths.toml](../../../scripts/ci/ci-paths.toml)) or the publisher itself, and every
 selected CI check passes, **CI** calls the **Publish MCP image** workflow. It builds a Linux amd64 candidate once
 and pushes it by digest only, so no tag refers to it yet. It runs protocol and
 security checks and Trivy scans against that exact digest. After those pass, it
@@ -233,7 +233,7 @@ revision, and build date. The image includes
 
 Pushing a `vX.Y.Z` tag that matches the package version, on a commit in `main`,
 promotes that commit's published digest after verifying its signature and
-rescanning it; see [Preparing release artifacts](../../../docs/RELEASING.md). The
+rescanning it through the [release workflow](../../../.github/workflows/release-image.yml). The
 release step does not rebuild, so tag a commit that CI published. Every version
 bump publishes, because it changes `packages/mcp/pyproject.toml`.
 
@@ -304,7 +304,7 @@ package is private, then run:
 export OPENDART_MCP_IMAGE=ghcr.io/orestxherija/opendart-mcp@sha256:YOUR_DIGEST
 docker pull "$OPENDART_MCP_IMAGE"
 docker compose -f packages/mcp/docker-compose.yml up --detach --wait mcp
-uv run --no-sync python scripts/check_mcp.py --url http://127.0.0.1:8000/mcp
+uv run --no-sync python scripts/mcp/check_mcp.py --url http://127.0.0.1:8000/mcp
 ```
 
 For private packages, use a personal access token (classic) with `read:packages`

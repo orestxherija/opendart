@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from opendart_mcp.services.calendar_debt import COVERAGE
-from tests.support.events import buyback, filing, identity, merger, profile
+from scripts.testing.events import buyback, filing, identity, merger, profile
 
 HALF_YEAR = "20260814001234"
 ANNUAL = "20260310002820"

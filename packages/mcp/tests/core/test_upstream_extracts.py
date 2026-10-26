@@ -19,7 +19,7 @@ from opendart_mcp.core.ttl import DAY, FILINGS
 from opendart_mcp.core.upstream import service_fetch
 from opendart_mcp.models.common import CompanyRef
 from opendart_mcp.services.companies import Company
-from tests.support.events import filing, profile
+from scripts.testing.events import filing, profile
 
 COMPANY = Company(ref=CompanyRef(name="Example", corp_code="00126380"), fye_month=12, profile=None)
 TODAY = dt.date(2026, 10, 22)

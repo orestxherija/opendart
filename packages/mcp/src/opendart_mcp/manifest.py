@@ -10,7 +10,7 @@ it to the newest version of each name, so it changes whenever another version is
 registered. The lifespan is never entered, so building a manifest needs no network or key.
 
 ``review`` compares the recorded lock, ``packages/mcp/components.lock.json``, with the
-current server; ``scripts/check_mcp_components.py`` runs it. The framework-independent
+current server; ``scripts/mcp/check_mcp_components.py`` runs it. The framework-independent
 rules live in ``opendart_mcp.versioning``.
 """
 

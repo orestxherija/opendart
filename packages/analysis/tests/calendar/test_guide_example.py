@@ -26,7 +26,7 @@ from opendart_analysis.calendar import (
 )
 from opendart_analysis.catalog import service
 from opendart_analysis.upstream import CallLimit
-from tests.support.events import HYNIX, SAMSUNG, buyback, convertible_bond, filing
+from scripts.testing.events import HYNIX, SAMSUNG, buyback, convertible_bond, filing
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence

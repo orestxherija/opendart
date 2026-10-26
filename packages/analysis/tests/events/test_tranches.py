@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 
 from opendart_analysis.events import describe, labeled_fields, records_from
-from tests.support.events import debt_registration, identity
+from scripts.testing.events import debt_registration, identity
 
 NUMBER = "20261020000111"
 

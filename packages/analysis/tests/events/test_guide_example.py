@@ -23,7 +23,7 @@ from opendart_analysis.events import (
     fetch_events,
 )
 from opendart_analysis.filings import FilingSearchRequest, find_filings
-from tests.support.events import convertible_bond, filing
+from scripts.testing.events import convertible_bond, filing
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable

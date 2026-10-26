@@ -5,9 +5,8 @@ Status: implemented (2026-10-22). This plan implements [COMPONENT_DESIGN.md](COM
 architecture and contracts every module codes against, and how the work is split between parallel streams.
 
 Since 2026-10-24 the reusable logic lives in [opendart-analysis](../../analysis/README.md), and MCP services are
-adapters over it; the [reorganization plan](../../../docs/SDK_MCP_REORGANIZATION_PLAN.md) records the move. The
-architecture and contracts below describe the current code. The execution waves and the deviations record how the
-server was first built, when today's analysis modules were still MCP subpackages.
+adapters over it. The architecture and contracts below describe the current code. The execution waves and the deviations
+record how the server was first built, when today's analysis modules were still MCP subpackages.
 
 ## Decisions
 
@@ -17,7 +16,7 @@ server was first built, when today's analysis modules were still MCP subpackages
 | Registration | Standalone decorators (`fastmcp.tools.tool`, `fastmcp.resources.resource`, `fastmcp.prompts.prompt`) in component modules; one ordered registration list in `app/registry.py`. | `tools/list` order is registration order, which keeps prompt caches warm. Ruff's `runtime-evaluated-decorators` understands standalone decorators, so annotation imports stay at runtime. |
 | Text and structured output | `markdown_view(render)` wraps each tool: Markdown text for the model, the Pydantic result as `structuredContent`, `outputSchema` generated from the return type. Structured content drops `None` fields. | Hosts that read `content` get compact tables. Claude Code passes `structuredContent` to the model instead, so concise structured output must also be small and labeled. |
 | Versions | Every tool, resource, template, and prompt declares `version="MAJOR.MINOR.PATCH"`, starting at `1.0.0`. | Requested by the project; FastMCP publishes it as `_meta.fastmcp.version`, and clients can pin it with `_meta.fastmcp.version` on requests. |
-| Fingerprints | `packages/mcp/components.lock.json` records each component's version, SHA-256 of its wire definition, and token estimates; `scripts/check_mcp_components.py` fails CI when a definition changes without a version bump, when a bump is smaller than the schema change requires, or when tool definitions exceed 10K tokens. | FastMCP and the protocol have no built-in fingerprinting; this makes every definition change explicit and reviewable. |
+| Fingerprints | `packages/mcp/components.lock.json` records each component's version, SHA-256 of its wire definition, and token estimates; `scripts/mcp/check_mcp_components.py` fails CI when a definition changes without a version bump, when a bump is smaller than the schema change requires, or when tool definitions exceed 10K tokens. | FastMCP and the protocol have no built-in fingerprinting; this makes every definition change explicit and reviewable. |
 | Background tasks | `TasksExtension(url="memory://")` with `concurrency=4`; `read_filing`, `get_corporate_events`, and `get_corporate_action_calendar` use `TaskConfig(mode="optional")`. | Optional mode runs in the foreground for hosts without the tasks extension (all Claude hosts today) and as a task for clients that have it. Deadlines and progress heartbeats make the foreground path work on its own. |
 | Progress | `ctx.report_progress` through a monotonic `Reporter`, at least every 5 s during waits. | The only progress API that reaches foreground clients; in tasks it becomes `statusMessage`. |
 | Apps | Self-contained HTML apps on `ui://opendart/financials.v1.html`, `peers.v1.html`, `calendar.v1.html`, linked from `get_financials`, `compare_companies`, `get_corporate_action_calendar`. No Prefab. | Wide tables and calendars benefit from client-side sorting and filtering. Prefab would replace the typed structured content and load code from a CDN. |
@@ -172,15 +171,16 @@ a `title`, tags (`identity`, `filings`, `documents`, `financials`, `events`, `ow
 
 ## CI and tooling
 
-- `scripts/generate_mcp_registry.py --check` (`just analysis generated`) keeps the generated service catalog in
+- `scripts/analysis/generate_mcp_registry.py --check` (`just analysis generated`) keeps the generated service catalog in
   `opendart_analysis.catalog` in sync with the API catalog; the analysis workflow and a pre-push hook run it.
-- `scripts/check_mcp_components.py` checks versions, fingerprints, and token budgets against the lock; `--update`
+- `scripts/mcp/check_mcp_components.py` checks versions, fingerprints, and token budgets against the lock; `--update`
   rewrites the lock after an intentional change.
-- `scripts/check_mcp.py` checks both protocol eras, the tool list, `/health`, a reference resource, and the
+- `scripts/mcp/check_mcp.py` checks both protocol eras, the tool list, `/health`, a reference resource, and the
   missing-key error over real HTTP, and still requires 421 and 403 for hostile Host and Origin headers.
-- `scripts/check_mcp_conformance.py` (`just mcp conformance`) runs the pinned official MCP conformance suite against a
-  keyless server at the default and 2026-07-28 wires; `packages/mcp/conformance-baseline.yaml` lists, check by check,
-  only failures from the suite's fixture components, features the server does not offer, and one upstream SDK
+- `scripts/mcp/check_mcp_conformance.py` (`just mcp conformance`) runs the pinned official MCP conformance suite
+  against a keyless server at the default and 2026-07-28 wires. The baseline in
+  `packages/mcp/conformance-baseline.yaml` lists only failures from the suite's fixture components,
+  features the server does not offer, and one upstream SDK
   leniency. A pre-push hook and an MCP workflow job (skipped for drafts) run it.
 - The MCP workflow, path filters, prek hooks, and `just mcp` recipes gain these checks; FastMCP and `mcp` update in
   one Renovate group.

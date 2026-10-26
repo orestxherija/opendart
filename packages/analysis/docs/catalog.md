@@ -21,6 +21,7 @@ field_label("search", "rcept_no")  # "Filing No."
 ```
 
 `SERVICES` is generated from `api_reference/sources/catalog.json` and the SDK generator's naming rules by
-`scripts/generate_mcp_registry.py`. Regenerate it with `just analysis generate`; CI runs `just analysis generated` to
-check that it is fresh. Binding a service to an SDK client method belongs to the caller; MCP does it with
+`scripts/analysis/generate_mcp_registry.py`. Regenerate it with `just analysis generate`;
+CI runs `just analysis generated` to check that it is fresh. Binding a service to an SDK client method belongs to the caller;
+MCP does it with
 `opendart_mcp.core.sdk_binding.sdk_method`.

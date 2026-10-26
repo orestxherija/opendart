@@ -4,6 +4,3 @@ betterleaksMinVersion = "v1.7.4"
 
 [extend]
 useDefault = true
-
-# Add only demonstrated false positives, scoped to both their paths and values.
-# Never exclude whole fixture, documentation, or generated-code directories.

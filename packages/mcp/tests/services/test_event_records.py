@@ -9,7 +9,7 @@ from __future__ import annotations
 from opendart.models.major_issues import CvbdIsDecsnResponse
 from opendart.models.securities_registration import BdRsResponse, EstkRsResponse
 from opendart_analysis.events import records_from
-from tests.support.events import convertible_bond, debt_registration, equity_registration
+from scripts.testing.events import convertible_bond, debt_registration, equity_registration
 
 
 def test_list_models_match_their_bodies():

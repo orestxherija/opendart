@@ -1,5 +1,3 @@
-# Check human documentation, including .github and api_reference Markdown.
-# The Prek hook passes Markdown files only; the extension also scopes directory runs.
 extensions = ["md"]
 hidden = true
 exclude_path = ['(^|/)\.agents/plugins/python-conventions/']
@@ -21,14 +19,11 @@ no_progress = true
 format = "compact"
 
 exclude = [
-    # FSS serves its public guides/account pages with TLS suites rejected by
-    # Lychee's client. API URLs on these hosts also require an authentication key.
+    # FSS requires unsupported TLS suites or an API key.
     '^https?://(?:eng)?opendart\.fss\.or\.kr(?:/|$)',
-    # Docker's account dashboard redirects anonymous clients through an OAuth loop.
-    # Its public sign-up and documentation links are still checked.
+    # Anonymous Docker dashboard requests enter an OAuth redirect loop.
     '^https://app\.docker\.com/?$',
-    # This repository is private: anonymous GitHub requests return 404 for its
-    # CI workflow and badge. The authenticated workflows API confirms ci.yml exists.
+    # Private workflow URLs return 404 to anonymous requests.
     '^https://github\.com/orestxherija/opendart/actions/workflows/ci\.yml\?query=branch%3Amain$',
     '^https://github\.com/orestxherija/opendart/actions/workflows/ci\.yml/badge\.svg\?branch=main$',
 ]
