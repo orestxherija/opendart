@@ -444,7 +444,7 @@ log_file = ".prek-shfmt.log"
 id = "renovate-config"
 name = "Renovate configuration"
 description = "Validates renovate.json with Renovate's strict validator."
-entry = "npx --yes --package=renovate@44.181.0 renovate-config-validator --strict"
+entry = "npx --yes --package=renovate@44.181.1 renovate-config-validator --strict"
 language = "system"
 files = '^renovate\.json$'
 pass_filenames = false
