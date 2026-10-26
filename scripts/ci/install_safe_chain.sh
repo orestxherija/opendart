@@ -2,7 +2,7 @@
 # Install a pinned, checksum-verified Aikido Safe Chain release for CI.
 set -euo pipefail
 
-version=1.5.25
+version=1.5.26
 checksum=83069f6db4215cccf6a26bdd6e65a5c2366b9d24322b2d5d2862d47385e56682
 
 installer=$(mktemp "${RUNNER_TEMP:-/tmp}/install-safe-chain.XXXXXX")
