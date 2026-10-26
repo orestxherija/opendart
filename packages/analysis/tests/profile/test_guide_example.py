@@ -1,7 +1,7 @@
 """The company-profile guide's example, without the SDK or MCP.
 
-``or_none``, ``sdk_filing_search``, and ``print_profile`` match docs/data-access.md and
-docs/profile.md. A duck-typed client stands in for ``opendart.OpenDART``, and a local
+``or_none``, ``sdk_filing_search``, and ``print_profile`` match the data-access and
+company-profile guides. A duck-typed client stands in for ``opendart.OpenDART``, and a local
 ``NoDataError`` for the SDK's exception of that name.
 """
 

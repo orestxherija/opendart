@@ -1,7 +1,7 @@
 """The package guide's data-access recipe and reports example, without the SDK or MCP.
 
-``or_none`` and ``sdk_filing_search`` match docs/data-access.md. A duck-typed client stands in for
-``opendart.OpenDART``, and a local ``NoDataError`` for the SDK's exception of that name.
+``or_none`` and ``sdk_filing_search`` match the data-access guide. A duck-typed client stands in
+for ``opendart.OpenDART``, and a local ``NoDataError`` for the SDK's exception of that name.
 """
 
 from __future__ import annotations

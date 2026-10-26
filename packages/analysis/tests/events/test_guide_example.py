@@ -1,6 +1,6 @@
 """The events and filing-discovery guides' SDK recipes, without the SDK or MCP.
 
-``sdk_filing_pages`` and ``sdk_service_fetch`` match docs/filings.md and docs/events.md. A
+``sdk_filing_pages`` and ``sdk_service_fetch`` match the filing-discovery and events guides. A
 duck-typed client stands in for ``opendart.OpenDART``, and a local ``NoDataError`` for the
 SDK's exception of that name.
 """

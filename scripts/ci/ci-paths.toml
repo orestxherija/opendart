@@ -33,6 +33,7 @@ paths = [
     "scripts/release/resolve_image.sh",
     "scripts/release/promote_image.sh",
     ".github/workflows/**",
+    "!.github/workflows/README.md",
     "packages/mcp/Dockerfile",
     "scripts/conftest.py",
     "scripts/testing/git.py",
@@ -54,7 +55,7 @@ paths = [
     "scripts/testing/git.py",
 ]
 
-# Package tests and docs cannot change whether the distributions build or install.
+# Package tests cannot change whether the distributions build or install.
 [distributions]
 include = ["shared"]
 paths = [
@@ -64,7 +65,6 @@ paths = [
     "packages/analysis/**",
     "packages/mcp/**",
     "!packages/*/tests/**",
-    "!packages/*/docs/**",
     "scripts/release/check_release.py",
     "scripts/release/smoke_distributions.py",
     "scripts/release/smoke_installed.py",
@@ -78,7 +78,6 @@ paths = [
     "codecov.yml",
     ".github/workflows/check-sdk.yml",
     "packages/sdk/**",
-    "!packages/sdk/docs/**",
     "scripts/sdk/generate_sdk.py",
     "api_reference/openapi.yaml",
     "api_reference/parameters.yaml",
@@ -101,14 +100,13 @@ paths = [
     ".github/workflows/check-analysis.yml",
     "packages/analysis/**",
     "scripts/testing/**",
-    "!packages/analysis/docs/**",
     "scripts/analysis/generate_mcp_registry.py",
     "scripts/sdk/generate_sdk.py",
     "api_reference/sources/catalog.json",
     "api_reference/paths/**",
 ]
 
-# MCP tests parse COMPONENT_DESIGN.md and run against the installed SDK and analysis packages.
+# MCP tests run against the installed SDK and analysis packages.
 [mcp]
 include = ["shared", "python"]
 paths = [
@@ -119,8 +117,6 @@ paths = [
     ".github/workflows/check-mcp.yml",
     "packages/mcp/**",
     "scripts/testing/**",
-    "!packages/mcp/docs/**",
-    "packages/mcp/docs/COMPONENT_DESIGN.md",
     "scripts/mcp/check_mcp.py",
     "scripts/mcp/check_mcp_runtime.py",
     "scripts/mcp/check_mcp_components.py",

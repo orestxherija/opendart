@@ -1,6 +1,6 @@
 """The directory guide's loader recipe, run with a duck-typed client instead of the SDK.
 
-``sdk_archive_fetch`` and ``run_example`` match the Loader section of docs/directory.md; the
+``sdk_archive_fetch`` and ``run_example`` match the Loader section of the directory guide; the
 fake client answers ``disclosures.corporation_codes`` with a synthetic archive.
 """
 

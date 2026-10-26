@@ -18,8 +18,6 @@ justfile       text eol=lf
 *.xml      text diff
 *.yaml     text diff
 *.yml      text diff
-*.svg      text diff
-*.drawio   text diff
 
 *.gif    binary
 *.ico    binary
@@ -44,7 +42,6 @@ justfile       text eol=lf
 /api_reference/schemas/*.yaml   linguist-generated
 
 /api_reference/**       linguist-documentation
-/packages/*/docs/**     linguist-documentation
 *.md                    linguist-documentation
 
 /.agents/plugins/python-conventions/** linguist-vendored

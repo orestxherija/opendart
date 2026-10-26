@@ -1,77 +1,50 @@
 # OpenDART API reference
 
-Read the [published Redoc reference](https://orestxherija.github.io/opendart/).
-This directory contains an unofficial OpenAPI description of the
-[English OpenDART API](https://engopendart.fss.or.kr/intro/main.do), used to generate
-the Python SDK, validate responses, and publish browsable documentation. FSS
-operates the API; its guides and service behavior remain authoritative.
+An unofficial OpenAPI description of the
+[English OpenDART API](https://engopendart.fss.or.kr/intro/main.do), published as the
+[Redoc reference](https://orestxherija.github.io/opendart/). It generates the Python SDK and
+validates responses. FSS operates the API; its guides and service behavior remain authoritative.
 
-## Contents
+## Table of contents
 
-- [Setup](#setup)
-- [Generate offline](#generate-offline)
-- [Validate](#validate)
-- [Build and view Redoc](#build-and-view-redoc)
-- [Refresh guides or audit live responses](#refresh-guides-or-audit-live-responses)
+- [Layout](#layout)
+- [Generate and validate](#generate-and-validate)
+- [Build Redoc](#build-redoc)
+- [Refresh or audit](#refresh-or-audit)
 
-## Setup
+## Layout
 
-Run these commands from the repository root with Python 3.14+, uv, Just, and Node.js 22+ installed:
+- `sources/`: the reviewed snapshot of the public guides and the live-audit record.
+- `openapi.yaml`, `paths/`, `schemas/`, `parameters.yaml`, `examples.yaml`: generated from `sources/`; do not
+  edit them directly.
+- [`scripts/api_reference/`](../scripts/api_reference/): the builder, checks, Redoc bundler, live contract
+  audit, and their tests.
+
+## Generate and validate
+
+Run from the repository root with Python 3.14+, uv, Just, and Node.js 22+:
 
 ```sh
 uv sync --locked --all-packages --group contracts
-just reference sync
+just reference sync       # locked Node dependencies
+just reference generate   # regenerate the YAML from sources/
+just reference check      # lint, tests, freshness, schemas, references, and examples
 ```
 
-Python dependencies come from `uv.lock`; `just reference sync` installs the locked
-Node dependencies in `scripts/api_reference/`.
+Validation is offline and needs no API key.
 
-## Generate offline
-
-[`scripts/api_reference/build.py`](../scripts/api_reference/build.py) reads the
-reviewed [`sources/catalog.json`](sources/catalog.json) snapshot and generates
-`openapi.yaml`, `paths/`, `schemas/`, `parameters.yaml`, and `examples.yaml`:
-
-```sh
-just reference generate
-```
-
-Change the builder or refresh the snapshot, then regenerate. Avoid editing generated YAML directly.
-
-## Validate
-
-```sh
-just reference check
-```
-
-This runs lint, offline regression tests, and
-[`scripts/api_reference/check.py`](../scripts/api_reference/check.py), which checks
-freshness, guide coverage, schemas, local references, and JSON/XML examples.
-It makes no OpenDART API calls and needs no key.
-
-## Build and view Redoc
-
-[`scripts/api_reference/build-docs.mjs`](../scripts/api_reference/build-docs.mjs)
-bundles the specification and embeds Redoc in `site/index.html`:
+## Build Redoc
 
 ```sh
 just reference build
 uv run --no-sync python -m http.server 8000 --directory site
 ```
 
-Open <http://localhost:8000/>. The [reference workflow](../.github/workflows/check-reference.yml)
-validates and builds the same page, then publishes it to GitHub Pages from `main`.
+Open <http://localhost:8000/>. CI builds the same page and publishes it to GitHub Pages from `main`.
 
-## Refresh guides or audit live responses
+## Refresh or audit
 
-To fetch updated public guides with
-[`scripts/api_reference/snapshot.py`](../scripts/api_reference/snapshot.py), run
-`uv run --no-sync python scripts/api_reference/snapshot.py`, review the snapshot
-diff, then repeat generation and validation. This step needs network access.
-
-`just reference contracts` runs
-[`scripts/api_reference/contracts/run.py`](../scripts/api_reference/contracts/run.py)
-against all operations; `just reference contracts BASE_SHA` limits it to operations
-changed since that commit. Set `OPENDART_API__API_KEY` or `OPENDART_API_KEY` first.
-Selection and reports go to `contract-results/`. These bounded samples do not
-establish every possible upstream response.
+- `uv run --no-sync python scripts/api_reference/snapshot.py` refetches the public guides; review the diff,
+  then regenerate and validate.
+- `just reference contracts [BASE_SHA]` audits live responses for all operations, or only those changed
+  since `BASE_SHA`. Set `OPENDART_API__API_KEY` first; reports go to `contract-results/`.

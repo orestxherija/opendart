@@ -48,8 +48,6 @@ def selected(event: Event, *paths: str) -> set[str]:
     [
         ("packages/mcp/src/opendart_mcp/server.py", {"mcp", "image", "distributions", "release"}),
         ("packages/mcp/tests/test_server.py", {"mcp"}),
-        ("packages/mcp/docs/COMPONENT_DESIGN.md", {"mcp"}),
-        ("packages/mcp/docs/CONTAINER.md", set()),
         ("packages/mcp/Dockerfile", {"mcp", "image", "distributions", "release", "audit"}),
         (
             "packages/sdk/src/opendart/client.py",
@@ -81,7 +79,6 @@ def selected(event: Event, *paths: str) -> set[str]:
         ("api_reference/sources/catalog.json", {"sdk", "analysis", "reference"}),
         ("importlinter.toml", {"analysis", "mcp"}),
         (".github/workflows/check-analysis.yml", {"analysis", "audit"}),
-        ("packages/sdk/docs/architecture.svg", set()),
         ("scripts/sdk/generate_sdk.py", {"sdk", "analysis"}),
         ("scripts/mcp/check_mcp_conformance.py", {"mcp"}),
         ("codecov.yml", {"sdk", "analysis", "mcp"}),
@@ -106,7 +103,7 @@ def selected(event: Event, *paths: str) -> set[str]:
         (".github/workflows/check-sdk.yml", {"sdk", "audit"}),
         (".github/workflows/publish-mcp-image.yml", {"audit"}),
         ("scripts/ci/select_components.py", {*COMPONENTS}),
-        (".github/README.md", set()),
+        (".github/workflows/README.md", set()),
         ("scripts/ci/tests/test_select_components.py", {"audit"}),
         ("README.md", set()),
     ],

@@ -597,7 +597,6 @@ files = { glob = [
     "packages/mcp/{src/**,tests/**,pyproject.toml,.coveragerc.toml}",
     "scripts/testing/**",
     "packages/{sdk,analysis}/{src/**,pyproject.toml}",
-    "packages/mcp/docs/COMPONENT_DESIGN.md",
     "scripts/mcp/check_mcp_components.py",
     "{pyproject.toml,pytest.toml,prek.toml,uv.lock}",
 ] }

@@ -1,8 +1,8 @@
 """The dividends guide's example, without the SDK or MCP.
 
-``or_none``, ``sdk_filing_search``, ``sdk_fetch_service``, and ``cash_dividends`` match
-docs/data-access.md, docs/extracts.md, and docs/dividends.md. A duck-typed client stands in
-for ``opendart.OpenDART``, and a local ``NoDataError`` for the SDK's exception of that name.
+``or_none``, ``sdk_filing_search``, ``sdk_fetch_service``, and ``cash_dividends`` match the
+data-access, extracts, and dividends guides. A duck-typed client stands in for
+``opendart.OpenDART``, and a local ``NoDataError`` for the SDK's exception of that name.
 """
 
 from __future__ import annotations

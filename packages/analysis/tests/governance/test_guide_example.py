@@ -1,8 +1,8 @@
 """The governance guide's example, through the SDK recipes, without the SDK or MCP.
 
-``or_none``, ``sdk_filing_search``, ``sdk_fetch_service``, and ``main`` match
-docs/data-access.md, docs/extracts.md, and docs/governance.md. A duck-typed client stands in
-for ``opendart.OpenDART``, and a local ``NoDataError`` for the SDK's exception of that name.
+``or_none``, ``sdk_filing_search``, ``sdk_fetch_service``, and ``main`` match the data-access,
+extracts, and governance guides. A duck-typed client stands in for ``opendart.OpenDART``, and a
+local ``NoDataError`` for the SDK's exception of that name.
 """
 
 from __future__ import annotations
