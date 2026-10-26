@@ -2,7 +2,7 @@
 # Run the same checksum-verified Betterleaks release in local hooks and CI.
 set -euo pipefail
 
-version=1.7.4
+version=1.9.0
 case "$(uname -s)/$(uname -m)" in
   Darwin/arm64)
     platform=darwin_arm64
